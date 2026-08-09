@@ -12,6 +12,9 @@ import MoodView from './components/dashboard/MoodView'
 import PsychiatristAuthPage from './pages/PsychiatristAuthPage'
 import PsychiatristDashboardPage from './pages/PsychiatristDashboardPage'
 import { PsychiatristProtectedRoute } from './components/PsychiatristProtectedRoute'
+import InstitutionAuthPage from './pages/InstitutionAuthPage'
+import InstitutionDashboardPage from './pages/InstitutionDashboardPage'
+import { InstitutionProtectedRoute } from './components/InstitutionProtectedRoute'
 
 export default function App() {
   return (
@@ -33,6 +36,10 @@ export default function App() {
       <Route path="/psychiatrist/signin" element={<PsychiatristAuthPage />} />
       <Route path="/psychiatrist" element={<PsychiatristProtectedRoute />}>
         <Route path="dashboard" element={<PsychiatristDashboardPage />} />
+      </Route>
+      <Route path="/institution/login" element={<InstitutionAuthPage />} />
+      <Route path="/institution" element={<InstitutionProtectedRoute />}>
+        <Route path="dashboard" element={<InstitutionDashboardPage />} />
       </Route>
     </Routes>
   )

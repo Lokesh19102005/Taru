@@ -77,3 +77,22 @@ export interface Appointment {
   notes?: string
   createdAt: string
 }
+
+export interface Institution {
+  _id: string
+  collegeName: string
+  contactEmail: string
+  role: string
+  createdAt: string
+}
+
+export interface InstitutionAuthResponse {
+  success: boolean
+  token: string
+  user: Institution
+}
+
+export interface InstitutionResponse {
+  success: boolean
+  user: Institution
+}

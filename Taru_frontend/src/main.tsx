@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { AuthProvider } from './contexts/AuthContext'
 import { PsychiatristAuthProvider } from './contexts/PsychiatristAuthContext'
+import { InstitutionAuthProvider } from './contexts/InstitutionAuthContext'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -22,7 +23,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <AuthProvider>
           <PsychiatristAuthProvider>
-            <App />
+            <InstitutionAuthProvider>
+              <App />
+            </InstitutionAuthProvider>
           </PsychiatristAuthProvider>
         </AuthProvider>
       </BrowserRouter>
