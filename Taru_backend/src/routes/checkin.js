@@ -4,7 +4,7 @@ const { submitCheckin, getHistory, getToday } = require('../controllers/checkinC
 const { protect, optionalProtect } = require('../middleware/auth');
 
 router.post('/', optionalProtect, submitCheckin);
-router.get('/history', protect, getHistory);
-router.get('/today', protect, getToday);
+router.get('/history', protect('user'), getHistory);
+router.get('/today', protect('user'), getToday);
 
 module.exports = router;

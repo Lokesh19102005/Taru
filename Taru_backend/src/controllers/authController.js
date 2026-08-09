@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
       degree: degree || ''
     });
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, 'user');
 
     res.status(201).json({
       success: true,
@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, 'user');
 
     res.status(200).json({
       success: true,

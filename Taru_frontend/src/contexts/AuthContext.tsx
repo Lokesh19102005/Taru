@@ -27,8 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const res = await fetchCurrentUser()
           setUser(res.user)
         } catch (error) {
-          localStorage.removeItem('taru_token')
-          setToken(null)
+          // Don't remove token — it might belong to a psychiatrist
           setUser(null)
         }
       }

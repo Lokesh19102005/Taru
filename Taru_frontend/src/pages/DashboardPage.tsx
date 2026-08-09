@@ -92,7 +92,7 @@ export default function DashboardPage() {
   const isOverview = location.pathname === '/dashboard' || location.pathname === '/dashboard/home'
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: COLORS.muted }}>
+    <div className="h-screen flex flex-col" style={{ background: COLORS.muted }}>
       {/* Top bar */}
       <header
         className="sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
@@ -138,7 +138,7 @@ export default function DashboardPage() {
 
         {/* Sidebar */}
         <aside
-          className={`fixed md:static top-14 bottom-0 left-0 z-40 w-60 flex flex-col border-r transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+          className={`fixed md:static top-14 bottom-0 left-0 z-40 w-60 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
           style={{ background: COLORS.card, borderColor: COLORS.border }}
         >
           <nav className="flex-1 p-3 space-y-0.5">

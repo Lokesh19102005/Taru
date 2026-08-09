@@ -9,6 +9,9 @@ import TalkView from './components/dashboard/TalkView'
 import GamesView from './components/dashboard/GamesView'
 import PsychiatristView from './components/dashboard/PsychiatristView'
 import MoodView from './components/dashboard/MoodView'
+import PsychiatristAuthPage from './pages/PsychiatristAuthPage'
+import PsychiatristDashboardPage from './pages/PsychiatristDashboardPage'
+import { PsychiatristProtectedRoute } from './components/PsychiatristProtectedRoute'
 
 export default function App() {
   return (
@@ -26,6 +29,10 @@ export default function App() {
           <Route path="psychiatrist" element={<PsychiatristView />} />
           <Route path="mood" element={<MoodView />} />
         </Route>
+      </Route>
+      <Route path="/psychiatrist/signin" element={<PsychiatristAuthPage />} />
+      <Route path="/psychiatrist" element={<PsychiatristProtectedRoute />}>
+        <Route path="dashboard" element={<PsychiatristDashboardPage />} />
       </Route>
     </Routes>
   )
