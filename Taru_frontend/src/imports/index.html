@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TARU — Daily Check-in</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ══ PWA ══ -->
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#091a24">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TARU">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* ── THEME VARIABLES ── */
+body.theme-cool{
+  --bg:#091a24;--bg1:#0d1f2d;--bg2:#0f2535;--bg3:#132d40;
+  --border:#1a3d4a;--border2:#20506a;
+  --accent1:#38b8d0;--accent1-dim:#1a8faa;--accent1-glow:#5cd4e8;
+  --accent2:#3ecfa8;--accent2-dim:#1aaa7a;--accent2-glow:#6ae8c4;
+  --green:#4ab890;--red:#c07070;--amber:#c8a060;
+  --txt:#c8e8e0;--txt2:#5a9898;--txt3:#2a5858;
+  --band:linear-gradient(90deg,#1a8faa,#3ecfa8,#38b8d0,#1aaa7a);
+  --mood-on-border:#3ecfa8;--mood-on-bg:rgba(62,207,168,.1);--mood-on-txt:#6ae8c4;
+  --chip-on-border:#1a8faa;--chip-on-bg:rgba(56,184,208,.1);--chip-on-txt:#5cd4e8;
+}
+
+
+:root{--mono:'DM Mono',monospace;--sans:'Nunito',sans-serif;--radius:14px;--radius-sm:10px}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh;transition:background .4s,color .4s}
+
+
+
+
+
+
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{position:sticky;top:0;z-index:50;background:var(--bg1);border-bottom:1px solid var(--border);padding:12px 24px}
+.progress-inner{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.progress-track{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent1-dim),var(--accent2));transition:width .4s ease}
+.progress-label{font-family:var(--mono);font-size:11px;color:var(--txt3);letter-spacing:.05em;white-space:nowrap}
+.logo-small{font-family:var(--mono);font-size:13px;color:var(--accent1);letter-spacing:.06em}
+
+/* ── SECTIONS ── */
+.sections{max-width:560px;margin:0 auto;padding:32px 20px 80px}
+.section{display:none;animation:fadeUp .35s ease}
+.section.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SECTION HEADER ── */
+.section-tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px}
+.section-title{font-size:22px;font-weight:700;color:var(--txt);margin-bottom:6px;line-height:1.3}
+.section-sub{font-size:14px;color:var(--txt2);margin-bottom:28px;line-height:1.6}
+
+/* ── INSTITUTION INPUT ── */
+.inst-wrap{position:relative;margin-bottom:20px}
+.inst-input{width:100%;padding:15px 18px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--sans);font-size:15px;color:var(--txt);outline:none;transition:border .2s;font-weight:500}
+.inst-input:focus{border-color:var(--accent1-dim)}
+.inst-input::placeholder{color:var(--txt3);font-weight:400}
+.inst-hint{font-size:12px;color:var(--txt3);margin-top:8px;font-family:var(--mono);letter-spacing:.03em}
+
+/* ── MOOD CARDS ── */
+.mood-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+.mood-card{padding:18px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:14px}
+.mood-card:hover{border-color:var(--border2);background:var(--bg3)}
+.mood-card.on{border-color:var(--mood-on-border);background:var(--mood-on-bg)}
+.mood-icon{font-size:28px;line-height:1;flex-shrink:0;width:36px;text-align:center}
+.mood-text{display:flex;flex-direction:column;gap:2px}
+.mood-name{font-size:15px;font-weight:600;color:var(--txt)}
+.mood-desc{font-size:12px;color:var(--txt2);line-height:1.4}
+.mood-card.on .mood-name{color:var(--mood-on-txt)}
+.mood-card.on .mood-desc{color:var(--mood-on-txt);opacity:.8}
+
+/* ── FACTOR CHIPS ── */
+.factor-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:8px}
+.fchip{padding:9px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:20px;font-size:13px;color:var(--txt2);cursor:pointer;transition:all .2s;font-weight:600}
+.fchip:hover{border-color:var(--border2);color:var(--txt)}
+.fchip.on{border-color:var(--chip-on-border);background:var(--chip-on-bg);color:var(--chip-on-txt)}
+
+/* ── YES/NO ── */
+.yn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.yn-btn{padding:14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .2s;text-align:center}
+.yn-btn:hover{border-color:var(--border2);color:var(--txt)}
+.yn-btn.on{border-color:var(--mood-on-border);background:var(--mood-on-bg);color:var(--mood-on-txt)}
+
+/* ── SUPPORT OPTS ── */
+.support-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.sopt{padding:13px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--txt2);cursor:pointer;transition:all .2s;font-weight:500}
+.sopt:hover{border-color:var(--border2);color:var(--txt)}
+.sopt.on{border-color:var(--chip-on-border);background:var(--chip-on-bg);color:var(--chip-on-txt)}
+
+/* ── TEXTAREA ── */
+.free-text{width:100%;padding:14px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--sans);font-size:14px;color:var(--txt);resize:none;outline:none;transition:border .2s;line-height:1.7;margin-bottom:8px}
+.free-text:focus{border-color:var(--accent1-dim)}
+.free-text::placeholder{color:var(--txt3)}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+
+/* ── CONSENT ── */
+.consent{font-size:13px;color:var(--txt2);line-height:1.7;padding:16px;background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:20px}
+.consent strong{color:var(--txt);font-weight:600}
+
+/* ── NAV BUTTONS ── */
+.btn-row{display:flex;gap:10px;margin-top:28px;align-items:center}
+.btn-next{flex:1;padding:15px;background:linear-gradient(135deg,var(--accent1-dim),var(--accent2-dim));color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.btn-next:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn-next:disabled{background:var(--bg3);color:var(--txt3);cursor:not-allowed;transform:none;filter:none}
+.btn-back{padding:15px 20px;background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--txt3);font-family:var(--sans);font-size:14px;cursor:pointer;transition:all .2s;font-weight:600}
+.btn-back:hover{border-color:var(--txt3);color:var(--txt2)}
+
+/* ── THANKYOU ── */
+.thankyou{text-align:center;padding:48px 0}
+.ty-icon{font-size:52px;margin-bottom:16px}
+.ty-title{font-size:24px;font-weight:700;color:var(--txt);margin-bottom:10px}
+.ty-sub{font-size:14px;color:var(--txt2);line-height:1.8;max-width:360px;margin:0 auto 28px}
+.ty-note{font-size:11px;color:var(--txt3);font-family:var(--mono);letter-spacing:.05em}
+
+/* ── TOP BAND ── */
+.top-band{height:3px;background:var(--band);width:100%}
+
+@media(max-width:480px){.mood-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="theme-cool" >
+
+<div class="top-band" id="top-band"></div>
+
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="logo-small">taru</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:16%"></div>
+    </div>
+    <div class="progress-label" id="prog-label">1 of 6</div>
+  </div>
+</div>
+
+<div class="sections">
+
+  <!-- ══ SECTION 0 — INTRO ══ -->
+<div class="section active" id="sec-0">
+  <div class="section-tag">welcome</div>
+  <div class="section-title">You're helping build something important.</div>
+  <div class="section-sub">A 2-minute anonymous check-in to understand student wellbeing at your institution. No names. No login. No judgement.</div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:28px">
+    <div style="padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--txt2);line-height:1.7">
+      🎓 <strong style="color:var(--txt)">What is this pilot?</strong><br>
+      TARU is mapping the emotional climate of your campus — so institutions can offer better, more timely support.
+    </div>
+    <div style="padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--txt2);line-height:1.7">
+      🔒 <strong style="color:var(--txt)">Your privacy is guaranteed.</strong><br>
+      No one can identify you — not us, not your college. Only anonymous patterns are visible.
+    </div>
+    <div style="padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--txt2);line-height:1.7">
+      ⏱️ <strong style="color:var(--txt)">How long does it take?</strong><br>
+      2 minutes. 6 questions. That's it.
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-next" onclick="goTo(1)">let's begin →</button>
+  </div>
+</div>
+
+  <!-- ══ SECTION 1 — INSTITUTION ══ -->
+  <div class="section active" id="sec-1">
+    <div class="section-tag">getting started</div>
+    <div class="section-title">Which institution are you from?</div>
+    <div class="section-sub">Helps us see patterns at your college. Your identity is never recorded.</div>
+
+    <div class="inst-wrap">
+      <input class="inst-input" id="inst-input" type="text"
+        placeholder="e.g. IIIT Allahabad, BHU, AKTU Lucknow..."
+        oninput="handleInst(this)">
+      <div class="inst-hint">type the full name of your college or university</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-next" id="btn-1" onclick="goTo(2)" disabled>continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 2 — MOOD ══ -->
+  <div class="section" id="sec-2">
+    <div class="section-tag">how you feel</div>
+    <div class="section-title">Aaj kaisa feel ho raha hai?</div>
+    <div class="section-sub">No right answer. Just what is true right now.</div>
+
+    <div class="mood-grid">
+      <div class="mood-card" onclick="pickMood(this,'good')">
+        <div class="mood-icon">🌤️</div>
+        <div class="mood-text">
+          <div class="mood-name">Accha hai</div>
+          <div class="mood-desc">feeling good, things are fine</div>
+        </div>
+      </div>
+      <div class="mood-card" onclick="pickMood(this,'okayish')">
+        <div class="mood-icon">🌫️</div>
+        <div class="mood-text">
+          <div class="mood-name">Theek-theek</div>
+          <div class="mood-desc">not great, not bad either</div>
+        </div>
+      </div>
+      <div class="mood-card" onclick="pickMood(this,'off')">
+        <div class="mood-icon">🌧️</div>
+        <div class="mood-text">
+          <div class="mood-name">Thoda off</div>
+          <div class="mood-desc">something feels slightly wrong</div>
+        </div>
+      </div>
+      <div class="mood-card" onclick="pickMood(this,'stressed')">
+        <div class="mood-icon">🌪️</div>
+        <div class="mood-text">
+          <div class="mood-name">Bahut pressure</div>
+          <div class="mood-desc">stressed, overwhelmed, heavy</div>
+        </div>
+      </div>
+      <div class="mood-card" onclick="pickMood(this,'very low')" style="grid-column:1/-1">
+        <div class="mood-icon">🌑</div>
+        <div class="mood-text">
+          <div class="mood-name">Bilkul theek nahi</div>
+          <div class="mood-desc">really struggling right now</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(1)">←</button>
+      <button class="btn-next" id="btn-2" onclick="goTo(3)" disabled>continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 3 — STRESS FACTOR ══ -->
+  <div class="section" id="sec-3">
+    <div class="section-tag">what's weighing on you</div>
+    <div class="section-title">Kya chal raha hai lately?</div>
+    <div class="section-sub">Pick whatever feels closest — more than one is fine.</div>
+
+    <div class="factor-grid">
+      <div class="fchip" onclick="pickFactor(this,'academics')">📚 academics</div>
+      <div class="fchip" onclick="pickFactor(this,'exams / results')">📝 exams / results</div>
+      <div class="fchip" onclick="pickFactor(this,'placements / career')">💼 placements / career</div>
+      <div class="fchip" onclick="pickFactor(this,'family pressure')">🏠 family pressure</div>
+      <div class="fchip" onclick="pickFactor(this,'relationships')">🤝 relationships</div>
+      <div class="fchip" onclick="pickFactor(this,'sleep / health')">😴 sleep / health</div>
+      <div class="fchip" onclick="pickFactor(this,'loneliness')">🌧️ loneliness</div>
+      <div class="fchip" onclick="pickFactor(this,'financial stress')">💸 financial stress</div>
+      <div class="fchip" onclick="pickFactor(this,'nothing specific')">🌀 nothing specific</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(2)">←</button>
+      <button class="btn-next" id="btn-3" onclick="goTo(4)" disabled>continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 4 — BODY + SUPPORT ══ -->
+  <div class="section" id="sec-4">
+    <div class="section-tag">your body and support</div>
+    <div class="section-title">A couple of quick things</div>
+    <div class="section-sub">These help us understand the fuller picture.</div>
+
+    <div style="margin-bottom:24px">
+      <div style="font-size:14px;color:var(--txt2);margin-bottom:12px;font-weight:600">Mentally thaka hua feel ho raha hai?</div>
+      <div class="yn-row">
+        <div class="yn-btn" onclick="pickYN('tired','yes',this)">haan, quite a bit</div>
+        <div class="yn-btn" onclick="pickYN('tired','no',this)">not really</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:14px;color:var(--txt2);margin-bottom:12px;font-weight:600">Jab mushkil hota hai — koi hai baat karne ke liye?</div>
+      <div class="support-opts">
+        <div class="sopt" onclick="pickSupport(this,'yes — friends or family')">haan — dost ya family hai</div>
+        <div class="sopt" onclick="pickSupport(this,'sometimes, but not always')">kabhi kabhi, always nahi</div>
+        <div class="sopt" onclick="pickSupport(this,'not really — I keep it to myself')">nahi really — main khud sambhalta/ti hoon</div>
+        <div class="sopt" onclick="pickSupport(this,'no one I feel comfortable with')">koi nahi jisse comfortable feel ho</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(3)">←</button>
+      <button class="btn-next" id="btn-4" onclick="goTo(5)" disabled>continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 5 — OPEN TEXT ══ -->
+  <div class="section" id="sec-5">
+    <div class="section-tag">in your own words</div>
+    <div class="section-title">Kuch aur share karna hai?</div>
+    <div class="section-sub">Completely optional. No names, no judgement — just a space to say what's on your mind.</div>
+
+    <textarea class="free-text" id="feedback" rows="4"
+      placeholder="kuch bhi likh sakte ho — Hindi, English, Hinglish, jo bhi comfortable lage..."></textarea>
+
+    <div class="divider"></div>
+
+    <div style="font-size:14px;color:var(--txt2);margin-bottom:12px;font-weight:600">Agar TARU aapke college mein hota — kya aap regularly use karte?</div>
+    <div class="yn-row">
+      <div class="yn-btn" onclick="pickYN('intent','yes',this)">haan, zaroor</div>
+      <div class="yn-btn" onclick="pickYN('intent','maybe',this)">maybe</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(4)">←</button>
+      <button class="btn-next" onclick="goTo(6)">continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 6 — CONSENT + SUBMIT ══ -->
+  <div class="section" id="sec-6">
+    <div class="section-tag">almost done</div>
+    <div class="section-title">Before you submit</div>
+    <div class="section-sub">We want to be transparent with you.</div>
+
+    <div class="consent">
+      <strong>Aapki privacy matters.</strong> Koi naam, email, ya roll number collect nahi hota. Aapka data sirf aapke institution mein student wellbeing trends samajhne ke liye use hoga — aur TARU ko behtar banane ke liye. Aap kabhi bhi page band kar sakte hain.
+    </div>
+
+    <div style="font-size:14px;color:var(--txt2);margin-bottom:12px;font-weight:600">Kya aap theek hain agar aapke anonymous responses institutions ko wellbeing trends samajhne mein madad karein?</div>
+    <div class="yn-row">
+      <div class="yn-btn" onclick="pickYN('consent','yes',this)">haan, yeh helpful lagta hai</div>
+      <div class="yn-btn" onclick="pickYN('consent','no',this)">I'd prefer not</div>
+    </div>
+
+    <!-- form submit handled via fetch in JS -->
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(5)">←</button>
+      <button class="btn-next" id="btn-submit" onclick="doSubmit()" disabled>submit check-in →</button>
+    </div>
+
+    <div style="text-align:center;margin-top:16px">
+      <div style="font-size:11px;color:var(--txt3);font-family:var(--mono);letter-spacing:.04em">🔒 fully anonymous · no account · cogniease techno labs pvt. ltd.</div>
+    </div>
+  </div>
+
+  <!-- ══ THANK YOU ══ -->
+  <div class="section" id="sec-thanks">
+    <div class="thankyou">
+      <div class="ty-icon">🌿</div>
+      <div class="ty-title">Shukriya, sharing ke liye</div>
+      <div class="ty-sub">Aaj aapne apne liye time nikala — yeh chhoti si cheez bahut matter karti hai. Aapka response anonymously record ho gaya hai aur aapke institution mein student wellbeing ko better banane mein help karega.</div>
+      <div class="ty-note">taru · cogniease techno labs pvt. ltd. · prayagraj</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const state = {institution:'',mood:'',factors:[],tired:'',support:'',intent:'',consent:''};
+const total = 7;
+
+
+function goTo(n) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(n === 'thanks' ? 'sec-thanks' : 'sec-' + n).classList.add('active');
+  if (n !== 'thanks') {
+    document.getElementById('prog-fill').style.width = Math.round((n / total) * 100) + '%';
+    document.getElementById('prog-label').textContent = n + ' of ' + total;
+  } else {
+    document.getElementById('prog-fill').style.width = '100%';
+    document.getElementById('prog-label').textContent = 'done';
+  }
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function handleInst(el) {
+  state.institution = el.value.trim();
+  document.getElementById('btn-1').disabled = state.institution.length < 3;
+}
+
+function pickMood(el, val) {
+  document.querySelectorAll('.mood-card').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  state.mood = val;
+  document.getElementById('btn-2').disabled = false;
+}
+
+function pickFactor(el, val) {
+  el.classList.toggle('on');
+  const idx = state.factors.indexOf(val);
+  if (idx > -1) state.factors.splice(idx, 1);
+  else state.factors.push(val);
+  document.getElementById('btn-3').disabled = state.factors.length === 0;
+}
+
+function pickYN(field, val, el) {
+  el.closest('.yn-row').querySelectorAll('.yn-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  state[field] = val;
+  checkSec4(); checkSec6();
+}
+
+function pickSupport(el, val) {
+  document.querySelectorAll('.sopt').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  state.support = val;
+  checkSec4();
+}
+
+function checkSec4() {
+  document.getElementById('btn-4').disabled = !(state.tired && state.support);
+}
+function checkSec6() {
+  document.getElementById('btn-submit').disabled = !state.consent;
+}
+
+function doSubmit() {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'submitting...';
+
+  const payload = new FormData();
+  payload.append('institution', state.institution);
+  payload.append('mood',        state.mood);
+  payload.append('factor',      state.factors.join(', '));
+  payload.append('tired',       state.tired);
+  payload.append('support',     state.support);
+  payload.append('feedback',    document.getElementById('feedback').value);
+  payload.append('usage_intent',  state.intent);
+  payload.append('sharing_comfort', state.consent);
+
+  fetch('/submit', { method: 'POST', body: payload })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        goTo('thanks');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'submit check-in →';
+        alert('Something went wrong. Please try again.');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'submit check-in →';
+      alert('Network error. Please check your connection and try again.');
+    });
+}
+
+// ── Register Service Worker (PWA) ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('TARU SW registered'))
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import AuthPage from './pages/AuthPage'
+import DashboardPage from './pages/DashboardPage'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import CheckinFlow from './components/CheckinFlow'
+import HomeView from './components/dashboard/HomeView'
+import TalkView from './components/dashboard/TalkView'
+import GamesView from './components/dashboard/GamesView'
+import PsychiatristView from './components/dashboard/PsychiatristView'
+import MoodView from './components/dashboard/MoodView'
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/check" element={<CheckinFlow isGuest />} />
+      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/dashboard" element={<ProtectedRoute />}>
+        <Route element={<DashboardPage />}>
+          <Route index element={<Navigate to="home" replace />} />
+          <Route path="home" element={<HomeView />} />
+          <Route path="check" element={<CheckinFlow />} />
+          <Route path="talk" element={<TalkView />} />
+          <Route path="games" element={<GamesView />} />
+          <Route path="psychiatrist" element={<PsychiatristView />} />
+          <Route path="mood" element={<MoodView />} />
+        </Route>
+      </Route>
+    </Routes>
+  )
+}
