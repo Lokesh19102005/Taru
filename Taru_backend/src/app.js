@@ -8,6 +8,7 @@ const psychiatristRoutes = require('./routes/psychiatrist');
 const { getAllPsychiatrists } = require('./controllers/psychiatristController');
 const availabilityRoutes = require('./routes/availability');
 const appointmentRoutes = require('./routes/appointment');
+const institutionRoutes = require('./routes/institution');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/psychiatrist', psychiatristRoutes);
 app.get('/api/view_psychiatrist', getAllPsychiatrists);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/appointment', appointmentRoutes);
+app.use('/api/institution', institutionRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Psychiatrist = require('../models/Psychiatrist');
+const Institution = require('../models/Institution');
 
 const modelMap = {
   user: User,
-  psychiatrist: Psychiatrist
+  psychiatrist: Psychiatrist,
+  institution: Institution
 };
 
 const protect = (...allowedRoles) => {
