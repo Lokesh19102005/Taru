@@ -51,13 +51,17 @@ function CalendarHeatmap({ checkins }: { checkins: any[] }) {
   today.setHours(0, 0, 0, 0)
   const days: DayCell[] = []
 
-  const startDate = new Date(today)
-  startDate.setDate(startDate.getDate() - 34)
-  const startDay = startDate.getDay()
-  const mondayOffset = startDay === 0 ? -6 : 1 - startDay
-  startDate.setDate(startDate.getDate() + mondayOffset)
+  // Find Monday of the current week
+  const currentMonday = new Date(today)
+  const todayDow = currentMonday.getDay() // 0=Sun
+  const toMondayOffset = todayDow === 0 ? -6 : 1 - todayDow
+  currentMonday.setDate(currentMonday.getDate() + toMondayOffset)
 
-  const totalCells = 35
+  // Go back 4 more weeks to get 5 columns total
+  const startDate = new Date(currentMonday)
+  startDate.setDate(startDate.getDate() - 28)
+
+  const totalCells = 35 // 5 weeks × 7 days
   for (let i = 0; i < totalCells; i++) {
     const d = new Date(startDate)
     d.setDate(d.getDate() + i)
