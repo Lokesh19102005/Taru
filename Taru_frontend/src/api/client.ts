@@ -1,4 +1,4 @@
-const BASE_URL = ''
+const BASE_URL = import.meta.env.VITE_API_URL || ''
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('taru_token')
