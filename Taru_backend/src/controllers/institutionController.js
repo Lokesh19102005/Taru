@@ -160,7 +160,7 @@ exports.getStudents = async (req, res) => {
     const collegeName = req.user.collegeName;
     
     // Find all students from this college (no email exposed)
-    const students = await User.find({ college: collegeName }).select('_id username year degree');
+    const students = await User.find({ college: collegeName }).select('_id username year degree batch age gender');
     const studentIds = students.map(s => s._id);
     
     // Get today's check-ins
@@ -186,6 +186,9 @@ exports.getStudents = async (req, res) => {
         username: s.username,
         year: s.year,
         degree: s.degree,
+        batch: s.batch || '',
+        age: s.age || null,
+        gender: s.gender || '',
         todayCheckin: checkin ? {
           mood: checkin.mood,
           energy: checkin.energy,
