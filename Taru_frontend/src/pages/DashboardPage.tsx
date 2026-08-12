@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Outlet, NavLink } from 'react-router-dom'
-import { Heart, Menu, Bell, Sparkles, LogOut, ClipboardList, MessageCircle, Gamepad2, Stethoscope, BarChart2, Mail, GraduationCap, User, Calendar } from 'lucide-react'
+import { Heart, Menu, Bell, Sparkles, LogOut, ClipboardList, MessageCircle, Gamepad2, Stethoscope, BarChart2, User } from 'lucide-react'
 import COLORS from '../lib/theme'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -14,6 +14,7 @@ const navItems = [
 
 function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClose: () => void; user: any }) {
   const ref = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose()
@@ -25,7 +26,7 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-full mt-2 w-72 rounded-2xl border shadow-xl z-50 overflow-hidden"
+      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border shadow-xl z-50 overflow-hidden"
       style={{ background: COLORS.card, borderColor: COLORS.border }}
     >
       {/* Header */}
@@ -34,44 +35,28 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
           <div className="w-11 h-11 rounded-full flex items-center justify-center font-extrabold text-lg" style={{ background: COLORS.primary, color: '#fff' }}>{user?.username?.charAt(0)?.toUpperCase() || 'U'}</div>
           <div>
             <div className="font-bold text-sm" style={{ color: COLORS.fg }}>{user?.username || ''}</div>
-            <div className="text-xs" style={{ color: COLORS.fg3 }}>{user?.year && user?.degree ? `${user.year} · ${user.degree}` : user?.year || user?.degree || 'Student'}</div>
+            <div className="text-xs" style={{ color: COLORS.fg3 }}>{user?.college || 'Student'}</div>
           </div>
         </div>
       </div>
 
-      {/* Details */}
-      <div className="px-5 py-4 space-y-3 border-b" style={{ borderColor: COLORS.border }}>
-        {[
-          { icon: <Mail size={13} />, label: 'Email', val: user?.email || '' },
-          { icon: <GraduationCap size={13} />, label: 'College', val: user?.college || '' },
-          { icon: <User size={13} />, label: 'Year', val: user?.year && user?.degree ? `${user.year} · ${user.degree}` : user?.year || user?.degree || '—' },
-          { icon: <Calendar size={13} />, label: 'Member since', val: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—' },
-        ].map(row => (
-          <div key={row.label} className="flex items-start gap-2.5">
-            <div className="mt-0.5 shrink-0" style={{ color: COLORS.fg3 }}>{row.icon}</div>
-            <div>
-              <div className="text-[10px] uppercase tracking-widest" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg4 }}>{row.label}</div>
-              <div className="text-xs font-medium" style={{ color: COLORS.fg }}>{row.val}</div>
-            </div>
-          </div>
-        ))}
+      {/* Actions */}
+      <div className="py-1">
+        <button
+          onClick={() => { onClose(); navigate('/dashboard/profile') }}
+          className="w-full flex items-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors hover:bg-gray-50"
+          style={{ color: COLORS.fg }}
+        >
+          <User size={14} /> View Profile
+        </button>
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors hover:bg-red-50"
+          style={{ color: '#cc0000' }}
+        >
+          <LogOut size={14} /> Sign out
+        </button>
       </div>
-
-      {/* Streak */}
-      <div className="px-5 py-3.5 flex items-center justify-between border-b" style={{ borderColor: COLORS.border }}>
-        <span className="text-xs font-semibold" style={{ color: COLORS.fg }}>Check-in streak</span>
-        <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: COLORS.muted, color: COLORS.fg }}>🔥 {user?.checkinStreak || 0} days</span>
-      </div>
-
-      {/* Logout */}
-      <button
-        onClick={onLogout}
-        className="w-full flex items-center gap-2.5 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-red-50"
-        style={{ color: '#cc0000' }}
-      >
-        <LogOut size={14} />
-        Sign out
-      </button>
     </div>
   )
 }
@@ -124,7 +109,7 @@ export default function DashboardPage() {
               <div className="hidden sm:block text-left">
                 <div className="text-xs font-bold leading-tight" style={{ color: COLORS.fg }}>{user?.username || ''}</div>
                 <div className="text-[10px]" style={{ color: COLORS.fg3 }}>
-                  {user?.year && user?.degree ? `${user.year} · ${user.degree}` : user?.year || user?.degree || 'Student'}
+                  {user?.college || 'Student'}
                 </div>
               </div>
             </button>

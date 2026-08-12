@@ -5,6 +5,9 @@ export interface User {
   college: string
   year: string
   degree: string
+  batch: string
+  age: number | null
+  gender: string
   checkinStreak: number
   createdAt: string
   updatedAt: string

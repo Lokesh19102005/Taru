@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const { email, password, college, year, degree } = req.body;
+    const { email, password, college, year, degree, batch, age, gender } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -21,7 +21,10 @@ exports.register = async (req, res) => {
       password,
       college,
       year: year || '',
-      degree: degree || ''
+      degree: degree || '',
+      batch: batch || '',
+      age: age || null,
+      gender: gender || ''
     });
 
     const token = generateToken(user._id, 'user');
@@ -36,6 +39,9 @@ exports.register = async (req, res) => {
         college: user.college,
         year: user.year,
         degree: user.degree,
+        batch: user.batch,
+        age: user.age,
+        gender: user.gender,
         checkinStreak: user.checkinStreak,
         createdAt: user.createdAt
       }
@@ -78,6 +84,9 @@ exports.login = async (req, res) => {
         college: user.college,
         year: user.year,
         degree: user.degree,
+        batch: user.batch,
+        age: user.age,
+        gender: user.gender,
         checkinStreak: user.checkinStreak,
         createdAt: user.createdAt
       }

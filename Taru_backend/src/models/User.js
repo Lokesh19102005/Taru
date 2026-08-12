@@ -44,6 +44,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  batch: {
+    type: String,
+    default: ''
+  },
+  age: {
+    type: Number,
+    default: null
+  },
+  gender: {
+    type: String,
+    default: ''
+  },
   checkinStreak: {
     type: Number,
     default: 0
