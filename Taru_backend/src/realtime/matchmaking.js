@@ -1,6 +1,9 @@
 const events = require("./events");
 const rooms = require("./rooms");
-const memoryGame = require("./games/memory");
+const gameModules = {
+  memory: require("./games/memory"),
+  four_in_a_row: require("./games/connect-four"),
+};
 
 /*
 queues: { [gameType]: Array<socketId> }
@@ -62,11 +65,16 @@ async function handleJoinQueue(io, socket, gameType) {
       waitingSocket.emit(events.MATCH_FOUND, payload);
       socket.emit(events.MATCH_FOUND, payload);
 
-      // Initialize game state for this room (Memory module will emit GAME_STARTED)
+      // Initialize game state for this room (Game module will emit GAME_STARTED)
       try {
-        memoryGame.startGameForRoom(io, room);
-      } catch (e) {
-        console.error("Failed starting game for room", room.id, e);
+        gameModules[room.gameType]?.startGameForRoom(io, room);
+      } catch (error) {
+        console.error(
+          "Failed starting game for room",
+          room.id,
+          room.gameType,
+          error,
+        );
       }
       return;
     }
