@@ -5,6 +5,9 @@ import MemoryLobby from "../games/memory/MemoryLobby";
 import MemoryBoard from "../games/memory/MemoryBoard";
 import { disconnectSocket } from "../../lib/socket";
 import { GameStartedPayload } from "../../types/game";
+import ConnectFourLobby from "../games/connect-four/ConnectFourLobby";
+import ConnectFourBoard from "../games/connect-four/ConnectFourBoard";
+import { FourGameStartedPayload } from "../../types/connect-four";
 
 type Phase = "inhale" | "hold" | "exhale";
 const PHASE_DURATIONS: Record<Phase, number> = {
@@ -327,6 +330,9 @@ function BreathingBubble({ onBack }: { onBack: () => void }) {
 export default function GamesView() {
   const [active, setActive] = useState<string | null>(null);
   const [memoryGame, setMemoryGame] = useState<GameStartedPayload | null>(null);
+  const [connectFour, setConnectFour] = useState<FourGameStartedPayload | null>(
+    null,
+  );
 
   useEffect(() => {
     return () => {
@@ -363,7 +369,41 @@ export default function GamesView() {
       desc: "Find matching pairs together in a calm, turn-based game.",
       tag: "Play together",
     },
+    {
+      id: "four_in_a_row",
+      icon: <Sparkles size={20} />,
+      title: "4 in a Row",
+      desc: "Take turns placing pieces and enjoy a thoughtful game together.",
+      tag: "Play together",
+    },
   ];
+
+  if (active === "four_in_a_row") {
+    if (connectFour) {
+      return (
+        <ConnectFourBoard
+          initialGame={connectFour}
+          onExit={() => {
+            disconnectSocket();
+            setConnectFour(null);
+            setActive(null);
+          }}
+        />
+      );
+    }
+
+    return (
+      <ConnectFourLobby
+        onStarted={(game) => {
+          setConnectFour(game);
+        }}
+        onCancel={() => {
+          setConnectFour(null);
+          setActive(null);
+        }}
+      />
+    );
+  }
 
   if (active === "memory") {
     if (memoryGame) {
