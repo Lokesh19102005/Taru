@@ -1,34 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap");
+@import "tailwindcss";
 
 @theme inline {
-  --font-display: 'Nunito', system-ui, sans-serif;
-  --font-sans: 'Nunito', system-ui, sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-display: "Nunito", system-ui, sans-serif;
+  --font-sans: "Nunito", system-ui, sans-serif;
+  --font-mono: "DM Mono", monospace;
 
-  --color-background: #F9F9F9;
+  --color-background: #f9f9f9;
   --color-foreground: #111111;
-  --color-card: #FFFFFF;
+  --color-card: #ffffff;
   --color-card-foreground: #111111;
   --color-primary: #111111;
-  --color-primary-foreground: #FFFFFF;
-  --color-secondary: #F0F0F0;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f0f0f0;
   --color-secondary-foreground: #111111;
-  --color-muted: #F4F4F4;
+  --color-muted: #f4f4f4;
   --color-muted-foreground: #666666;
   --color-accent: #333333;
-  --color-accent-foreground: #FFFFFF;
-  --color-border: #E2E2E2;
+  --color-accent-foreground: #ffffff;
+  --color-border: #e2e2e2;
   --color-ring: #111111;
   --radius: 0.75rem;
 }
 
-* { scrollbar-width: none; }
-*::-webkit-scrollbar { display: none; }
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
 
 body {
   font-family: var(--font-sans);
-  background-color: #F9F9F9;
+  background-color: #f9f9f9;
   color: #111111;
   -webkit-font-smoothing: antialiased;
 }
