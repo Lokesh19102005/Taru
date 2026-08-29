@@ -16,9 +16,18 @@ module.exports = {
   TURN_RESULT: "turn_result",
   GAME_OVER: "game_over",
 
+  // 4 in a Row
   FOUR_GAME_STARTED: "four_game_started",
   PIECE_DROPPED: "piece_dropped",
   FOUR_GAME_OVER: "four_game_over",
+
+  // Beach Balls
+  FIRE_PROJECTILE: "fire_projectile",
+  BEACH_BALLS_GAME_STARTED: "beach_balls_game_started",
+  BEACH_BALLS_STATE: "beach_balls_state",
+  BEACH_BALLS_GOAL: "beach_balls_goal",
+  BEACH_BALLS_GAME_OVER: "beach_balls_game_over",
+  BEACH_BALLS_HIT: "beach_balls_hit",
 
   // Error
   ERROR: "error",

@@ -3,6 +3,7 @@ const rooms = require("./rooms");
 const gameModules = {
   memory: require("./games/memory"),
   four_in_a_row: require("./games/connect-four"),
+  beach_balls: require("./games/beach-balls"),
 };
 
 /*
@@ -124,6 +125,12 @@ function handleDisconnect(io, socket) {
         if (opponent) {
           opponent.emit(events.OPPONENT_LEFT, { roomId: room.id });
         }
+      }
+
+      const gameModule = gameModules[room.gameType];
+
+      if (gameModule && typeof gameModule.stopGameForRoom === "function") {
+        gameModule.stopGameForRoom(room);
       }
       // TODO: schedule room cleanup or immediate deletion if desired
       // rooms.deleteRoom(room.id)

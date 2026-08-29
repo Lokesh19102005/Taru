@@ -8,6 +8,9 @@ import { GameStartedPayload } from "../../types/game";
 import ConnectFourLobby from "../games/connect-four/ConnectFourLobby";
 import ConnectFourBoard from "../games/connect-four/ConnectFourBoard";
 import { FourGameStartedPayload } from "../../types/connect-four";
+import BeachBallsLobby from "../games/beach-balls/BeachBallsLobby";
+import BeachBallsBoard from "../games/beach-balls/BeachBallsBoard";
+import { BeachBallsGameStartedPayload } from "../../types/beach-balls";
 
 type Phase = "inhale" | "hold" | "exhale";
 const PHASE_DURATIONS: Record<Phase, number> = {
@@ -333,6 +336,8 @@ export default function GamesView() {
   const [connectFour, setConnectFour] = useState<FourGameStartedPayload | null>(
     null,
   );
+  const [beachBalls, setBeachBalls] =
+    useState<BeachBallsGameStartedPayload | null>(null);
 
   useEffect(() => {
     return () => {
@@ -376,6 +381,13 @@ export default function GamesView() {
       desc: "Take turns placing pieces and enjoy a thoughtful game together.",
       tag: "Play together",
     },
+    {
+      id: "beach_balls",
+      icon: <Sparkles size={20} />,
+      title: "Beach Balls",
+      desc: "Share a gentle, real-time game of timing and movement.",
+      tag: "Play together",
+    },
   ];
 
   if (active === "four_in_a_row") {
@@ -399,6 +411,34 @@ export default function GamesView() {
         }}
         onCancel={() => {
           setConnectFour(null);
+          setActive(null);
+        }}
+      />
+    );
+  }
+
+  if (active === "beach_balls") {
+    if (beachBalls) {
+      return (
+        <BeachBallsBoard
+          initialGame={beachBalls}
+          onExit={() => {
+            disconnectSocket();
+            setBeachBalls(null);
+            setActive(null);
+          }}
+        />
+      );
+    }
+
+    return (
+      <BeachBallsLobby
+        onStarted={(game) => {
+          setBeachBalls(game);
+        }}
+        onCancel={() => {
+          disconnectSocket();
+          setBeachBalls(null);
           setActive(null);
         }}
       />
