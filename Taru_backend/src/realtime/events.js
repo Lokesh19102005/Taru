@@ -29,6 +29,16 @@ module.exports = {
   BEACH_BALLS_GAME_OVER: "beach_balls_game_over",
   BEACH_BALLS_HIT: "beach_balls_hit",
 
+  // Meeting (Video Consultation)
+  MEETING_JOIN: "meeting:join",
+  MEETING_LEAVE: "meeting:leave",
+  MEETING_OFFER: "meeting:offer",
+  MEETING_ANSWER: "meeting:answer",
+  MEETING_ICE_CANDIDATE: "meeting:ice-candidate",
+  MEETING_PARTICIPANT_JOINED: "meeting:participant-joined",
+  MEETING_PARTICIPANT_LEFT: "meeting:participant-left",
+  MEETING_ERROR: "meeting:error",
+
   // Chat (Talk to Someone)
   CHAT_JOIN_QUEUE: "chat_join_queue",
   CHAT_LEAVE_QUEUE: "chat_leave_queue",

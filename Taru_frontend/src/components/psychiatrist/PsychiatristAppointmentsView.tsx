@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Video } from 'lucide-react'
 import { COLORS } from '../../lib/theme'
 import { getPsychiatristAppointments, updateAppointmentStatus } from '../../api/appointment'
+import { joinAppointment } from '../../api/meeting'
 import { Appointment } from '../../types'
 
 const formatTime = (time: string) => {
@@ -10,10 +13,26 @@ const formatTime = (time: string) => {
   return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+const isJoinWindowOpen = (appt: Appointment) => {
+  const now = new Date()
+  const appointmentDate = new Date(appt.date)
+  const [startH, startM] = appt.startTime.split(':').map(Number)
+  const [endH, endM] = appt.endTime.split(':').map(Number)
+  const start = new Date(appointmentDate)
+  start.setHours(startH, startM, 0, 0)
+  const end = new Date(appointmentDate)
+  end.setHours(endH, endM, 0, 0)
+  const windowStart = new Date(start.getTime() - 5 * 60 * 1000)
+  const windowEnd = new Date(end.getTime() + 10 * 60 * 1000)
+  return now >= windowStart && now <= windowEnd
+}
+
 export default function PsychiatristAppointmentsView() {
+  const navigate = useNavigate()
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(false)
+  const [joiningId, setJoiningId] = useState<string | null>(null)
 
   const fetchAppointments = async () => {
     setLoading(true)
@@ -101,6 +120,32 @@ export default function PsychiatristAppointmentsView() {
                       className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
                     >
                       Reject
+                    </button>
+                  </div>
+                )}
+                {appt.status === 'confirmed' && (
+                  <div className="flex items-center gap-2 shrink-0 mt-3 md:mt-0">
+                    <button
+                      onClick={async () => {
+                        setJoiningId(appt._id)
+                        try {
+                          const res = await joinAppointment(appt._id)
+                          if (res.success && res.meetingId) {
+                            navigate(`/meeting/${res.meetingId}`)
+                          } else if (res.success && res.data?.meetingId) {
+                            navigate(`/meeting/${res.data.meetingId}`)
+                          }
+                        } catch (e) {
+                          console.error(e)
+                        } finally {
+                          setJoiningId(null)
+                        }
+                      }}
+                      disabled={!isJoinWindowOpen(appt) || joiningId === appt._id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-opacity disabled:opacity-50"
+                    >
+                      <Video size={14} />
+                      {joiningId === appt._id ? 'Joining...' : isJoinWindowOpen(appt) ? 'Join Session' : 'Outside Join Window'}
                     </button>
                   </div>
                 )}

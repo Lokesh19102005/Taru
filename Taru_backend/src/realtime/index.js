@@ -5,7 +5,7 @@ const memoryGame = require("./games/memory");
 const connectFourGame = require("./games/connect-four");
 const beachBallsGame = require("./games/beach-balls");
 const chat = require("./chat");
-
+const meetingSignaling = require("./meeting-signaling");
 function initRealtime(httpServer) {
   const io = new Server(httpServer, {
     cors: {
@@ -31,12 +31,14 @@ function initRealtime(httpServer) {
     socket.on("disconnect", (reason) => {
       matchmaking.handleDisconnect(io, socket);
       chat.handleChatDisconnect(io, socket);
+      meetingSignaling.handleMeetingDisconnect(io, socket);
     });
 
     memoryGame.attachHandlers(io, socket);
     connectFourGame.attachHandlers(io, socket);
     beachBallsGame.attachHandlers(io, socket);
     chat.attachHandlers(io, socket);
+    meetingSignaling.attachHandlers(io, socket);
 
     // game-specific modules will attach here later (e.g. require('./games/memory').attach(io, socket))
   });

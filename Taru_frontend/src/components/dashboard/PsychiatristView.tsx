@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import { CheckCircle, ChevronRight, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CheckCircle, ChevronRight, Clock, Video } from 'lucide-react'
 import COLORS from '../../lib/theme'
 import { fetchAllPsychiatrists } from '../../api/psychiatrist'
 import { getAvailabilityForPsychiatrist } from '../../api/availability'
 import { bookAppointment, getMyAppointments } from '../../api/appointment'
+import { joinAppointment } from '../../api/meeting'
 import { Psychiatrist, AvailabilityData, Slot, Appointment } from '../../types'
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -21,7 +23,22 @@ const formatTime = (time: string) => {
   return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+const isJoinWindowOpen = (appt: Appointment) => {
+  const now = new Date()
+  const appointmentDate = new Date(appt.date)
+  const [startH, startM] = appt.startTime.split(':').map(Number)
+  const [endH, endM] = appt.endTime.split(':').map(Number)
+  const start = new Date(appointmentDate)
+  start.setHours(startH, startM, 0, 0)
+  const end = new Date(appointmentDate)
+  end.setHours(endH, endM, 0, 0)
+  const windowStart = new Date(start.getTime() - 5 * 60 * 1000)
+  const windowEnd = new Date(end.getTime() + 10 * 60 * 1000)
+  return now >= windowStart && now <= windowEnd
+}
+
 export default function PsychiatristView() {
+  const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [doctors, setDoctors] = useState<Psychiatrist[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,6 +53,7 @@ export default function PsychiatristView() {
   const [bookingLoading, setBookingLoading] = useState(false)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loadingAppts, setLoadingAppts] = useState(true)
+  const [joiningId, setJoiningId] = useState<string | null>(null)
 
   const fetchAppts = () => {
     setLoadingAppts(true)
@@ -303,6 +321,33 @@ export default function PsychiatristView() {
                   </div>
                   {appt.reason && (
                     <div className="text-xs mt-1" style={{ color: COLORS.fg3 }}>Reason: {appt.reason}</div>
+                  )}
+                  {appt.status === 'confirmed' && (
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={async () => {
+                          setJoiningId(appt._id)
+                          try {
+                            const res = await joinAppointment(appt._id)
+                            if (res.success && res.meetingId) {
+                              navigate(`/meeting/${res.meetingId}`)
+                            } else if (res.success && res.data?.meetingId) {
+                              navigate(`/meeting/${res.data.meetingId}`)
+                            }
+                          } catch (e) {
+                            console.error(e)
+                          } finally {
+                            setJoiningId(null)
+                          }
+                        }}
+                        disabled={!isJoinWindowOpen(appt) || joiningId === appt._id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-opacity hover:opacity-90 disabled:opacity-50"
+                        style={{ background: COLORS.primary, color: '#fff' }}
+                      >
+                        <Video size={14} />
+                        {joiningId === appt._id ? 'Joining...' : isJoinWindowOpen(appt) ? 'Join Session' : 'Outside Join Window'}
+                      </button>
+                    </div>
                   )}
                 </div>
               )

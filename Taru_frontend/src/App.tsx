@@ -18,6 +18,7 @@ import InstitutionDashboardPage from './pages/InstitutionDashboardPage'
 import { InstitutionProtectedRoute } from './components/InstitutionProtectedRoute'
 import InstitutionOverviewView from './components/institution/InstitutionOverviewView'
 import InstitutionStudentsView from './components/institution/InstitutionStudentsView'
+import MeetingPage from './pages/MeetingPage'
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="students" element={<InstitutionStudentsView />} />
         </Route>
       </Route>
+      <Route path="/meeting/:meetingId" element={<MeetingPage />} />
     </Routes>
   )
 }
