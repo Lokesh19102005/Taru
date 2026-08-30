@@ -1,5 +1,6 @@
 const Meeting = require('../models/Meeting');
 const Appointment = require('../models/Appointment');
+const DailyCheckIn = require('../models/DailyCheckIn');
 const crypto = require('crypto');
 
 function buildDateTime(appointmentDate, timeString) {
@@ -111,7 +112,9 @@ exports.verifyMeeting = async (req, res) => {
         date: appointment.date,
         startTime: appointment.startTime,
         endTime: appointment.endTime,
-        status: appointment.status
+        status: appointment.status,
+        // Include studentId so psychiatrist can fetch mood history
+        studentId: appointment.studentId._id
       },
       participant: {
         role: req.userRole,
@@ -187,6 +190,54 @@ exports.getTurnCredentials = async (req, res) => {
 
     res.status(200).json({ success: true, iceServers });
   } catch (err) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// Get student's mood history for a meeting (psychiatrist only)
+exports.getStudentMoodHistory = async (req, res) => {
+  try {
+    const { meetingId } = req.params;
+    
+    // Only psychiatrists can access this
+    if (req.userRole !== 'psychiatrist') {
+      return res.status(403).json({ success: false, message: 'Only psychiatrists can view student mood history' });
+    }
+    
+    const meeting = await Meeting.findOne({ meetingId });
+    if (!meeting) return res.status(404).json({ success: false, message: 'Meeting not found' });
+    
+    const appointment = await Appointment.findById(meeting.appointmentId)
+      .populate('psychiatristId', 'name')
+      .populate('studentId', 'username');
+    
+    if (!appointment) return res.status(404).json({ success: false, message: 'Appointment not found' });
+    
+    // Verify the psychiatrist is part of this appointment
+    if (appointment.psychiatristId._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized for this appointment' });
+    }
+    
+    const studentId = appointment.studentId._id;
+    
+    // Fetch past 14 days of check-ins
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    fourteenDaysAgo.setHours(0, 0, 0, 0);
+    
+    const checkins = await DailyCheckIn.find({
+      userId: studentId,
+      date: { $gte: fourteenDaysAgo }
+    }).sort({ date: -1 });
+    
+    res.status(200).json({
+      success: true,
+      studentName: appointment.studentId.username,
+      count: checkins.length,
+      data: checkins
+    });
+  } catch (err) {
+    console.error('getStudentMoodHistory error:', err);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };

@@ -18,3 +18,7 @@ export const updateMeetingLifecycle = async (meetingId: string, action: 'start' 
 export const getTurnCredentials = async () => {
   return apiRequest('/api/turn-credentials', { method: 'GET' })
 }
+
+export const getStudentMoodHistory = async (meetingId: string) => {
+  return apiRequest(`/api/meetings/${meetingId}/student-mood`, { method: 'GET' })
+}

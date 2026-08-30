@@ -38,6 +38,8 @@ module.exports = {
   MEETING_PARTICIPANT_JOINED: "meeting:participant-joined",
   MEETING_PARTICIPANT_LEFT: "meeting:participant-left",
   MEETING_ERROR: "meeting:error",
+  MEETING_MEDIA_STATE: "meeting:media-state",
+  MEETING_CHAT_MESSAGE: "meeting:chat-message",
 
   // Chat (Talk to Someone)
   CHAT_JOIN_QUEUE: "chat_join_queue",

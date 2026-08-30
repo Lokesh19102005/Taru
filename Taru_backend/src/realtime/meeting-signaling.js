@@ -107,6 +107,24 @@ function attachHandlers(io, socket) {
     console.log('[Meeting] Relaying ICE candidate for meeting:', payload.meetingId);
     socket.to('meeting:' + payload.meetingId).emit(events.MEETING_ICE_CANDIDATE, payload);
   });
+
+  // Relay media state changes (camera/mic on/off)
+  socket.on(events.MEETING_MEDIA_STATE, (payload) => {
+    if (payload && payload.meetingId) {
+      socket.to('meeting:' + payload.meetingId).emit(events.MEETING_MEDIA_STATE, payload);
+    }
+  });
+
+  // Relay chat messages between meeting participants
+  socket.on(events.MEETING_CHAT_MESSAGE, (payload) => {
+    if (payload && payload.meetingId) {
+      socket.to('meeting:' + payload.meetingId).emit(events.MEETING_CHAT_MESSAGE, {
+        message: payload.message,
+        senderName: payload.senderName,
+        timestamp: Date.now()
+      });
+    }
+  });
   
   socket.on(events.MEETING_LEAVE, (payload) => {
     if (payload && payload.meetingId) {

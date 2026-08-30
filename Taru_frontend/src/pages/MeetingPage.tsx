@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Mic, MicOff, Camera, CameraOff, PhoneOff, Loader2, ShieldX, CheckCircle, ArrowLeft, Clock, Users, MoreVertical } from 'lucide-react'
+import { Mic, MicOff, Camera, CameraOff, PhoneOff, Loader2, ShieldX, CheckCircle, ArrowLeft, Clock, Users, MoreVertical, Brain, MessageSquare } from 'lucide-react'
 import { verifyMeeting, updateMeetingLifecycle } from '../api/meeting'
 import { useWebRTC } from '../hooks/useWebRTC'
+import MoodHistoryPanel from '../components/MoodHistoryPanel'
+import MeetingChatPanel, { type ChatMessage } from '../components/MeetingChatPanel'
 
 type MeetingState = 'loading' | 'denied' | 'lobby' | 'connecting' | 'waiting' | 'connected' | 'ended'
 
@@ -14,7 +16,16 @@ export default function MeetingPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [participantInfo, setParticipantInfo] = useState<{ role: string; name: string } | null>(null)
   const [duration, setDuration] = useState(0)
+  const [isRemoteCameraOn, setIsRemoteCameraOn] = useState(true)
+  const [isMoodPanelOpen, setIsMoodPanelOpen] = useState(false)
+  const [myRole, setMyRole] = useState<string>('')
+  const [otherParticipantName, setOtherParticipantName] = useState<string>('')
+  const [myName, setMyName] = useState<string>('')
+  const [isChatOpen, setIsChatOpen] = useState(false)
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [unreadChat, setUnreadChat] = useState(0)
   const meetingStateRef = useRef<MeetingState>('loading')
+  const chatOpenRef = useRef(false)
   
   useEffect(() => { meetingStateRef.current = meetingState }, [meetingState])
   
@@ -41,6 +52,25 @@ export default function MeetingPage() {
     setMeetingState('denied')
     setErrorMsg(err)
   }, [])
+
+  const onMediaStateChange = useCallback((state: { video: boolean; audio: boolean }) => {
+    setIsRemoteCameraOn(state.video)
+  }, [])
+
+  const onChatMessage = useCallback((msg: { message: string; senderName: string; timestamp: number }) => {
+    const newMsg: ChatMessage = {
+      id: `${msg.timestamp}-${Math.random()}`,
+      message: msg.message,
+      senderName: msg.senderName,
+      timestamp: msg.timestamp,
+      isSelf: false
+    }
+    setChatMessages(prev => [...prev, newMsg])
+    // Increment unread if chat panel is closed
+    if (!chatOpenRef.current) {
+      setUnreadChat(prev => prev + 1)
+    }
+  }, [])
   
   const {
     localStream,
@@ -51,13 +81,16 @@ export default function MeetingPage() {
     toggleCamera,
     startLocalStream,
     joinMeeting,
-    leaveMeeting
+    leaveMeeting,
+    sendChatMessage
   } = useWebRTC({
     meetingId: meetingId || '',
     token,
     onParticipantJoined,
     onParticipantLeft,
-    onError
+    onError,
+    onMediaStateChange,
+    onChatMessage
   })
 
   // Verify meeting on mount
@@ -67,6 +100,9 @@ export default function MeetingPage() {
       .then(res => {
         if (res.success) {
           setMeetingState('lobby')
+          setMyRole(res.participant?.role || '')
+          setOtherParticipantName(res.otherParticipant?.name || '')
+          setMyName(res.participant?.name || 'You')
           startLocalStream().catch(console.error)
         } else {
           setMeetingState('denied')
@@ -152,6 +188,27 @@ export default function MeetingPage() {
   }
 
   const getInitial = (name?: string) => (name?.[0] || '?').toUpperCase()
+
+  const handleSendChat = (message: string) => {
+    sendChatMessage(message, myName)
+    const selfMsg: ChatMessage = {
+      id: `${Date.now()}-self-${Math.random()}`,
+      message,
+      senderName: myName,
+      timestamp: Date.now(),
+      isSelf: true
+    }
+    setChatMessages(prev => [...prev, selfMsg])
+  }
+
+  const handleToggleChat = () => {
+    setIsChatOpen(prev => {
+      const next = !prev
+      chatOpenRef.current = next
+      if (next) setUnreadChat(0)
+      return next
+    })
+  }
 
   // ─── LOADING ───
   if (meetingState === 'loading') {
@@ -311,6 +368,20 @@ export default function MeetingPage() {
               In session
             </span>
           )}
+          {/* Mood History button - psychiatrist only */}
+          {myRole === 'psychiatrist' && (meetingState === 'connected' || meetingState === 'waiting') && (
+            <button 
+              onClick={() => setIsMoodPanelOpen(true)}
+              title="View student mood history"
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                isMoodPanelOpen 
+                  ? 'bg-[#8ab4f8]/20 text-[#8ab4f8]' 
+                  : 'text-[#9aa0a6] hover:bg-[#3c4043]'
+              }`}
+            >
+              <Brain size={20} />
+            </button>
+          )}
           <button className="w-10 h-10 rounded-full flex items-center justify-center text-[#9aa0a6] hover:bg-[#3c4043] transition-colors">
             <MoreVertical size={20} />
           </button>
@@ -339,24 +410,33 @@ export default function MeetingPage() {
             <>
               {/* Remote Video (main view) */}
               <div className="w-full h-full bg-[#3c4043] rounded-2xl overflow-hidden relative">
-                {remoteStream ? (
-                  <video 
-                    ref={remoteVideoRef} 
-                    autoPlay 
-                    playsInline 
-                    className="w-full h-full object-contain bg-[#202124]" 
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-[#669df6] flex items-center justify-center text-white text-4xl sm:text-5xl font-medium">
+                {/* Always keep video element mounted for stream continuity */}
+                <video 
+                  ref={remoteVideoRef} 
+                  autoPlay 
+                  playsInline 
+                  className={`w-full h-full object-contain bg-[#202124] ${
+                    remoteStream && isRemoteCameraOn ? '' : 'hidden'
+                  }`}
+                />
+
+                {/* Show avatar when camera is off or no stream */}
+                {(!remoteStream || !isRemoteCameraOn) && (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-[#3c4043]">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-[#669df6] flex items-center justify-center text-white text-4xl sm:text-5xl font-medium shadow-lg">
                       {getInitial(participantInfo?.name)}
                     </div>
-                    <p className="text-[#9aa0a6] text-sm mt-4">{participantInfo?.name}</p>
+                    <p className="text-[#e8eaed] text-base font-medium mt-4">{participantInfo?.name}</p>
+                    {!isRemoteCameraOn && remoteStream && (
+                      <p className="text-[#9aa0a6] text-xs mt-1 flex items-center gap-1.5">
+                        <CameraOff size={12} /> Camera is off
+                      </p>
+                    )}
                   </div>
                 )}
 
-                {/* Remote participant name tag */}
-                {remoteStream && (
+                {/* Remote participant name tag (shown only when video is visible) */}
+                {remoteStream && isRemoteCameraOn && (
                   <div className="absolute bottom-3 left-3 bg-[#202124]/70 backdrop-blur-sm px-3 py-1 rounded-md">
                     <span className="text-[#e8eaed] text-xs font-medium">{participantInfo?.name || 'Participant'}</span>
                   </div>
@@ -420,6 +500,39 @@ export default function MeetingPage() {
             {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
           </button>
 
+          {/* Mood History - psychiatrist only */}
+          {myRole === 'psychiatrist' && (
+            <button 
+              onClick={() => setIsMoodPanelOpen(v => !v)}
+              title="Student mood history"
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all
+                ${isMoodPanelOpen 
+                  ? 'bg-[#8ab4f8] text-[#202124]' 
+                  : 'bg-[#3c4043] hover:bg-[#4a4d51] text-[#e8eaed]'
+                }`}
+            >
+              <Brain size={20} />
+            </button>
+          )}
+
+          {/* Chat */}
+          <button 
+            onClick={handleToggleChat}
+            title="Chat"
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all relative
+              ${isChatOpen 
+                ? 'bg-[#8ab4f8] text-[#202124]' 
+                : 'bg-[#3c4043] hover:bg-[#4a4d51] text-[#e8eaed]'
+              }`}
+          >
+            <MessageSquare size={20} />
+            {unreadChat > 0 && !isChatOpen && (
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#ea4335] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {unreadChat > 9 ? '9+' : unreadChat}
+              </span>
+            )}
+          </button>
+
           {/* Spacer */}
           <div className="w-px h-8 bg-[#5f6368]/50 mx-1 hidden sm:block" />
 
@@ -434,6 +547,25 @@ export default function MeetingPage() {
           </button>
         </div>
       </div>
+
+      {/* Mood History Panel (psychiatrist only) */}
+      {myRole === 'psychiatrist' && meetingId && (
+        <MoodHistoryPanel
+          meetingId={meetingId}
+          studentName={otherParticipantName || participantInfo?.name || 'Student'}
+          isOpen={isMoodPanelOpen}
+          onClose={() => setIsMoodPanelOpen(false)}
+        />
+      )}
+
+      {/* Chat Panel */}
+      <MeetingChatPanel
+        isOpen={isChatOpen}
+        onClose={() => { setIsChatOpen(false); chatOpenRef.current = false }}
+        messages={chatMessages}
+        onSend={handleSendChat}
+        unreadCount={unreadChat}
+      />
     </div>
   )
 }

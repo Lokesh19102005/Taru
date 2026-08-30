@@ -10,9 +10,11 @@ export interface UseWebRTCOptions {
   onParticipantJoined?: (info: { role: string; name: string }) => void
   onParticipantLeft?: () => void
   onError?: (error: string) => void
+  onMediaStateChange?: (state: { video: boolean; audio: boolean }) => void
+  onChatMessage?: (msg: { message: string; senderName: string; timestamp: number }) => void
 }
 
-export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipantLeft, onError }: UseWebRTCOptions) {
+export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipantLeft, onError, onMediaStateChange, onChatMessage }: UseWebRTCOptions) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -25,7 +27,7 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
   const socketRef = useRef<Socket | null>(null)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const iceServersRef = useRef<RTCIceServer[]>([])
-  const callbacksRef = useRef({ onParticipantJoined, onParticipantLeft, onError })
+  const callbacksRef = useRef({ onParticipantJoined, onParticipantLeft, onError, onMediaStateChange, onChatMessage })
 
   // Queue for ICE candidates that arrive before remote description is set
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([])
@@ -34,8 +36,8 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
 
   // Keep callbacks ref updated
   useEffect(() => {
-    callbacksRef.current = { onParticipantJoined, onParticipantLeft, onError }
-  }, [onParticipantJoined, onParticipantLeft, onError])
+    callbacksRef.current = { onParticipantJoined, onParticipantLeft, onError, onMediaStateChange, onChatMessage }
+  }, [onParticipantJoined, onParticipantLeft, onError, onMediaStateChange, onChatMessage])
 
   // Fetch TURN credentials once
   useEffect(() => {
@@ -90,6 +92,13 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
     }
   }, [])
 
+  // Helper to emit media state to the other participant
+  const emitMediaState = useCallback((video: boolean, audio: boolean) => {
+    if (socketRef.current?.connected) {
+      socketRef.current.emit('meeting:media-state', { meetingId, video, audio })
+    }
+  }, [meetingId])
+
   const toggleMic = useCallback(() => {
     const stream = localStreamRef.current
     if (stream) {
@@ -97,9 +106,11 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled
         setIsMicOn(audioTrack.enabled)
+        const videoTrack = stream.getVideoTracks()[0]
+        emitMediaState(videoTrack?.enabled ?? false, audioTrack.enabled)
       }
     }
-  }, [])
+  }, [emitMediaState])
 
   const toggleCamera = useCallback(() => {
     const stream = localStreamRef.current
@@ -108,9 +119,11 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled
         setIsCameraOn(videoTrack.enabled)
+        const audioTrack = stream.getAudioTracks()[0]
+        emitMediaState(videoTrack.enabled, audioTrack?.enabled ?? false)
       }
     }
-  }, [])
+  }, [emitMediaState])
 
   const closePeerConnection = useCallback(() => {
     if (peerConnectionRef.current) {
@@ -337,8 +350,25 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
       callbacksRef.current.onError?.(err.message || 'Error joining meeting')
     })
 
+    // Listen for remote participant's camera/mic state changes
+    socket.on('meeting:media-state', (state: { video: boolean; audio: boolean }) => {
+      console.log('[WebRTC] Remote media state changed:', state)
+      callbacksRef.current.onMediaStateChange?.(state)
+    })
+
+    // Listen for chat messages from remote participant
+    socket.on('meeting:chat-message', (msg: { message: string; senderName: string; timestamp: number }) => {
+      callbacksRef.current.onChatMessage?.(msg)
+    })
+
     socket.connect()
   }, [meetingId, token, createPeerConnection, closePeerConnection, flushPendingCandidates])
+
+  const sendChatMessage = useCallback((message: string, senderName: string) => {
+    if (socketRef.current?.connected && message.trim()) {
+      socketRef.current.emit('meeting:chat-message', { meetingId, message: message.trim(), senderName })
+    }
+  }, [meetingId])
 
   const leaveMeeting = useCallback(() => {
     if (socketRef.current) {
@@ -386,6 +416,7 @@ export function useWebRTC({ meetingId, token, onParticipantJoined, onParticipant
     startLocalStream,
     stopLocalStream,
     joinMeeting,
-    leaveMeeting
+    leaveMeeting,
+    sendChatMessage
   }
 }
