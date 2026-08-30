@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Mic, MicOff, Camera, CameraOff, PhoneOff, Loader2, ShieldX, CheckCircle, ArrowLeft, Clock } from 'lucide-react'
+import { Mic, MicOff, Camera, CameraOff, PhoneOff, Loader2, ShieldX, CheckCircle, ArrowLeft, Clock, Users, MoreVertical } from 'lucide-react'
 import { verifyMeeting, updateMeetingLifecycle } from '../api/meeting'
 import { useWebRTC } from '../hooks/useWebRTC'
 
@@ -16,11 +16,11 @@ export default function MeetingPage() {
   const [duration, setDuration] = useState(0)
   const meetingStateRef = useRef<MeetingState>('loading')
   
-  // Keep ref in sync with state to avoid stale closure in setTimeout
   useEffect(() => { meetingStateRef.current = meetingState }, [meetingState])
   
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  const lobbyVideoRef = useRef<HTMLVideoElement>(null)
   
   const token = localStorage.getItem('taru_token') || ''
 
@@ -60,7 +60,7 @@ export default function MeetingPage() {
     onError
   })
 
-  // Verify meeting on mount — only run once
+  // Verify meeting on mount
   useEffect(() => {
     if (!meetingId) return
     verifyMeeting(meetingId)
@@ -80,7 +80,14 @@ export default function MeetingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meetingId])
 
-  // Attach local stream to video element whenever stream or view changes
+  // Attach local stream to lobby video
+  useEffect(() => {
+    if (lobbyVideoRef.current && localStream) {
+      lobbyVideoRef.current.srcObject = localStream
+    }
+  }, [localStream, meetingState, isCameraOn])
+
+  // Attach local stream to in-call self-preview
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream
@@ -90,16 +97,14 @@ export default function MeetingPage() {
   // Attach remote stream to video element
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
-      // Always re-assign to ensure latest tracks are used
       remoteVideoRef.current.srcObject = remoteStream
-      // Some browsers block autoplay; explicitly call play()
       remoteVideoRef.current.play().catch(() => {
-        console.log('[MeetingPage] Remote video autoplay blocked, will play on interaction')
+        console.log('[MeetingPage] Remote video autoplay blocked')
       })
     }
   }, [remoteStream, meetingState])
 
-  // Also listen for track additions on the remote stream
+  // Listen for track additions on remote stream
   useEffect(() => {
     if (!remoteStream) return
     const handleTrackAdded = () => {
@@ -131,7 +136,6 @@ export default function MeetingPage() {
   const handleJoin = () => {
     setMeetingState('connecting')
     joinMeeting()
-    // Transition to "waiting" after 1 second if not already connected
     setTimeout(() => {
       if (meetingStateRef.current === 'connecting') {
         setMeetingState('waiting')
@@ -147,12 +151,14 @@ export default function MeetingPage() {
     setMeetingState('ended')
   }
 
+  const getInitial = (name?: string) => (name?.[0] || '?').toUpperCase()
+
   // ─── LOADING ───
   if (meetingState === 'loading') {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center text-white">
-        <Loader2 className="animate-spin mb-4" size={32} />
-        <p>Verifying access...</p>
+      <div className="h-screen bg-[#202124] flex flex-col items-center justify-center text-white">
+        <Loader2 className="animate-spin mb-4 text-blue-400" size={40} />
+        <p className="text-[#e8eaed] text-lg">Verifying access...</p>
       </div>
     )
   }
@@ -160,16 +166,18 @@ export default function MeetingPage() {
   // ─── DENIED ───
   if (meetingState === 'denied') {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center text-white p-4">
-        <ShieldX size={48} className="text-red-500 mb-4" />
-        <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-        <p className="text-gray-400 mb-6 text-center">{errorMsg}</p>
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full font-semibold"
-        >
-          <ArrowLeft size={16} /> Go Back
-        </button>
+      <div className="h-screen bg-[#202124] flex flex-col items-center justify-center text-white p-4">
+        <div className="bg-[#303134] rounded-2xl p-10 max-w-md w-full text-center shadow-2xl">
+          <ShieldX size={56} className="text-red-400 mx-auto mb-5" />
+          <h2 className="text-2xl font-semibold mb-3 text-[#e8eaed]">Can't join this meeting</h2>
+          <p className="text-[#9aa0a6] mb-8 text-sm leading-relaxed">{errorMsg}</p>
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#8ab4f8] text-[#202124] rounded-full font-semibold mx-auto hover:bg-[#aecbfa] transition-colors"
+          >
+            <ArrowLeft size={16} /> Go Back
+          </button>
+        </div>
       </div>
     )
   }
@@ -177,20 +185,21 @@ export default function MeetingPage() {
   // ─── ENDED ───
   if (meetingState === 'ended') {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center text-white p-4">
-        <div className="bg-[#2a2a2a] p-8 rounded-2xl max-w-sm w-full text-center border border-[#3a3a3a]">
-          <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Session Ended</h2>
-          {errorMsg && <p className="text-gray-400 mb-4 text-sm">{errorMsg}</p>}
+      <div className="h-screen bg-[#202124] flex flex-col items-center justify-center text-white p-4">
+        <div className="bg-[#303134] rounded-2xl p-10 max-w-md w-full text-center shadow-2xl">
+          <CheckCircle size={56} className="text-green-400 mx-auto mb-5" />
+          <h2 className="text-2xl font-semibold mb-2 text-[#e8eaed]">Session ended</h2>
+          <p className="text-[#9aa0a6] text-sm mb-2">Your consultation session has ended</p>
+          {errorMsg && <p className="text-[#9aa0a6] mb-4 text-xs">{errorMsg}</p>}
           {duration > 0 && (
-            <div className="flex items-center justify-center gap-2 text-gray-300 mb-6 bg-[#1a1a1a] py-2 rounded-lg">
-              <Clock size={16} />
-              <span>Duration: {formatDuration(duration)}</span>
+            <div className="flex items-center justify-center gap-2 text-[#e8eaed] my-5 bg-[#202124] py-3 px-4 rounded-xl">
+              <Clock size={16} className="text-[#8ab4f8]" />
+              <span className="text-sm font-medium">Duration: {formatDuration(duration)}</span>
             </div>
           )}
           <button 
             onClick={() => navigate(-1)}
-            className="w-full py-3 bg-white text-black rounded-full font-bold transition-opacity hover:opacity-90"
+            className="w-full py-3 bg-[#8ab4f8] text-[#202124] rounded-full font-semibold hover:bg-[#aecbfa] transition-colors mt-2"
           >
             Return to Dashboard
           </button>
@@ -199,16 +208,18 @@ export default function MeetingPage() {
     )
   }
 
-  // ─── LOBBY ───
+  // ─── LOBBY (Google Meet style) ───
   if (meetingState === 'lobby') {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex flex-col items-center justify-center p-4">
-        <div className="max-w-3xl w-full">
-          <div className="bg-[#2a2a2a] rounded-2xl overflow-hidden shadow-xl border border-[#3a3a3a]">
-            <div className="aspect-video bg-black relative flex items-center justify-center">
+      <div className="h-screen bg-[#202124] flex items-center justify-center p-4 sm:p-8">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 max-w-5xl w-full">
+          
+          {/* Video Preview */}
+          <div className="flex-1 w-full max-w-2xl">
+            <div className="relative aspect-video bg-[#3c4043] rounded-2xl overflow-hidden shadow-2xl">
               {localStream && isCameraOn ? (
                 <video 
-                  ref={localVideoRef} 
+                  ref={lobbyVideoRef} 
                   autoPlay 
                   playsInline 
                   muted 
@@ -216,123 +227,210 @@ export default function MeetingPage() {
                   style={{ transform: 'scaleX(-1)' }}
                 />
               ) : (
-                <div className="flex flex-col items-center text-gray-500">
-                  <CameraOff size={48} className="mb-2" />
-                  <p>{localStream ? 'Camera is off' : 'Requesting camera access...'}</p>
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-[#5f6368] flex items-center justify-center mb-3">
+                    <CameraOff size={36} className="text-[#dadce0]" />
+                  </div>
+                  <p className="text-[#9aa0a6] text-sm">
+                    {localStream ? 'Camera is off' : 'Requesting camera access...'}
+                  </p>
                 </div>
               )}
               
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+              {/* Lobby Controls Overlay */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
                 <button 
                   onClick={toggleMic}
-                  className={`p-4 rounded-full transition-colors ${isMicOn ? 'bg-[#3a3a3a] text-white hover:bg-[#4a4a4a]' : 'bg-red-500 text-white'}`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all
+                    ${isMicOn 
+                      ? 'bg-[#3c4043] hover:bg-[#4a4d51] text-white' 
+                      : 'bg-[#ea4335] hover:bg-[#d33828] text-white'
+                    }`}
                 >
-                  {isMicOn ? <Mic size={24} /> : <MicOff size={24} />}
+                  {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
                 </button>
                 <button 
                   onClick={toggleCamera}
-                  className={`p-4 rounded-full transition-colors ${isCameraOn ? 'bg-[#3a3a3a] text-white hover:bg-[#4a4a4a]' : 'bg-red-500 text-white'}`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all
+                    ${isCameraOn 
+                      ? 'bg-[#3c4043] hover:bg-[#4a4d51] text-white' 
+                      : 'bg-[#ea4335] hover:bg-[#d33828] text-white'
+                    }`}
                 >
-                  {isCameraOn ? <Camera size={24} /> : <CameraOff size={24} />}
+                  {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
                 </button>
               </div>
             </div>
-            <div className="p-6 text-center">
-              <h2 className="text-xl font-bold text-white mb-6">Ready to join?</h2>
-              <button 
-                onClick={handleJoin}
-                className="px-8 py-3 bg-white text-black rounded-full font-bold text-lg transition-transform hover:scale-105"
-              >
-                Join Now
-              </button>
-            </div>
+          </div>
+
+          {/* Join Panel */}
+          <div className="flex flex-col items-center text-center lg:w-80">
+            <h1 className="text-[#e8eaed] text-2xl sm:text-3xl font-normal mb-3">Ready to join?</h1>
+            <p className="text-[#9aa0a6] text-sm mb-8">Check your audio and video before joining</p>
+            <button 
+              onClick={handleJoin}
+              className="px-10 py-3.5 bg-[#8ab4f8] text-[#202124] rounded-full font-semibold text-base hover:bg-[#aecbfa] hover:shadow-lg transition-all"
+            >
+              Join now
+            </button>
+            <p className="text-[#9aa0a6] text-xs mt-6 flex items-center gap-1.5">
+              <Users size={14} />
+              1-on-1 private session
+            </p>
           </div>
         </div>
       </div>
     )
   }
 
-  // ─── IN-CALL (connecting, waiting, connected) ───
+  // ─── IN-CALL (connecting, waiting, connected) — Google Meet Layout ───
   return (
-    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-      {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-start bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
-        <div className="text-white">
-          <div className="font-semibold text-lg drop-shadow-md">
-            {participantInfo ? participantInfo.name : (meetingState === 'waiting' ? 'Waiting...' : 'Connecting...')}
+    <div className="h-screen bg-[#202124] flex flex-col overflow-hidden select-none">
+      
+      {/* ── Top Bar ── */}
+      <div className="h-16 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 bg-[#202124] z-10">
+        {/* Left: Meeting info */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[#e8eaed] text-sm font-medium truncate">
+              {participantInfo ? participantInfo.name : (meetingState === 'waiting' ? 'Waiting for participant...' : 'Connecting...')}
+            </span>
+            {meetingState === 'connected' && (
+              <span className="text-[#9aa0a6] text-xs flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
+                {formatDuration(duration)}
+              </span>
+            )}
           </div>
+        </div>
+        
+        {/* Right: Meeting ID badge */}
+        <div className="hidden sm:flex items-center gap-2">
           {meetingState === 'connected' && (
-            <div className="text-sm text-gray-300 flex items-center gap-1 drop-shadow-md">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              {formatDuration(duration)}
+            <span className="text-xs text-[#9aa0a6] bg-[#303134] px-3 py-1.5 rounded-full">
+              In session
+            </span>
+          )}
+          <button className="w-10 h-10 rounded-full flex items-center justify-center text-[#9aa0a6] hover:bg-[#3c4043] transition-colors">
+            <MoreVertical size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Video Area ── */}
+      <div className="flex-1 px-2 sm:px-4 pb-2 min-h-0">
+        <div className="w-full h-full relative flex items-center justify-center">
+          
+          {/* Waiting / Connecting State */}
+          {(meetingState === 'waiting' || meetingState === 'connecting') && (
+            <div className="w-full h-full bg-[#3c4043] rounded-2xl flex flex-col items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-[#5f6368] flex items-center justify-center mb-6">
+                <Loader2 className="animate-spin text-[#e8eaed]" size={32} />
+              </div>
+              <p className="text-[#e8eaed] text-lg font-medium mb-2">
+                {meetingState === 'connecting' ? 'Connecting...' : 'Waiting for others to join'}
+              </p>
+              <p className="text-[#9aa0a6] text-sm">You'll be connected automatically</p>
             </div>
+          )}
+
+          {/* Connected State */}
+          {meetingState === 'connected' && (
+            <>
+              {/* Remote Video (main view) */}
+              <div className="w-full h-full bg-[#3c4043] rounded-2xl overflow-hidden relative">
+                {remoteStream ? (
+                  <video 
+                    ref={remoteVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    className="w-full h-full object-contain bg-[#202124]" 
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-[#669df6] flex items-center justify-center text-white text-4xl sm:text-5xl font-medium">
+                      {getInitial(participantInfo?.name)}
+                    </div>
+                    <p className="text-[#9aa0a6] text-sm mt-4">{participantInfo?.name}</p>
+                  </div>
+                )}
+
+                {/* Remote participant name tag */}
+                {remoteStream && (
+                  <div className="absolute bottom-3 left-3 bg-[#202124]/70 backdrop-blur-sm px-3 py-1 rounded-md">
+                    <span className="text-[#e8eaed] text-xs font-medium">{participantInfo?.name || 'Participant'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Self Preview (Picture-in-Picture) */}
+              <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 w-[140px] h-[105px] sm:w-[200px] sm:h-[150px] bg-[#3c4043] rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/20 transition-all hover:ring-2 hover:ring-[#8ab4f8]/40 cursor-pointer">
+                {localStream && isCameraOn ? (
+                  <video 
+                    ref={localVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="w-full h-full object-cover" 
+                    style={{ transform: 'scaleX(-1)' }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-[#3c4043]">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#669df6] flex items-center justify-center text-white text-lg font-medium">
+                      You
+                    </div>
+                  </div>
+                )}
+                {/* Self name tag */}
+                <div className="absolute bottom-1.5 left-1.5 bg-[#202124]/70 backdrop-blur-sm px-2 py-0.5 rounded">
+                  <span className="text-[#e8eaed] text-[10px] font-medium">You</span>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
 
-      {/* Main Remote Video / Waiting */}
-      <div className="flex-1 w-full h-full relative flex items-center justify-center">
-        {meetingState === 'waiting' || meetingState === 'connecting' ? (
-          <div className="text-white text-center">
-            <Loader2 className="animate-spin mx-auto mb-4" size={48} />
-            <p className="text-xl animate-pulse">{meetingState === 'connecting' ? 'Connecting to session...' : 'Waiting for others to join...'}</p>
-          </div>
-        ) : remoteStream ? (
-          <video 
-            ref={remoteVideoRef} 
-            autoPlay 
-            playsInline 
-            className="w-full h-full object-cover" 
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center text-white">
-            <div className="w-32 h-32 rounded-full bg-[#3a3a3a] flex items-center justify-center text-4xl font-bold mb-4">
-              {participantInfo?.name?.[0] || '?'}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Self Preview */}
-      <div className="absolute bottom-24 right-4 z-10 w-[160px] h-[120px] sm:w-[200px] sm:h-[150px] bg-[#1a1a1a] rounded-xl overflow-hidden border-2 border-[#3a3a3a] shadow-lg">
-        {localStream && isCameraOn ? (
-          <video 
-            ref={localVideoRef} 
-            autoPlay 
-            playsInline 
-            muted 
-            className="w-full h-full object-cover" 
-            style={{ transform: 'scaleX(-1)' }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[#2a2a2a] text-gray-500">
-            <CameraOff size={24} />
-          </div>
-        )}
-      </div>
-
-      {/* Controls Bar */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full flex items-center gap-4 shadow-2xl border border-[#3a3a3a]">
+      {/* ── Bottom Controls Bar (Google Meet style) ── */}
+      <div className="h-20 flex-shrink-0 flex items-center justify-center px-4 bg-[#202124]">
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Mic Toggle */}
           <button 
             onClick={toggleMic}
-            className={`p-3 rounded-full transition-colors ${isMicOn ? 'bg-white text-black hover:bg-gray-200' : 'bg-red-500 text-white'}`}
+            title={isMicOn ? 'Turn off microphone' : 'Turn on microphone'}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all
+              ${isMicOn 
+                ? 'bg-[#3c4043] hover:bg-[#4a4d51] text-[#e8eaed]' 
+                : 'bg-[#ea4335] hover:bg-[#d33828] text-white'
+              }`}
           >
             {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
           </button>
           
-          <button 
-            onClick={handleEndCall}
-            className="p-4 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20"
-          >
-            <PhoneOff size={24} />
-          </button>
-
+          {/* Camera Toggle */}
           <button 
             onClick={toggleCamera}
-            className={`p-3 rounded-full transition-colors ${isCameraOn ? 'bg-white text-black hover:bg-gray-200' : 'bg-red-500 text-white'}`}
+            title={isCameraOn ? 'Turn off camera' : 'Turn on camera'}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all
+              ${isCameraOn 
+                ? 'bg-[#3c4043] hover:bg-[#4a4d51] text-[#e8eaed]' 
+                : 'bg-[#ea4335] hover:bg-[#d33828] text-white'
+              }`}
           >
             {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
+          </button>
+
+          {/* Spacer */}
+          <div className="w-px h-8 bg-[#5f6368]/50 mx-1 hidden sm:block" />
+
+          {/* End Call */}
+          <button 
+            onClick={handleEndCall}
+            title="Leave call"
+            className="h-12 px-5 sm:px-8 rounded-full bg-[#ea4335] hover:bg-[#d33828] text-white flex items-center gap-2 font-medium transition-all hover:shadow-lg"
+          >
+            <PhoneOff size={20} />
+            <span className="hidden sm:inline text-sm">Leave</span>
           </button>
         </div>
       </div>
