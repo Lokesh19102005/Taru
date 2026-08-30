@@ -3,6 +3,7 @@ const events = require("./events");
 const matchmaking = require("./matchmaking");
 const memoryGame = require("./games/memory");
 const connectFourGame = require("./games/connect-four");
+const beachBallsGame = require("./games/beach-balls");
 
 function initRealtime(httpServer) {
   const io = new Server(httpServer, {
@@ -32,6 +33,7 @@ function initRealtime(httpServer) {
 
     memoryGame.attachHandlers(io, socket);
     connectFourGame.attachHandlers(io, socket);
+    beachBallsGame.attachHandlers(io, socket);
 
     // game-specific modules will attach here later (e.g. require('./games/memory').attach(io, socket))
   });
