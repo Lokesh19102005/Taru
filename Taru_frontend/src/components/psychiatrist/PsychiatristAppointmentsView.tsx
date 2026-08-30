@@ -13,18 +13,9 @@ const formatTime = (time: string) => {
   return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
-const isJoinWindowOpen = (appt: Appointment) => {
-  const now = new Date()
-  const appointmentDate = new Date(appt.date)
-  const [startH, startM] = appt.startTime.split(':').map(Number)
-  const [endH, endM] = appt.endTime.split(':').map(Number)
-  const start = new Date(appointmentDate)
-  start.setHours(startH, startM, 0, 0)
-  const end = new Date(appointmentDate)
-  end.setHours(endH, endM, 0, 0)
-  const windowStart = new Date(start.getTime() - 5 * 60 * 1000)
-  const windowEnd = new Date(end.getTime() + 10 * 60 * 1000)
-  return now >= windowStart && now <= windowEnd
+const isJoinWindowOpen = (_appt: Appointment) => {
+  // Allow joining anytime — no time-window restriction
+  return true
 }
 
 export default function PsychiatristAppointmentsView() {

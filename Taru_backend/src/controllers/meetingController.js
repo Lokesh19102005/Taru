@@ -44,9 +44,7 @@ exports.joinAppointment = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized for this appointment' });
     }
     
-    if (!isWithinJoinWindow(appointment)) {
-      return res.status(400).json({ success: false, message: 'Join window is not open yet or has expired' });
-    }
+    // Time-window check removed — allow joining confirmed appointments anytime
     
     let meeting = await Meeting.findOne({ appointmentId: appointment._id });
     if (!meeting) {
@@ -94,9 +92,7 @@ exports.verifyMeeting = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Appointment is not confirmed' });
     }
     
-    if (!isWithinJoinWindow(appointment)) {
-      return res.status(400).json({ success: false, message: 'Join window is not open yet or has expired' });
-    }
+    // Time-window check removed — allow joining confirmed appointments anytime
     
     const participantName = req.userRole === 'user' ? appointment.studentId.username : appointment.psychiatristId.name;
     const otherRole = req.userRole === 'user' ? 'psychiatrist' : 'user';
