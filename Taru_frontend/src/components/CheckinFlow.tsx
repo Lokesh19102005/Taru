@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { COLORS } from '../lib/theme'
@@ -66,6 +67,7 @@ const MOTIVATION_OPTIONS = [
 
 export default function CheckinFlow({ isGuest }: CheckFlowProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const mutation = useSubmitCheckin()
 
   const [step, setStep] = useState(0)
@@ -124,6 +126,8 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
       },
       {
         onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['checkin-history'] })
+          queryClient.invalidateQueries({ queryKey: ['checkin-today'] })
           setDone(true)
         },
         onError: () => {

@@ -4,6 +4,7 @@ const matchmaking = require("./matchmaking");
 const memoryGame = require("./games/memory");
 const connectFourGame = require("./games/connect-four");
 const beachBallsGame = require("./games/beach-balls");
+const chat = require("./chat");
 
 function initRealtime(httpServer) {
   const io = new Server(httpServer, {
@@ -29,11 +30,13 @@ function initRealtime(httpServer) {
 
     socket.on("disconnect", (reason) => {
       matchmaking.handleDisconnect(io, socket);
+      chat.handleChatDisconnect(io, socket);
     });
 
     memoryGame.attachHandlers(io, socket);
     connectFourGame.attachHandlers(io, socket);
     beachBallsGame.attachHandlers(io, socket);
+    chat.attachHandlers(io, socket);
 
     // game-specific modules will attach here later (e.g. require('./games/memory').attach(io, socket))
   });

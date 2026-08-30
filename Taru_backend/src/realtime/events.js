@@ -29,6 +29,15 @@ module.exports = {
   BEACH_BALLS_GAME_OVER: "beach_balls_game_over",
   BEACH_BALLS_HIT: "beach_balls_hit",
 
+  // Chat (Talk to Someone)
+  CHAT_JOIN_QUEUE: "chat_join_queue",
+  CHAT_LEAVE_QUEUE: "chat_leave_queue",
+  CHAT_MATCHED: "chat_matched",
+  CHAT_MESSAGE: "chat_message",
+  CHAT_RECEIVE_MESSAGE: "chat_receive_message",
+  CHAT_PARTNER_LEFT: "chat_partner_left",
+  CHAT_STOPPED: "chat_stopped",
+
   // Error
   ERROR: "error",
 };
