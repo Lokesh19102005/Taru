@@ -13,13 +13,7 @@ function initRealtime(httpServer) {
 
   const io = new Server(httpServer, {
     cors: {
-      origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-        return callback(new Error("Not allowed by CORS"));
-      },
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
       credentials: true,
     },
