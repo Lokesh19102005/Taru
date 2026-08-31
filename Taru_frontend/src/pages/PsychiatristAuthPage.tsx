@@ -61,7 +61,7 @@ export default function PsychiatristAuthPage() {
   return (
     <div className="min-h-screen flex" style={{ background: C.bg }}>
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-[44%] p-12 border-r" style={{ background: C.primary, borderColor: '#000' }}>
+      <div className="hidden lg:flex flex-col justify-between w-[44%] p-12 border-r" style={{ background: 'linear-gradient(135deg, #0D9488, #059669)', borderColor: C.border }}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
           <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
             <Heart size={13} className="text-white" fill="white" />
@@ -90,7 +90,7 @@ export default function PsychiatristAuthPage() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto animate-fade-in">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function PsychiatristAuthPage() {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-teal-50"
                 style={{
                   background: tab === t ? C.card : 'transparent',
                   color: tab === t ? C.fg : C.fg3,
@@ -137,7 +137,7 @@ export default function PsychiatristAuthPage() {
               <div>
                 <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Full Name</label>
                 <input type="text" placeholder="Dr. Jane Doe" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                  className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
               </div>
             )}
@@ -145,14 +145,14 @@ export default function PsychiatristAuthPage() {
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Email</label>
               <input type="email" placeholder="doctor@clinic.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>
 
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
               <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>
 
@@ -161,31 +161,31 @@ export default function PsychiatristAuthPage() {
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Qualification</label>
                   <input type="text" placeholder="MD Psychiatry" value={form.qualification} onChange={e => setForm({ ...form, qualification: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Specialization (comma-separated)</label>
                   <input type="text" placeholder="Anxiety, Depression, CBT" value={form.specialization} onChange={e => setForm({ ...form, specialization: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Experience (Years)</label>
                   <input type="number" placeholder="5" value={form.experience} onChange={e => setForm({ ...form, experience: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Languages (comma-separated)</label>
                   <input type="text" placeholder="English, Hindi" value={form.languages} onChange={e => setForm({ ...form, languages: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Bio</label>
                   <textarea placeholder="Tell us about your practice..." value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black min-h-[80px]"
+                    className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50 min-h-[80px]"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
               </>

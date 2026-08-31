@@ -79,7 +79,7 @@ export default function ManageAvailabilityView() {
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <h1 className="text-2xl font-extrabold mb-6" style={{ color: COLORS.fg }}>Manage Availability</h1>
       <div className="rounded-2xl p-6 border shadow-sm mb-6" style={{ background: COLORS.card, borderColor: COLORS.border }}>
         <div className="mb-6 flex items-center gap-4">
@@ -89,7 +89,7 @@ export default function ManageAvailabilityView() {
             value={date}
             min={new Date().toISOString().split('T')[0]}
             onChange={(e) => setDate(e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm focus:outline-none"
+            className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors"
             style={{ borderColor: COLORS.border, color: COLORS.fg }}
           />
         </div>
@@ -103,7 +103,7 @@ export default function ManageAvailabilityView() {
                 <div 
                   key={idx}
                   onClick={() => toggleSlot(idx)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${slot.isBooked ? 'opacity-60 cursor-not-allowed bg-gray-50' : 'cursor-pointer hover:border-black'}`}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${slot.isBooked ? 'opacity-60 cursor-not-allowed bg-teal-50' : 'cursor-pointer hover:border-teal-400 card-hover hover:bg-teal-50'}`}
                   style={{ 
                     borderColor: slot.selected ? COLORS.primary : COLORS.border,
                     background: slot.isBooked ? COLORS.muted : (slot.selected ? COLORS.bg : COLORS.card)
@@ -117,7 +117,7 @@ export default function ManageAvailabilityView() {
                         type="checkbox" 
                         checked={slot.selected || false} 
                         onChange={() => {}}
-                        className="w-4 h-4 rounded border-gray-300"
+                        className="w-4 h-4 rounded border-gray-300 focus:border-teal-500"
                         style={{ accentColor: COLORS.primary }}
                       />
                     )}

@@ -8,10 +8,10 @@ interface Props {
 
 export default function PsychiatristProfileView({ psychiatrist }: Props) {
   return (
-    <div>
+    <div className="animate-fade-in">
       <h1 className="text-2xl font-extrabold mb-6" style={{ color: COLORS.fg }}>Practitioner Profile</h1>
       
-      <div className="rounded-2xl p-8 border shadow-sm" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+      <div className="rounded-2xl p-8 border shadow-sm card-hover" style={{ background: COLORS.card, borderColor: COLORS.border }}>
         <div className="flex items-start gap-6 mb-8">
           <div className="w-20 h-20 rounded-full flex items-center justify-center font-bold text-3xl shrink-0" 
             style={{ background: COLORS.muted, color: COLORS.fg }}>
@@ -54,7 +54,7 @@ export default function PsychiatristProfileView({ psychiatrist }: Props) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {psychiatrist.languages.map(lang => (
-                    <span key={lang} className="text-xs font-semibold px-2.5 py-1 rounded-md bg-gray-100" style={{ color: COLORS.fg2 }}>
+                    <span key={lang} className="text-xs font-semibold px-2.5 py-1 rounded-md bg-teal-50" style={{ color: COLORS.fg2 }}>
                       {lang}
                     </span>
                   ))}

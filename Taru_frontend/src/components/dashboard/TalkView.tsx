@@ -132,7 +132,7 @@ export default function TalkView() {
   // ─── LANDING ────────────────────────────────────────────────
   if (viewState === 'landing') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4 animate-fade-in">
         {/* Hero Card */}
         <div className="w-full max-w-md">
           {/* Emoji header */}
@@ -140,7 +140,7 @@ export default function TalkView() {
             <div className="relative">
               <div
                 className="w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center shadow-lg"
-                style={{ background: `linear-gradient(135deg, ${COLORS.primary}, #333)` }}
+                style={{ background: 'linear-gradient(135deg, #0D9488, #059669)' }}
               >
                 <MessageCircle size={36} className="text-white md:hidden" />
                 <MessageCircle size={44} className="text-white hidden md:block" />
@@ -207,7 +207,7 @@ export default function TalkView() {
   // ─── SEARCHING ──────────────────────────────────────────────
   if (viewState === 'searching') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4 animate-fade-in">
         <div className="w-full max-w-sm text-center">
           {/* Animated search icon */}
           <div className="flex justify-center mb-8">
@@ -261,7 +261,7 @@ export default function TalkView() {
   // ─── ENDED ──────────────────────────────────────────────────
   if (viewState === 'ended') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4 animate-fade-in">
         <div className="w-full max-w-sm text-center">
           <div className="flex justify-center mb-6">
             <div
@@ -311,7 +311,7 @@ export default function TalkView() {
             <div className="relative">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                style={{ background: `linear-gradient(135deg, ${COLORS.primary}, #444)`, color: '#fff' }}
+                style={{ background: 'linear-gradient(135deg, #0D9488, #059669)', color: '#fff' }}
               >
                 {partnerName.charAt(0)}
               </div>

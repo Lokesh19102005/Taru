@@ -20,9 +20,9 @@ export default function HomeView() {
   const checkins = historyRes?.data || []
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-in">
       {/* Greeting */}
-      <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: COLORS.primary }}>
+      <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0D9488, #059669)' }}>
         <div className="absolute right-0 top-0 opacity-5 pointer-events-none">
           <div className="w-48 h-48 rounded-full border-[40px] border-white absolute -top-10 -right-10" />
           <div className="w-28 h-28 rounded-full border-[25px] border-white absolute bottom-2 right-20" />
@@ -53,9 +53,9 @@ export default function HomeView() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {navItems.slice(0, 4).map(item => (
           <button key={item.id} onClick={() => navigate(`/dashboard/${item.id}`)}
-            className="rounded-2xl p-4 border transition-all hover:border-black hover:shadow-sm text-left group"
+            className="rounded-2xl p-4 border transition-all hover:border-teal-400 hover:shadow-sm text-left group card-hover"
             style={{ background: COLORS.card, borderColor: COLORS.border }}>
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-black group-hover:text-white"
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3 transition-colors group-hover:bg-teal-600 group-hover:text-white"
               style={{ background: COLORS.muted, color: COLORS.fg }}>
               {item.icon}
             </div>

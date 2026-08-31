@@ -54,7 +54,7 @@ export default function PsychiatristAppointmentsView() {
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <h1 className="text-2xl font-extrabold mb-6" style={{ color: COLORS.fg }}>Appointments</h1>
       
       <div className="mb-6 flex items-center gap-4">
@@ -63,7 +63,7 @@ export default function PsychiatristAppointmentsView() {
           type="date" 
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm focus:outline-none"
+          className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors"
           style={{ borderColor: COLORS.border, color: COLORS.fg }}
         />
       </div>
@@ -80,7 +80,7 @@ export default function PsychiatristAppointmentsView() {
             const studentName = typeof appt.studentId === 'object' ? appt.studentId.username : 'Unknown Student'
             
             return (
-              <div key={appt._id} className="rounded-xl p-5 border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+              <div key={appt._id} className="rounded-xl p-5 border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 card-hover hover:border-teal-400 transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <span className="font-bold text-base" style={{ color: COLORS.fg }}>{studentName}</span>
@@ -133,7 +133,8 @@ export default function PsychiatristAppointmentsView() {
                         }
                       }}
                       disabled={!isJoinWindowOpen(appt) || joiningId === appt._id}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-opacity disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity disabled:opacity-50 hover:opacity-90"
+                      style={{ background: COLORS.primary }}
                     >
                       <Video size={14} />
                       {joiningId === appt._id ? 'Joining...' : isJoinWindowOpen(appt) ? 'Join Session' : 'Outside Join Window'}

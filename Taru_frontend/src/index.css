@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap");
 @import "tailwindcss";
 
 @theme inline {
@@ -6,33 +6,114 @@
   --font-sans: "Nunito", system-ui, sans-serif;
   --font-mono: "DM Mono", monospace;
 
-  --color-background: #f9f9f9;
-  --color-foreground: #111111;
+  --color-background: #F0FDFA;
+  --color-foreground: #0F172A;
   --color-card: #ffffff;
-  --color-card-foreground: #111111;
-  --color-primary: #111111;
+  --color-card-foreground: #0F172A;
+  --color-primary: #0D9488;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #f0f0f0;
-  --color-secondary-foreground: #111111;
-  --color-muted: #f4f4f4;
-  --color-muted-foreground: #666666;
-  --color-accent: #333333;
+  --color-secondary: #F0FDFA;
+  --color-secondary-foreground: #0F172A;
+  --color-muted: #F0FDFA;
+  --color-muted-foreground: #475569;
+  --color-accent: #14B8A6;
   --color-accent-foreground: #ffffff;
-  --color-border: #e2e2e2;
-  --color-ring: #111111;
+  --color-border: #CCFBF1;
+  --color-ring: #0D9488;
   --radius: 0.75rem;
 }
 
 * {
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #99F6E4 transparent;
 }
 *::-webkit-scrollbar {
-  display: none;
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #99F6E4;
+  border-radius: 999px;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #f9f9f9;
-  color: #111111;
+  background-color: #F0FDFA;
+  color: #0F172A;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Animations ────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseGentle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out both;
+}
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out both;
+}
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out both;
+}
+.animate-pulse-gentle {
+  animation: pulseGentle 2s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ── Glassmorphism ────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.glass-teal {
+  background: rgba(240, 253, 250, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Card hover effect ────────────────────── */
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(13, 148, 136, 0.12), 0 4px 10px -3px rgba(13, 148, 136, 0.08);
+  border-color: #99F6E4 !important;
+}
+
+/* ── Gradient text ────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #0D9488, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
