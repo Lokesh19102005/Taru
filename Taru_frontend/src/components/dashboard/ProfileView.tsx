@@ -56,11 +56,11 @@ export default function ProfileView() {
     : '—'
 
   return (
-    <div className="max-w-lg mx-auto space-y-5">
+    <div className="max-w-lg mx-auto space-y-5 animate-fade-in">
       {/* Profile header */}
       <div className="rounded-2xl border overflow-hidden" style={{ background: COLORS.card, borderColor: COLORS.border }}>
         {/* Banner */}
-        <div className="h-24 relative" style={{ background: COLORS.primary }}>
+        <div className="h-24 relative" style={{ background: 'linear-gradient(135deg, #0D9488, #059669)' }}>
           <div className="absolute -bottom-8 left-6">
             <div
               className="w-16 h-16 rounded-full border-4 flex items-center justify-center font-extrabold text-2xl"
@@ -80,7 +80,7 @@ export default function ProfileView() {
             {!editing ? (
               <button
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all hover:border-black"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all hover:border-teal-500"
                 style={{ color: COLORS.fg, borderColor: COLORS.border }}
               >
                 <Pencil size={11} /> Edit Profile
@@ -156,7 +156,7 @@ export default function ProfileView() {
               <select
                 value={form.batch}
                 onChange={e => setForm({ ...form, batch: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-black appearance-none"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-teal-500 appearance-none"
                 style={{ background: COLORS.bg, borderColor: COLORS.border, color: form.batch ? COLORS.fg : COLORS.fg3 }}
               >
                 <option value="">Select batch</option>
@@ -286,7 +286,7 @@ function EditableField({ icon, label, value, onChange, placeholder, type = 'text
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-black"
+          className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-teal-500"
           style={{ background: COLORS.bg, borderColor: COLORS.border, color: COLORS.fg }}
         />
       </div>

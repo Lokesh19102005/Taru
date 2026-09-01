@@ -36,9 +36,6 @@ const appointmentSchema = new mongoose.Schema({
   reason: {
     type: String
   },
-  meetingLink: {
-    type: String
-  },
   notes: {
     type: String
   },

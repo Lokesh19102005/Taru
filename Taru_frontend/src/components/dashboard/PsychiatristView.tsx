@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
-import { CheckCircle, ChevronRight, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CheckCircle, ChevronRight, Clock, Video } from 'lucide-react'
 import COLORS from '../../lib/theme'
 import { fetchAllPsychiatrists } from '../../api/psychiatrist'
 import { getAvailabilityForPsychiatrist } from '../../api/availability'
 import { bookAppointment, getMyAppointments } from '../../api/appointment'
+import { joinAppointment } from '../../api/meeting'
 import { Psychiatrist, AvailabilityData, Slot, Appointment } from '../../types'
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -21,7 +23,13 @@ const formatTime = (time: string) => {
   return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+const isJoinWindowOpen = (_appt: Appointment) => {
+  // Allow joining anytime — no time-window restriction
+  return true
+}
+
 export default function PsychiatristView() {
+  const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
   const [doctors, setDoctors] = useState<Psychiatrist[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,6 +44,7 @@ export default function PsychiatristView() {
   const [bookingLoading, setBookingLoading] = useState(false)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loadingAppts, setLoadingAppts] = useState(true)
+  const [joiningId, setJoiningId] = useState<string | null>(null)
 
   const fetchAppts = () => {
     setLoadingAppts(true)
@@ -109,7 +118,7 @@ export default function PsychiatristView() {
 
   if (step === 4) {
     return (
-      <div className="max-w-md mx-auto">
+      <div className="max-w-md mx-auto animate-fade-in">
         <div className="rounded-2xl p-8 border text-center" style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <CheckCircle size={32} className="mx-auto mb-4" style={{ color: COLORS.fg }} />
           <h2 className="text-xl font-extrabold mb-2" style={{ color: COLORS.fg }}>Session Requested!</h2>
@@ -127,7 +136,7 @@ export default function PsychiatristView() {
 
   if (step === 3) {
     return (
-      <div className="max-w-md mx-auto space-y-4">
+      <div className="max-w-md mx-auto space-y-4 animate-fade-in">
         <button onClick={() => setStep(2)} className="text-sm hover:underline" style={{ color: COLORS.fg3 }}>← Back</button>
         <div className="rounded-2xl p-6 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <h2 className="text-lg font-bold mb-4" style={{ color: COLORS.fg }}>Confirm Details</h2>
@@ -166,7 +175,7 @@ export default function PsychiatristView() {
     const unbookedSlots = availability?.slots.filter(s => !s.isBooked) || []
 
     return (
-      <div className="max-w-md mx-auto space-y-4">
+      <div className="max-w-md mx-auto space-y-4 animate-fade-in">
         <button onClick={() => setStep(1)} className="text-sm hover:underline" style={{ color: COLORS.fg3 }}>← Back to all doctors</button>
         <div className="rounded-2xl p-5 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <div className="flex items-start gap-3 mb-5">
@@ -238,7 +247,7 @@ export default function PsychiatristView() {
 
   // Step 1
   return (
-    <div className="max-w-xl mx-auto space-y-4">
+    <div className="max-w-xl mx-auto space-y-4 animate-fade-in">
       <div className="mb-1">
         <h2 className="text-xl font-extrabold" style={{ color: COLORS.fg }}>Book a session</h2>
         <p className="text-xs mt-0.5" style={{ color: COLORS.fg3 }}>All practitioners are independent, certified professionals — not affiliated with your college.</p>
@@ -249,7 +258,7 @@ export default function PsychiatristView() {
         <div className="text-center py-8 text-sm" style={{ color: COLORS.fg3 }}>No psychiatrists available yet</div>
       ) : doctors.map(doc => (
         <div key={doc._id} onClick={() => handleDoctorSelect(doc._id)}
-          className="rounded-2xl p-5 border cursor-pointer hover:border-black hover:shadow-sm transition-all group"
+          className="rounded-2xl p-5 border cursor-pointer card-hover hover:border-teal-400 hover:shadow-sm transition-all group"
           style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <div className="flex items-start gap-3 mb-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0" style={{ background: COLORS.muted, color: COLORS.fg }}>{doc.name ? doc.name[0] : 'D'}</div>
@@ -258,7 +267,7 @@ export default function PsychiatristView() {
               <div className="text-xs" style={{ color: COLORS.fg3 }}>{doc.qualification}</div>
               <div className="text-xs mt-0.5" style={{ color: COLORS.fg2 }}>{doc.experience ? `${doc.experience} yrs exp` : ''}</div>
             </div>
-            <ChevronRight size={14} className="shrink-0 mt-1 group-hover:text-black" style={{ color: COLORS.fg4 }} />
+            <ChevronRight size={14} className="shrink-0 mt-1 group-hover:text-teal-600" style={{ color: COLORS.fg4 }} />
           </div>
           <div className="flex flex-wrap gap-1.5">
             {doc.specialization?.map(tag => (
@@ -303,6 +312,33 @@ export default function PsychiatristView() {
                   </div>
                   {appt.reason && (
                     <div className="text-xs mt-1" style={{ color: COLORS.fg3 }}>Reason: {appt.reason}</div>
+                  )}
+                  {appt.status === 'confirmed' && (
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={async () => {
+                          setJoiningId(appt._id)
+                          try {
+                            const res = await joinAppointment(appt._id)
+                            if (res.success && res.meetingId) {
+                              navigate(`/meeting/${res.meetingId}`)
+                            } else if (res.success && res.data?.meetingId) {
+                              navigate(`/meeting/${res.data.meetingId}`)
+                            }
+                          } catch (e) {
+                            console.error(e)
+                          } finally {
+                            setJoiningId(null)
+                          }
+                        }}
+                        disabled={!isJoinWindowOpen(appt) || joiningId === appt._id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-opacity hover:opacity-90 disabled:opacity-50"
+                        style={{ background: COLORS.primary, color: '#fff' }}
+                      >
+                        <Video size={14} />
+                        {joiningId === appt._id ? 'Joining...' : isJoinWindowOpen(appt) ? 'Join Session' : 'Outside Join Window'}
+                      </button>
+                    </div>
                   )}
                 </div>
               )

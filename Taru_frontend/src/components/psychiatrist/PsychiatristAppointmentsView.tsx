@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Video } from 'lucide-react'
 import { COLORS } from '../../lib/theme'
 import { getPsychiatristAppointments, updateAppointmentStatus } from '../../api/appointment'
+import { joinAppointment } from '../../api/meeting'
 import { Appointment } from '../../types'
 
 const formatTime = (time: string) => {
@@ -10,10 +13,17 @@ const formatTime = (time: string) => {
   return `${hour}:${String(m).padStart(2, '0')} ${ampm}`
 }
 
+const isJoinWindowOpen = (_appt: Appointment) => {
+  // Allow joining anytime — no time-window restriction
+  return true
+}
+
 export default function PsychiatristAppointmentsView() {
+  const navigate = useNavigate()
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(false)
+  const [joiningId, setJoiningId] = useState<string | null>(null)
 
   const fetchAppointments = async () => {
     setLoading(true)
@@ -44,7 +54,7 @@ export default function PsychiatristAppointmentsView() {
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <h1 className="text-2xl font-extrabold mb-6" style={{ color: COLORS.fg }}>Appointments</h1>
       
       <div className="mb-6 flex items-center gap-4">
@@ -53,7 +63,7 @@ export default function PsychiatristAppointmentsView() {
           type="date" 
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm focus:outline-none"
+          className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 transition-colors"
           style={{ borderColor: COLORS.border, color: COLORS.fg }}
         />
       </div>
@@ -70,7 +80,7 @@ export default function PsychiatristAppointmentsView() {
             const studentName = typeof appt.studentId === 'object' ? appt.studentId.username : 'Unknown Student'
             
             return (
-              <div key={appt._id} className="rounded-xl p-5 border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+              <div key={appt._id} className="rounded-xl p-5 border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 card-hover hover:border-teal-400 transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <span className="font-bold text-base" style={{ color: COLORS.fg }}>{studentName}</span>
@@ -101,6 +111,33 @@ export default function PsychiatristAppointmentsView() {
                       className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
                     >
                       Reject
+                    </button>
+                  </div>
+                )}
+                {appt.status === 'confirmed' && (
+                  <div className="flex items-center gap-2 shrink-0 mt-3 md:mt-0">
+                    <button
+                      onClick={async () => {
+                        setJoiningId(appt._id)
+                        try {
+                          const res = await joinAppointment(appt._id)
+                          if (res.success && res.meetingId) {
+                            navigate(`/meeting/${res.meetingId}`)
+                          } else if (res.success && res.data?.meetingId) {
+                            navigate(`/meeting/${res.data.meetingId}`)
+                          }
+                        } catch (e) {
+                          console.error(e)
+                        } finally {
+                          setJoiningId(null)
+                        }
+                      }}
+                      disabled={!isJoinWindowOpen(appt) || joiningId === appt._id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity disabled:opacity-50 hover:opacity-90"
+                      style={{ background: COLORS.primary }}
+                    >
+                      <Video size={14} />
+                      {joiningId === appt._id ? 'Joining...' : isJoinWindowOpen(appt) ? 'Join Session' : 'Outside Join Window'}
                     </button>
                   </div>
                 )}

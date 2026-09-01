@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { COLORS } from '../lib/theme'
@@ -66,6 +67,7 @@ const MOTIVATION_OPTIONS = [
 
 export default function CheckinFlow({ isGuest }: CheckFlowProps) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const mutation = useSubmitCheckin()
 
   const [step, setStep] = useState(0)
@@ -124,6 +126,8 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
       },
       {
         onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['checkin-history'] })
+          queryClient.invalidateQueries({ queryKey: ['checkin-today'] })
           setDone(true)
         },
         onError: () => {
@@ -135,9 +139,9 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
   if (done) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: COLORS.bg }}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 animate-fade-in" style={{ background: COLORS.bg }}>
         <div className="max-w-md w-full text-center py-16">
-          <div className="text-5xl mb-5">🌿</div>
+          <div className="text-5xl mb-5 animate-float">🌿</div>
           <h2 className="text-2xl font-bold mb-3" style={{ color: COLORS.fg }}>Shukriya, sharing ke liye</h2>
           <p className="text-sm leading-relaxed mb-8" style={{ color: COLORS.fg2 }}>
             Aaj aapne apne liye time nikala — yeh chhoti si cheez bahut matter karti hai.
@@ -148,15 +152,15 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
           {isGuest && (
             <button
               onClick={handleDone}
-              className="w-full py-3 rounded-xl font-semibold text-sm mb-3 transition-all"
-              style={{ background: COLORS.primary, color: '#fff' }}
+              className="w-full py-3 rounded-xl font-semibold text-sm mb-3 transition-all card-hover hover:opacity-90"
+              style={{ background: COLORS.gradient, color: '#fff' }}
             >
               Create a free account
             </button>
           )}
           <button
             onClick={handleBack}
-            className="text-sm font-medium transition-colors"
+            className="text-sm font-medium transition-colors hover:text-teal-600"
             style={{ color: COLORS.fg3 }}
           >
             ← {isGuest ? 'Back to home' : 'Back to dashboard'}
@@ -173,11 +177,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: COLORS.bg }}>
+    <div className="min-h-screen flex flex-col animate-fade-in" style={{ background: COLORS.bg }}>
       {/* Progress bar */}
       <div
-        className="sticky top-0 z-50 border-b px-6 py-3"
-        style={{ background: COLORS.card, borderColor: COLORS.border }}
+        className="sticky top-0 z-50 border-b px-6 py-3 glass"
+        style={{ borderColor: COLORS.border }}
       >
         <div className="max-w-lg mx-auto flex items-center gap-4">
           <span
@@ -198,7 +202,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
           >
             {step} of {total}
           </span>
-          <button onClick={handleBack} className="transition-colors" style={{ color: COLORS.fg3 }}>
+          <button onClick={handleBack} className="transition-colors hover:text-teal-600" style={{ color: COLORS.fg3 }}>
             <X size={16} />
           </button>
         </div>
@@ -207,15 +211,15 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
       <div className="flex-1 max-w-lg mx-auto w-full px-6 py-8">
         {/* Step 0 — Intro */}
         {step === 0 && (
-          <div>
+          <div className="animate-slide-up">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>daily check-in</p>
             <h1 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>Welcome to your daily check-in.</h1>
             <p className="text-sm leading-relaxed mb-8" style={{ color: COLORS.fg2 }}>
               Take a moment to reflect on your day. This quick check-in helps you track your wellbeing, energy, and stress over time.
             </p>
             <button
-              className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
-              style={{ background: COLORS.primary, color: '#fff' }}
+              className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 card-hover"
+              style={{ background: COLORS.gradient, color: '#fff' }}
               onClick={() => setStep(1)}
             >
               let's begin →
@@ -225,7 +229,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 1 — Mood */}
         {step === 1 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>mood</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>How are you feeling today?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>No right answer. Just what is true right now.</p>
@@ -234,10 +238,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setMood({ label: m.label, score: m.score })}
-                  className="p-4 rounded-xl border-2 flex items-center gap-3 text-left transition-all"
+                  className={`p-4 rounded-xl border-2 flex items-center gap-3 text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${mood?.score === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: mood?.score === m.score ? COLORS.primary : COLORS.border,
-                    background: mood?.score === m.score ? COLORS.muted : COLORS.card,
+                    background: mood?.score === m.score ? COLORS.muted : undefined,
                   }}
                 >
                   <span className="text-2xl shrink-0">{m.emoji}</span>
@@ -248,11 +252,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(0)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(0)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={mood === null}
                 onClick={() => setStep(2)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -263,7 +267,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 2 — Energy */}
         {step === 2 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>energy</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>How energetic did you feel today?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>Reflect on your overall energy levels.</p>
@@ -272,10 +276,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setEnergy(m.score)}
-                  className="p-4 rounded-xl border-2 text-sm font-bold text-left transition-all"
+                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${energy === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: energy === m.score ? COLORS.primary : COLORS.border,
-                    background: energy === m.score ? COLORS.muted : COLORS.card,
+                    background: energy === m.score ? COLORS.muted : undefined,
                     color: COLORS.fg,
                   }}
                 >
@@ -284,11 +288,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(1)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(1)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={energy === null}
                 onClick={() => setStep(3)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -299,7 +303,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 3 — Academic Stress */}
         {step === 3 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>academic stress</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>How stressed did your studies or assignments make you feel today?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>Consider classes, homework, and exams.</p>
@@ -308,10 +312,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setStress(m.score)}
-                  className="p-4 rounded-xl border-2 text-sm font-bold text-left transition-all"
+                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${stress === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: stress === m.score ? COLORS.primary : COLORS.border,
-                    background: stress === m.score ? COLORS.muted : COLORS.card,
+                    background: stress === m.score ? COLORS.muted : undefined,
                     color: COLORS.fg,
                   }}
                 >
@@ -320,11 +324,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(2)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(2)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={stress === null}
                 onClick={() => setStep(4)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -335,7 +339,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 4 — Sleep */}
         {step === 4 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>sleep</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>How well did you sleep last night?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>Think about sleep quality and duration.</p>
@@ -344,10 +348,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setSleep(m.score)}
-                  className="p-4 rounded-xl border-2 text-sm font-bold text-left transition-all"
+                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${sleep === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: sleep === m.score ? COLORS.primary : COLORS.border,
-                    background: sleep === m.score ? COLORS.muted : COLORS.card,
+                    background: sleep === m.score ? COLORS.muted : undefined,
                     color: COLORS.fg,
                   }}
                 >
@@ -356,11 +360,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(3)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(3)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={sleep === null}
                 onClick={() => setStep(5)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -371,7 +375,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 5 — Focus */}
         {step === 5 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>focus</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>How easy was it to concentrate on your studies today?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>Reflect on your ability to stay focused and productive.</p>
@@ -380,10 +384,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setConcentration(m.score)}
-                  className="p-4 rounded-xl border-2 text-sm font-bold text-left transition-all"
+                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${concentration === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: concentration === m.score ? COLORS.primary : COLORS.border,
-                    background: concentration === m.score ? COLORS.muted : COLORS.card,
+                    background: concentration === m.score ? COLORS.muted : undefined,
                     color: COLORS.fg,
                   }}
                 >
@@ -392,11 +396,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(4)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(4)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={concentration === null}
                 onClick={() => setStep(6)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -407,7 +411,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 6 — Social Connection */}
         {step === 6 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>social connection</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>Did you feel supported by friends, classmates, or family today?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>Your connections and support system.</p>
@@ -416,10 +420,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setSupport(m.score)}
-                  className="p-4 rounded-xl border-2 text-sm font-bold text-left transition-all"
+                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${support === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: support === m.score ? COLORS.primary : COLORS.border,
-                    background: support === m.score ? COLORS.muted : COLORS.card,
+                    background: support === m.score ? COLORS.muted : undefined,
                     color: COLORS.fg,
                   }}
                 >
@@ -428,11 +432,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(5)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(5)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={support === null}
                 onClick={() => setStep(7)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -443,7 +447,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 7 — Motivation */}
         {step === 7 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>motivation</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>How motivated did you feel to complete your work today?</h2>
             <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>Drive and willingness to get things done.</p>
@@ -452,10 +456,10 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
                 <button
                   key={m.score}
                   onClick={() => setMotivation(m.score)}
-                  className="p-4 rounded-xl border-2 text-sm font-bold text-left transition-all"
+                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${motivation === m.score ? '' : 'bg-white'}`}
                   style={{
                     borderColor: motivation === m.score ? COLORS.primary : COLORS.border,
-                    background: motivation === m.score ? COLORS.muted : COLORS.card,
+                    background: motivation === m.score ? COLORS.muted : undefined,
                     color: COLORS.fg,
                   }}
                 >
@@ -464,11 +468,11 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setStep(6)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(6)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={motivation === null}
                 onClick={() => setStep(8)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 continue →
@@ -479,7 +483,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
         {/* Step 8 — Feedback + Submit */}
         {step === 8 && (
-          <div>
+          <div className="animate-fade-in">
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg3 }}>feedback</p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>Anything else you want to share?</h2>
             <p className="text-sm mb-5" style={{ color: COLORS.fg2 }}>Optional notes about your day.</p>
@@ -489,16 +493,16 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               value={feedback}
               onChange={e => setFeedback(e.target.value)}
               placeholder="Write your thoughts here..."
-              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none mb-8"
-              style={{ background: COLORS.card, borderColor: COLORS.border, color: COLORS.fg, lineHeight: 1.7 }}
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none mb-8 transition-all hover:border-teal-400 focus:border-teal-500 bg-white focus:ring-1 focus:ring-teal-500"
+              style={{ borderColor: COLORS.border, color: COLORS.fg, lineHeight: 1.7 }}
             />
             
             <div className="flex gap-3 mb-4">
-              <button onClick={() => setStep(7)} className="px-5 py-3 rounded-xl border text-sm font-semibold" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
+              <button onClick={() => setStep(7)} className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all" style={{ borderColor: COLORS.border, color: COLORS.fg2 }}>←</button>
               <button
                 disabled={mutation.isPending}
                 onClick={handleSubmit}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30"
+                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
                 style={{ background: COLORS.primary, color: '#fff' }}
               >
                 {mutation.isPending ? 'submitting...' : 'submit check-in →'}

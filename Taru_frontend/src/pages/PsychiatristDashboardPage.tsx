@@ -28,8 +28,8 @@ export default function PsychiatristDashboardPage() {
   ] as const;
 
   return (
-    <div className="min-h-screen" style={{ background: COLORS.bg }}>
-      <header className="px-6 py-4 border-b flex justify-between items-center sticky top-0 z-10" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+    <div className="min-h-screen animate-fade-in" style={{ background: COLORS.bg }}>
+      <header className="glass px-6 py-4 border-b flex justify-between items-center sticky top-0 z-10" style={{ borderColor: COLORS.border }}>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: COLORS.primary }}>
             <Heart size={14} className="text-white" fill="white" />
@@ -38,7 +38,7 @@ export default function PsychiatristDashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm font-semibold" style={{ color: COLORS.fg }}>{psychiatrist.name}</span>
-          <button onClick={handleLogout} className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border hover:bg-gray-50 transition-colors"
+          <button onClick={handleLogout} className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border hover:bg-teal-50 transition-colors"
             style={{ borderColor: COLORS.border, color: COLORS.fg }}>
             <LogOut size={14} /> Sign Out
           </button>
@@ -52,7 +52,7 @@ export default function PsychiatristDashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 text-left hover:bg-teal-50"
                 style={{
                   background: activeTab === tab.id ? COLORS.primary : 'transparent',
                   color: activeTab === tab.id ? '#ffffff' : COLORS.fg2,

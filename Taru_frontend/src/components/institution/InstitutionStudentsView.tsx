@@ -97,11 +97,11 @@ export default function InstitutionStudentsView() {
   const pendingCount = students.length - checkedCount
 
   if (loading) {
-    return <div className="text-center py-16 text-sm" style={{ color: COLORS.fg3 }}>Loading students...</div>
+    return <div className="text-center py-16 text-sm animate-pulse-gentle" style={{ color: COLORS.fg3 }}>Loading students...</div>
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function InstitutionStudentsView() {
             placeholder="Search students..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-black"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-50"
             style={{ background: COLORS.card, borderColor: COLORS.border, color: COLORS.fg }}
           />
         </div>
@@ -134,10 +134,10 @@ export default function InstitutionStudentsView() {
               <button
                 key={f.key}
                 onClick={() => setStatusFilter(f.key)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:bg-teal-50"
                 style={{
                   background: statusFilter === f.key ? COLORS.card : 'transparent',
-                  color: statusFilter === f.key ? COLORS.fg : COLORS.fg3,
+                  color: statusFilter === f.key ? COLORS.primary : COLORS.fg3,
                   boxShadow: statusFilter === f.key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                 }}
               >
@@ -148,7 +148,7 @@ export default function InstitutionStudentsView() {
           {/* Filter toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all hover:border-black relative"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all hover:border-teal-400 relative"
             style={{
               background: showFilters || activeFilterCount > 0 ? COLORS.primary : COLORS.card,
               color: showFilters || activeFilterCount > 0 ? '#fff' : COLORS.fg,
@@ -168,7 +168,7 @@ export default function InstitutionStudentsView() {
 
       {/* Classification filters panel */}
       {showFilters && (
-        <div className="rounded-2xl p-4 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+        <div className="rounded-2xl p-4 border animate-slide-down" style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-bold" style={{ color: COLORS.fg }}>Classify Students</h4>
             {activeFilterCount > 0 && (
@@ -188,7 +188,7 @@ export default function InstitutionStudentsView() {
               <select
                 value={batchFilter}
                 onChange={e => setBatchFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-black appearance-none"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-50 appearance-none hover:bg-teal-50"
                 style={{ background: COLORS.bg, borderColor: batchFilter ? COLORS.primary : COLORS.border, color: batchFilter ? COLORS.fg : COLORS.fg3 }}
               >
                 <option value="">All batches</option>
@@ -202,7 +202,7 @@ export default function InstitutionStudentsView() {
               <select
                 value={genderFilter}
                 onChange={e => setGenderFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-black appearance-none"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-50 appearance-none hover:bg-teal-50"
                 style={{ background: COLORS.bg, borderColor: genderFilter ? COLORS.primary : COLORS.border, color: genderFilter ? COLORS.fg : COLORS.fg3 }}
               >
                 <option value="">All genders</option>
@@ -216,7 +216,7 @@ export default function InstitutionStudentsView() {
               <select
                 value={ageFilter}
                 onChange={e => setAgeFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-black appearance-none"
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-50 appearance-none hover:bg-teal-50"
                 style={{ background: COLORS.bg, borderColor: ageFilter ? COLORS.primary : COLORS.border, color: ageFilter ? COLORS.fg : COLORS.fg3 }}
               >
                 <option value="">All ages</option>
@@ -231,21 +231,21 @@ export default function InstitutionStudentsView() {
               <span className="text-[10px] font-semibold py-1" style={{ color: COLORS.fg3 }}>Active:</span>
               {batchFilter && (
                 <button onClick={() => setBatchFilter('')}
-                  className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all hover:bg-gray-100"
+                  className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all hover:bg-teal-50"
                   style={{ borderColor: COLORS.border, color: COLORS.fg }}>
                   Batch: {batchFilter} <X size={9} />
                 </button>
               )}
               {genderFilter && (
                 <button onClick={() => setGenderFilter('')}
-                  className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all hover:bg-gray-100"
+                  className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all hover:bg-teal-50"
                   style={{ borderColor: COLORS.border, color: COLORS.fg }}>
                   Gender: {genderFilter} <X size={9} />
                 </button>
               )}
               {ageFilter && (
                 <button onClick={() => setAgeFilter('')}
-                  className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all hover:bg-gray-100"
+                  className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all hover:bg-teal-50"
                   style={{ borderColor: COLORS.border, color: COLORS.fg }}>
                   Age: {ageFilter} <X size={9} />
                 </button>
@@ -264,7 +264,7 @@ export default function InstitutionStudentsView() {
 
       {/* Student list */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl p-8 border text-center" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+        <div className="rounded-2xl p-8 border text-center card-hover transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <div className="text-3xl mb-2">🔍</div>
           <p className="text-sm font-semibold mb-1" style={{ color: COLORS.fg }}>
             {students.length === 0 ? 'No students registered yet' : 'No students match your filters'}
@@ -278,10 +278,10 @@ export default function InstitutionStudentsView() {
       ) : (
         <div className="space-y-3">
           {filtered.map((s, idx) => (
-            <div key={s.username || idx} className="rounded-2xl p-5 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+            <div key={s.username || idx} className="rounded-2xl p-5 border card-hover transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm" style={{ background: COLORS.muted, color: COLORS.fg }}>
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shadow-sm" style={{ background: COLORS.muted, color: COLORS.primary }}>
                     {s.username?.charAt(5)?.toUpperCase() || 'S'}
                   </div>
                   <div>
@@ -307,14 +307,14 @@ export default function InstitutionStudentsView() {
                   </div>
                 </div>
                 {s.todayCheckin ? (
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#D1FAE5', color: '#065F46' }}>CHECKED IN</span>
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#CCFBF1', color: '#0D9488' }}>CHECKED IN</span>
                 ) : (
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#F3F4F6', color: '#6B7280' }}>PENDING</span>
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#F1F5F9', color: '#64748B' }}>PENDING</span>
                 )}
               </div>
 
               {s.todayCheckin ? (
-                <div className="mt-3 pt-3 border-t" style={{ borderColor: COLORS.border }}>
+                <div className="mt-3 pt-3 border-t transition-colors hover:bg-teal-50/30 -mx-5 -mb-5 px-5 pb-5 rounded-b-2xl" style={{ borderColor: COLORS.border }}>
                   <div className="grid grid-cols-4 gap-2 text-xs">
                     <div><span style={{ color: COLORS.fg3 }}>Mood</span><br/><span className="font-bold" style={{ color: COLORS.fg }}>{getMoodEmoji(s.todayCheckin.mood.score)} {s.todayCheckin.mood.label} ({s.todayCheckin.mood.score})</span></div>
                     <div><span style={{ color: COLORS.fg3 }}>Energy</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.energy, 4) }}>{s.todayCheckin.energy}</span></div>

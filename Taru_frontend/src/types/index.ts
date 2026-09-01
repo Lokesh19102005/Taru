@@ -73,8 +73,18 @@ export interface Appointment {
   endTime: string
   status: 'requested' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'
   reason?: string
-  meetingLink?: string
   notes?: string
+  createdAt: string
+}
+
+export interface Meeting {
+  _id: string
+  appointmentId: string
+  meetingId: string
+  status: 'scheduled' | 'active' | 'ended'
+  startedAt?: string
+  endedAt?: string
+  duration?: number
   createdAt: string
 }
 

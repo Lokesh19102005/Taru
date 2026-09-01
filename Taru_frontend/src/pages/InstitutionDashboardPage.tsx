@@ -25,14 +25,14 @@ export default function InstitutionDashboardPage() {
   const isOverview = location.pathname === '/institution/dashboard' || location.pathname === '/institution/dashboard/overview'
 
   return (
-    <div className="h-screen flex flex-col" style={{ background: COLORS.muted }}>
+    <div className="h-screen flex flex-col animate-fade-in" style={{ background: COLORS.muted }}>
       {/* Top bar */}
       <header
-        className="sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
-        style={{ background: COLORS.card, borderColor: COLORS.border }}
+        className="glass sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
+        style={{ borderColor: COLORS.border }}
       >
         <div className="flex items-center gap-3">
-          <button className="md:hidden" style={{ color: COLORS.fg2 }} onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button className="md:hidden hover:text-teal-600 transition-colors" style={{ color: COLORS.fg2 }} onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu size={19} />
           </button>
           <div className="flex items-center gap-2">
@@ -63,15 +63,15 @@ export default function InstitutionDashboardPage() {
 
         {/* Sidebar */}
         <aside
-          className={`fixed md:static top-14 bottom-0 left-0 z-40 w-56 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-          style={{ background: COLORS.card, borderColor: COLORS.border }}
+          className={`glass fixed md:static top-14 bottom-0 left-0 z-40 w-56 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+          style={{ borderColor: COLORS.border }}
         >
           <nav className="flex-1 p-3 space-y-0.5">
             <NavLink
               to="/institution/dashboard"
               end
               onClick={() => setSidebarOpen(false)}
-              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all font-semibold"
+              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
               style={{ background: isOverview ? COLORS.primary : 'transparent', color: isOverview ? '#fff' : COLORS.fg2 }}
             >
               <BarChart2 size={16} /> Dashboard
@@ -87,7 +87,7 @@ export default function InstitutionDashboardPage() {
                   key={item.id}
                   to={path}
                   onClick={() => setSidebarOpen(false)}
-                  className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all font-semibold"
+                  className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
                   style={{ background: isActive ? COLORS.primary : 'transparent', color: isActive ? '#fff' : COLORS.fg2 }}
                 >
                   {item.icon}
@@ -99,7 +99,7 @@ export default function InstitutionDashboardPage() {
 
           {/* Bottom section */}
           <div className="p-3 border-t" style={{ borderColor: COLORS.border }}>
-            <div className="rounded-xl p-3 border mb-3" style={{ background: COLORS.muted, borderColor: COLORS.border }}>
+            <div className="rounded-xl p-3 border mb-3 card-hover" style={{ background: COLORS.muted, borderColor: COLORS.border }}>
               <div className="flex items-center gap-2 mb-1">
                 <Building2 size={12} style={{ color: COLORS.fg }} />
                 <span className="text-xs font-bold" style={{ color: COLORS.fg }}>{institution.collegeName}</span>

@@ -26,7 +26,7 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border shadow-xl z-50 overflow-hidden"
+      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border shadow-xl z-50 overflow-hidden animate-fade-in"
       style={{ background: COLORS.card, borderColor: COLORS.border }}
     >
       {/* Header */}
@@ -44,7 +44,7 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
       <div className="py-1">
         <button
           onClick={() => { onClose(); navigate('/dashboard/profile') }}
-          className="w-full flex items-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors hover:bg-gray-50"
+          className="w-full flex items-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors hover:bg-teal-50"
           style={{ color: COLORS.fg }}
         >
           <User size={14} /> View Profile
@@ -77,14 +77,14 @@ export default function DashboardPage() {
   const isOverview = location.pathname === '/dashboard' || location.pathname === '/dashboard/home'
 
   return (
-    <div className="h-screen flex flex-col" style={{ background: COLORS.muted }}>
+    <div className="h-screen flex flex-col animate-fade-in" style={{ background: COLORS.muted }}>
       {/* Top bar */}
       <header
-        className="sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
-        style={{ background: COLORS.card, borderColor: COLORS.border }}
+        className="glass sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
+        style={{ borderColor: COLORS.border }}
       >
         <div className="flex items-center gap-3">
-          <button className="md:hidden" style={{ color: COLORS.fg2 }} onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button className="md:hidden hover:text-teal-600 transition-colors" style={{ color: COLORS.fg2 }} onClick={() => setSidebarOpen(!sidebarOpen)}>
             <Menu size={19} />
           </button>
           <div className="flex items-center gap-2">
@@ -96,14 +96,14 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" style={{ color: COLORS.fg2 }}>
+          <button className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-teal-50 transition-colors" style={{ color: COLORS.fg2 }}>
             <Bell size={16} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: COLORS.primary }} />
           </button>
           <div className="relative">
             <button
               onClick={() => setUserOpen(!userOpen)}
-              className="flex items-center gap-2 pl-1 py-1 pr-2 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+              className="flex items-center gap-2 pl-1 py-1 pr-2 rounded-xl hover:bg-teal-50 transition-colors cursor-pointer"
             >
               <div className="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm" style={{ background: COLORS.primary, color: '#fff' }}>{user?.username?.charAt(0)?.toUpperCase() || 'U'}</div>
               <div className="hidden sm:block text-left">
@@ -123,14 +123,14 @@ export default function DashboardPage() {
 
         {/* Sidebar */}
         <aside
-          className={`fixed md:static top-14 bottom-0 left-0 z-40 w-60 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-          style={{ background: COLORS.card, borderColor: COLORS.border }}
+          className={`glass fixed md:static top-14 bottom-0 left-0 z-40 w-60 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+          style={{ borderColor: COLORS.border }}
         >
           <nav className="flex-1 p-3 space-y-0.5">
             <NavLink
               to="/dashboard"
               onClick={() => setSidebarOpen(false)}
-              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all font-semibold"
+              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
               style={{ background: isOverview ? COLORS.primary : 'transparent', color: isOverview ? '#fff' : COLORS.fg2 }}
             >
               <Sparkles size={16} /> Overview
@@ -145,7 +145,7 @@ export default function DashboardPage() {
                   key={item.id}
                   to={`/dashboard/${item.id}`}
                   onClick={() => setSidebarOpen(false)}
-                  className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all font-semibold"
+                  className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
                   style={{ background: isActive ? COLORS.primary : 'transparent', color: isActive ? '#fff' : COLORS.fg2 }}
                 >
                   {item.icon}
@@ -156,7 +156,7 @@ export default function DashboardPage() {
           </nav>
 
           <div className="p-3 border-t" style={{ borderColor: COLORS.border }}>
-            <div className="rounded-xl p-3 mb-3 border" style={{ background: COLORS.muted, borderColor: COLORS.border }}>
+            <div className="rounded-xl p-3 mb-3 border card-hover" style={{ background: COLORS.muted, borderColor: COLORS.border }}>
               <p className="text-xs font-bold mb-0.5" style={{ color: COLORS.fg }}>Crisis line</p>
               <p className="text-[10px]" style={{ color: COLORS.fg3 }}>iCall: 9152987821</p>
               <p className="text-[10px]" style={{ color: COLORS.fg3 }}>Vandrevala: 1860-2662-345</p>

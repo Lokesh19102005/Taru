@@ -62,11 +62,11 @@ export default function InstitutionOverviewView() {
   ] : []
 
   if (loading) {
-    return <div className="text-center py-16 text-sm" style={{ color: COLORS.fg3 }}>Loading campus data...</div>
+    return <div className="text-center py-16 text-sm animate-pulse-gentle" style={{ color: COLORS.fg3 }}>Loading campus data...</div>
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
@@ -82,7 +82,7 @@ export default function InstitutionOverviewView() {
       {analytics && analytics.studentsCheckedIn > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {metrics.map(m => (
-            <div key={m.label} className="rounded-2xl p-4 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+            <div key={m.label} className="rounded-2xl p-4 border card-hover transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
               <div className="text-xs font-bold mb-2" style={{ color: COLORS.fg2 }}>{m.label}</div>
               <div className="flex items-center gap-2">
                 {m.label === 'Mood' && <span className="text-2xl">{getMoodEmoji(Math.round(m.value))}</span>}
@@ -96,7 +96,7 @@ export default function InstitutionOverviewView() {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl p-8 border text-center" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+        <div className="rounded-2xl p-8 border text-center card-hover transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
           <div className="text-3xl mb-2">📊</div>
           <p className="text-sm font-semibold mb-1" style={{ color: COLORS.fg }}>No check-ins recorded today</p>
           <p className="text-xs" style={{ color: COLORS.fg3 }}>Student wellness data will appear here once they start checking in.</p>
@@ -105,15 +105,15 @@ export default function InstitutionOverviewView() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl p-5 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+        <div className="rounded-2xl p-5 border card-hover transition-all shadow-sm" style={{ background: COLORS.gradient, borderColor: COLORS.border }}>
           <div className="text-3xl mb-2">👥</div>
-          <div className="text-2xl font-extrabold" style={{ color: COLORS.fg }}>{analytics?.totalStudents || 0}</div>
-          <div className="text-xs font-medium" style={{ color: COLORS.fg3 }}>Total Students</div>
+          <div className="text-2xl font-extrabold text-white">{analytics?.totalStudents || 0}</div>
+          <div className="text-xs font-medium text-teal-50">Total Students</div>
         </div>
-        <div className="rounded-2xl p-5 border" style={{ background: COLORS.card, borderColor: COLORS.border }}>
+        <div className="rounded-2xl p-5 border card-hover transition-all shadow-sm" style={{ background: COLORS.gradient, borderColor: COLORS.border }}>
           <div className="text-3xl mb-2">✅</div>
-          <div className="text-2xl font-extrabold" style={{ color: COLORS.fg }}>{analytics?.studentsCheckedIn || 0}</div>
-          <div className="text-xs font-medium" style={{ color: COLORS.fg3 }}>Checked In Today</div>
+          <div className="text-2xl font-extrabold text-white">{analytics?.studentsCheckedIn || 0}</div>
+          <div className="text-xs font-medium text-teal-50">Checked In Today</div>
         </div>
       </div>
     </div>

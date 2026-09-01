@@ -1,5 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Availability = require('../models/Availability');
+const Meeting = require('../models/Meeting');
+const crypto = require('crypto');
 
 // POST /api/appointment/book — student books a slot
 exports.bookAppointment = async (req, res) => {
@@ -127,6 +129,19 @@ exports.updateAppointmentStatus = async (req, res) => {
     }
 
     appointment.status = status;
+
+    // Create Meeting when appointment is confirmed (idempotent)
+    if (status === 'confirmed') {
+      const existingMeeting = await Meeting.findOne({ appointmentId: appointment._id });
+      if (!existingMeeting) {
+        await Meeting.create({
+          appointmentId: appointment._id,
+          meetingId: 'm_' + crypto.randomBytes(16).toString('hex'),
+          status: 'scheduled'
+        });
+      }
+    }
+
     await appointment.save();
 
     res.status(200).json({ success: true, data: appointment });

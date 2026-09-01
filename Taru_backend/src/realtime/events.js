@@ -39,6 +39,27 @@ module.exports = {
   SHOT_RESULT: "shot_result",
   SEA_BATTLE_GAME_OVER: "sea_battle_game_over",
 
+  // Meeting (Video Consultation)
+  MEETING_JOIN: "meeting:join",
+  MEETING_LEAVE: "meeting:leave",
+  MEETING_OFFER: "meeting:offer",
+  MEETING_ANSWER: "meeting:answer",
+  MEETING_ICE_CANDIDATE: "meeting:ice-candidate",
+  MEETING_PARTICIPANT_JOINED: "meeting:participant-joined",
+  MEETING_PARTICIPANT_LEFT: "meeting:participant-left",
+  MEETING_ERROR: "meeting:error",
+  MEETING_MEDIA_STATE: "meeting:media-state",
+  MEETING_CHAT_MESSAGE: "meeting:chat-message",
+
+  // Chat (Talk to Someone)
+  CHAT_JOIN_QUEUE: "chat_join_queue",
+  CHAT_LEAVE_QUEUE: "chat_leave_queue",
+  CHAT_MATCHED: "chat_matched",
+  CHAT_MESSAGE: "chat_message",
+  CHAT_RECEIVE_MESSAGE: "chat_receive_message",
+  CHAT_PARTNER_LEFT: "chat_partner_left",
+  CHAT_STOPPED: "chat_stopped",
+
   // Error
   ERROR: "error",
 };

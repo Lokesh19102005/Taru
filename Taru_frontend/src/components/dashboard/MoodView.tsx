@@ -267,7 +267,7 @@ export default function MoodView() {
   const checkins = data?.data || []
 
   return (
-    <div className="max-w-xl mx-auto space-y-5">
+    <div className="max-w-xl mx-auto space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-extrabold" style={{ color: COLORS.fg }}>Mood Tracker</h2>
