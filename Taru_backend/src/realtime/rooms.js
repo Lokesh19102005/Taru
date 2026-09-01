@@ -59,7 +59,9 @@ function deleteRoom(roomId) {
 
 function findRoomBySocket(socketId) {
   for (const room of rooms.values()) {
-    if (room.players.includes(socketId)) return room;
+    if (room.status !== "finished" && room.players.includes(socketId)) {
+      return room;
+    }
   }
   return null;
 }

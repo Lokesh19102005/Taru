@@ -4,6 +4,8 @@ module.exports = {
   LEAVE_QUEUE: "leave_queue",
   FLIP_CARD: "flip_card",
   DROP_PIECE: "drop_piece",
+  PLACE_FLEET: "place_fleet",
+  FIRE_SHOT: "fire_shot",
 
   // Server -> Client
   MATCH_FOUND: "match_found",
@@ -28,6 +30,14 @@ module.exports = {
   BEACH_BALLS_GOAL: "beach_balls_goal",
   BEACH_BALLS_GAME_OVER: "beach_balls_game_over",
   BEACH_BALLS_HIT: "beach_balls_hit",
+
+  // Sea Battle
+  SEA_BATTLE_GAME_STARTED: "sea_battle_game_started",
+  FLEET_PLACED: "fleet_placed",
+  OPPONENT_READY: "opponent_ready",
+  BATTLE_STARTED: "battle_started",
+  SHOT_RESULT: "shot_result",
+  SEA_BATTLE_GAME_OVER: "sea_battle_game_over",
 
   // Error
   ERROR: "error",

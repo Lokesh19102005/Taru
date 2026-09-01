@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, Sun, ChevronRight, ArrowLeft, Wind } from "lucide-react";
+import {
+  Sparkles,
+  Sun,
+  ChevronRight,
+  ArrowLeft,
+  Wind,
+  Images,
+  Grip,
+  LifeBuoy,
+  ShipIcon,
+} from "lucide-react";
 import COLORS from "../../lib/theme";
 import MemoryLobby from "../games/memory/MemoryLobby";
 import MemoryBoard from "../games/memory/MemoryBoard";
@@ -11,6 +21,10 @@ import { FourGameStartedPayload } from "../../types/connect-four";
 import BeachBallsLobby from "../games/beach-balls/BeachBallsLobby";
 import BeachBallsBoard from "../games/beach-balls/BeachBallsBoard";
 import { BeachBallsGameStartedPayload } from "../../types/beach-balls";
+import SeaBattleLobby from "../games/sea-battle/SeaBattleLobby";
+import SeaBattlePlacement from "../games/sea-battle/SeaBattlePlacement";
+import SeaBattleBoard from "../games/sea-battle/SeaBattleBoard";
+import { SeaBattleGameStartedPayload, Ship } from "../../types/sea-battle";
 
 type Phase = "inhale" | "hold" | "exhale";
 const PHASE_DURATIONS: Record<Phase, number> = {
@@ -338,6 +352,10 @@ export default function GamesView() {
   );
   const [beachBalls, setBeachBalls] =
     useState<BeachBallsGameStartedPayload | null>(null);
+  const [seaBattle, setSeaBattle] =
+    useState<SeaBattleGameStartedPayload | null>(null);
+  const [seaBattleFleet, setSeaBattleFleet] = useState<Ship[] | null>(null);
+  const [seaBattleTurn, setSeaBattleTurn] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -353,39 +371,46 @@ export default function GamesView() {
       desc: "Follow the bubble as it expands and shrinks. A calming breath exercise to reduce anxiety.",
       tag: "Anxiety relief",
     },
-    {
-      id: "grounding",
-      icon: <Sparkles size={20} />,
-      title: "5-4-3-2-1 Grounding",
-      desc: "Notice 5 things you can see, 4 you can touch, 3 you can hear — anchors you to the present.",
-      tag: "Mindfulness",
-    },
-    {
-      id: "journal",
-      icon: <Sun size={20} />,
-      title: "Gratitude Journal",
-      desc: "Write three things you're grateful for. Small or large — studies show it shifts your mood.",
-      tag: "Mood boost",
-    },
+    // {
+    //   id: "grounding",
+    //   icon: <Sparkles size={20} />,
+    //   title: "5-4-3-2-1 Grounding",
+    //   desc: "Notice 5 things you can see, 4 you can touch, 3 you can hear — anchors you to the present.",
+    //   tag: "Mindfulness",
+    // },
+    // {
+    //   id: "journal",
+    //   icon: <Sun size={20} />,
+    //   title: "Gratitude Journal",
+    //   desc: "Write three things you're grateful for. Small or large — studies show it shifts your mood.",
+    //   tag: "Mood boost",
+    // },
     {
       id: "memory",
-      icon: <Sparkles size={20} />,
+      icon: <Images size={20} />,
       title: "Memory Match",
       desc: "Find matching pairs together in a calm, turn-based game.",
       tag: "Play together",
     },
     {
       id: "four_in_a_row",
-      icon: <Sparkles size={20} />,
+      icon: <Grip size={20} />,
       title: "4 in a Row",
       desc: "Take turns placing pieces and enjoy a thoughtful game together.",
       tag: "Play together",
     },
     {
       id: "beach_balls",
-      icon: <Sparkles size={20} />,
+      icon: <LifeBuoy size={20} />,
       title: "Beach Balls",
       desc: "Share a gentle, real-time game of timing and movement.",
+      tag: "Play together",
+    },
+    {
+      id: "sea_battle",
+      icon: <ShipIcon size={20} />,
+      title: "Sea Battle",
+      desc: "Place your fleet, take turns firing, and sink the opposing ships.",
       tag: "Play together",
     },
   ];
@@ -411,6 +436,65 @@ export default function GamesView() {
         }}
         onCancel={() => {
           setConnectFour(null);
+          setActive(null);
+        }}
+      />
+    );
+  }
+
+  if (active === "sea_battle") {
+    if (seaBattle && seaBattleFleet && seaBattleTurn) {
+      return (
+        <SeaBattleBoard
+          roomId={seaBattle.roomId}
+          myFleet={seaBattleFleet}
+          initialTurnSocketId={seaBattleTurn}
+          onExit={() => {
+            disconnectSocket();
+            setSeaBattle(null);
+            setSeaBattleFleet(null);
+            setSeaBattleTurn(null);
+            setActive(null);
+          }}
+          onPlayAgain={() => {
+            setSeaBattle(null);
+            setSeaBattleFleet(null);
+            setSeaBattleTurn(null);
+            // active stays "sea_battle", so this falls through to SeaBattleLobby
+          }}
+        />
+      );
+    }
+
+    if (seaBattle) {
+      return (
+        <SeaBattlePlacement
+          roomId={seaBattle.roomId}
+          onPlaced={(fleet, currentTurnSocketId) => {
+            setSeaBattleFleet(fleet);
+            setSeaBattleTurn(currentTurnSocketId);
+          }}
+          onCancel={() => {
+            disconnectSocket();
+            setSeaBattle(null);
+            setSeaBattleFleet(null);
+            setSeaBattleTurn(null);
+            setActive(null);
+          }}
+        />
+      );
+    }
+
+    return (
+      <SeaBattleLobby
+        onStarted={(game) => {
+          setSeaBattle(game);
+        }}
+        onCancel={() => {
+          disconnectSocket();
+          setSeaBattle(null);
+          setSeaBattleFleet(null);
+          setSeaBattleTurn(null);
           setActive(null);
         }}
       />
