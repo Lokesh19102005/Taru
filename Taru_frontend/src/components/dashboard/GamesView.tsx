@@ -9,6 +9,8 @@ import {
   Grip,
   LifeBuoy,
   ShipIcon,
+  Palette,
+  PaintRoller,
 } from "lucide-react";
 import COLORS from "../../lib/theme";
 import MemoryLobby from "../games/memory/MemoryLobby";
@@ -25,6 +27,9 @@ import SeaBattleLobby from "../games/sea-battle/SeaBattleLobby";
 import SeaBattlePlacement from "../games/sea-battle/SeaBattlePlacement";
 import SeaBattleBoard from "../games/sea-battle/SeaBattleBoard";
 import { SeaBattleGameStartedPayload, Ship } from "../../types/sea-battle";
+import ColorWarsLobby from "../games/color-wars/ColorWarsLobby";
+import ColorWarsBoard from "../games/color-wars/ColorWarsBoard";
+import { ColorWarsGameStartedPayload } from "../../types/color-wars";
 
 type Phase = "inhale" | "hold" | "exhale";
 const PHASE_DURATIONS: Record<Phase, number> = {
@@ -356,6 +361,8 @@ export default function GamesView() {
     useState<SeaBattleGameStartedPayload | null>(null);
   const [seaBattleFleet, setSeaBattleFleet] = useState<Ship[] | null>(null);
   const [seaBattleTurn, setSeaBattleTurn] = useState<string | null>(null);
+  const [colorWars, setColorWars] =
+    useState<ColorWarsGameStartedPayload | null>(null);
 
   useEffect(() => {
     return () => {
@@ -411,6 +418,13 @@ export default function GamesView() {
       icon: <ShipIcon size={20} />,
       title: "Sea Battle",
       desc: "Place your fleet, take turns firing, and sink the opposing ships.",
+      tag: "Play together",
+    },
+    {
+      id: "color_wars",
+      icon: <PaintRoller size={20} />,
+      title: "Color Wars",
+      desc: "A playful, colorful game of claiming space together.",
       tag: "Play together",
     },
   ];
@@ -495,6 +509,38 @@ export default function GamesView() {
           setSeaBattle(null);
           setSeaBattleFleet(null);
           setSeaBattleTurn(null);
+          setActive(null);
+        }}
+      />
+    );
+  }
+
+  if (active === "color_wars") {
+    if (colorWars) {
+      return (
+        <ColorWarsBoard
+          initialGame={colorWars}
+          onExit={() => {
+            disconnectSocket();
+            setColorWars(null);
+            setActive(null);
+          }}
+          onPlayAgain={() => {
+            disconnectSocket();
+            setColorWars(null);
+          }}
+        />
+      );
+    }
+
+    return (
+      <ColorWarsLobby
+        onStarted={(game) => {
+          setColorWars(game);
+        }}
+        onCancel={() => {
+          disconnectSocket();
+          setColorWars(null);
           setActive(null);
         }}
       />

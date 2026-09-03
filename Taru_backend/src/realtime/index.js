@@ -5,6 +5,7 @@ const memoryGame = require("./games/memory");
 const connectFourGame = require("./games/connect-four");
 const beachBallsGame = require("./games/beach-balls");
 const seaBattleGame = require("./games/sea-battle");
+const colorWarsGame = require("./games/color-wars");
 
 const chat = require("./chat");
 const meetingSignaling = require("./meeting-signaling");
@@ -44,6 +45,7 @@ function initRealtime(httpServer) {
     connectFourGame.attachHandlers(io, socket);
     beachBallsGame.attachHandlers(io, socket);
     seaBattleGame.attachHandlers(io, socket);
+    colorWarsGame.attachHandlers(io, socket);
     chat.attachHandlers(io, socket);
     meetingSignaling.attachHandlers(io, socket);
 

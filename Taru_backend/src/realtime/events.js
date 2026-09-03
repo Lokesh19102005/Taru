@@ -39,6 +39,12 @@ module.exports = {
   SHOT_RESULT: "shot_result",
   SEA_BATTLE_GAME_OVER: "sea_battle_game_over",
 
+  // Color Wars
+  SET_DIRECTION: "set_direction",
+  COLOR_WARS_GAME_STARTED: "color_wars_game_started",
+  COLOR_WARS_STATE: "color_wars_state",
+  COLOR_WARS_GAME_OVER: "color_wars_game_over",
+
   // Meeting (Video Consultation)
   MEETING_JOIN: "meeting:join",
   MEETING_LEAVE: "meeting:leave",

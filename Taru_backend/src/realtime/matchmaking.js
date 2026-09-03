@@ -5,6 +5,7 @@ const gameModules = {
   four_in_a_row: require("./games/connect-four"),
   beach_balls: require("./games/beach-balls"),
   sea_battle: require("./games/sea-battle"),
+  color_wars: require("./games/color-wars"),
 };
 
 /*
