@@ -3,18 +3,18 @@ import COLORS from "../../../lib/theme";
 import { connectSocket, disconnectSocket, socket } from "../../../lib/socket";
 import {
   EVENT_NAMES,
-  BeachBallsGameStartedPayload,
-} from "../../../types/beach-balls";
+  SeaBattleGameStartedPayload,
+} from "../../../types/sea-battle";
 
-interface BeachBallsLobbyProps {
-  onStarted: (game: BeachBallsGameStartedPayload) => void;
+interface SeaBattleLobbyProps {
+  onStarted: (game: SeaBattleGameStartedPayload) => void;
   onCancel: () => void;
 }
 
-export default function BeachBallsLobby({
+export default function SeaBattleLobby({
   onStarted,
   onCancel,
-}: BeachBallsLobbyProps) {
+}: SeaBattleLobbyProps) {
   const [status, setStatus] = useState<
     "connecting" | "waiting" | "found" | "error"
   >("connecting");
@@ -33,10 +33,9 @@ export default function BeachBallsLobby({
       setStatus("found");
     };
 
-    const handleGameStarted = (payload: BeachBallsGameStartedPayload) => {
-      startTimer = window.setTimeout(() => {
-        onStarted(payload);
-      }, 900);
+    const handleGameStarted = (payload: SeaBattleGameStartedPayload) => {
+      setStatus("found");
+      startTimer = window.setTimeout(() => onStarted(payload), 900);
     };
 
     const handleError = (payload: { message?: string }) => {
@@ -46,7 +45,7 @@ export default function BeachBallsLobby({
 
     socket.on(EVENT_NAMES.ROOM_STATE, handleRoomState);
     socket.on(EVENT_NAMES.MATCH_FOUND, handleMatchFound);
-    socket.on(EVENT_NAMES.BEACH_BALLS_GAME_STARTED, handleGameStarted);
+    socket.on(EVENT_NAMES.SEA_BATTLE_GAME_STARTED, handleGameStarted);
     socket.on(EVENT_NAMES.ERROR, handleError);
 
     const activeSocket = connectSocket();
@@ -54,7 +53,7 @@ export default function BeachBallsLobby({
     const joinQueue = () => {
       setStatus("waiting");
       activeSocket.emit(EVENT_NAMES.JOIN_QUEUE, {
-        gameType: "beach_balls",
+        gameType: "sea_battle",
       });
     };
 
@@ -68,7 +67,7 @@ export default function BeachBallsLobby({
       activeSocket.off("connect", joinQueue);
       socket.off(EVENT_NAMES.ROOM_STATE, handleRoomState);
       socket.off(EVENT_NAMES.MATCH_FOUND, handleMatchFound);
-      socket.off(EVENT_NAMES.BEACH_BALLS_GAME_STARTED, handleGameStarted);
+      socket.off(EVENT_NAMES.SEA_BATTLE_GAME_STARTED, handleGameStarted);
       socket.off(EVENT_NAMES.ERROR, handleError);
 
       if (startTimer !== undefined) {
@@ -79,7 +78,7 @@ export default function BeachBallsLobby({
 
   const cancel = () => {
     socket.emit(EVENT_NAMES.LEAVE_QUEUE, {
-      gameType: "beach_balls",
+      gameType: "sea_battle",
     });
     disconnectSocket();
     onCancel();
@@ -92,30 +91,30 @@ export default function BeachBallsLobby({
     >
       {status === "found" ? (
         <div className="animate-fade-in py-4">
-          <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-cyan-50 text-4xl shadow-inner">
-            <span className="animate-bounce">🏖️</span>
+          <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-blue-50 text-4xl shadow-inner">
+            <span className="animate-bounce">🚢</span>
           </div>
           <h2
             className="text-2xl font-black tracking-tight mb-2"
             style={{ color: COLORS.fg }}
           >
-            Player found!
+            Match found!
           </h2>
           <p className="text-sm font-medium mb-6" style={{ color: COLORS.fg2 }}>
-            Your Beach Balls game is ready.
+            Setting up your Sea Battle board...
           </p>
           <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-cyan-500 h-full animate-pulse w-full" />
+            <div className="bg-blue-600 h-full animate-pulse w-full" />
           </div>
         </div>
       ) : (
         <div className="py-4">
           {/* Pulsing Radar Animation Container */}
           <div className="relative inline-flex items-center justify-center w-24 h-24 mb-6">
-            <div className="absolute inset-0 rounded-full bg-cyan-500/10 animate-ping" />
-            <div className="absolute inset-2 rounded-full bg-cyan-500/20 animate-pulse" />
+            <div className="absolute inset-0 rounded-full bg-blue-500/10 animate-ping" />
+            <div className="absolute inset-2 rounded-full bg-blue-500/20 animate-pulse" />
             <div className="relative z-10 w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center text-3xl">
-              🏖️
+              🚢
             </div>
           </div>
 
@@ -123,7 +122,7 @@ export default function BeachBallsLobby({
             className="text-2xl font-black tracking-tight mb-2"
             style={{ color: COLORS.fg }}
           >
-            Beach Balls
+            Sea Battle
           </h2>
 
           <p

@@ -4,6 +4,8 @@ const gameModules = {
   memory: require("./games/memory"),
   four_in_a_row: require("./games/connect-four"),
   beach_balls: require("./games/beach-balls"),
+  sea_battle: require("./games/sea-battle"),
+  color_wars: require("./games/color-wars"),
 };
 
 /*
@@ -132,8 +134,10 @@ function handleDisconnect(io, socket) {
       if (gameModule && typeof gameModule.stopGameForRoom === "function") {
         gameModule.stopGameForRoom(room);
       }
-      // TODO: schedule room cleanup or immediate deletion if desired
-      // rooms.deleteRoom(room.id)
+      // Actually remove the room now, rather than leaving it around forever
+      // marked "finished" — a lingering room can create ambiguity for any
+      // socket-to-room lookup involving a player who has since started a new game.
+      rooms.deleteRoom(room.id);
     }
   } catch (err) {
     // nothing to do on disconnect
