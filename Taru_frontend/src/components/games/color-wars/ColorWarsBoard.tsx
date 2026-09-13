@@ -54,6 +54,7 @@ export default function ColorWarsBoard({
   const lastPaintedPosRef = useRef<Record<string, { x: number; y: number }>>(
     {},
   );
+  const boardWrapperRef = useRef<HTMLDivElement | null>(null);
   const PAINT_PX_PER_UNIT = 20; // fixed internal resolution, independent of screen size
 
   useEffect(() => {
@@ -259,6 +260,11 @@ export default function ColorWarsBoard({
 
       canvas.width = drawWidth;
       canvas.height = drawHeight;
+
+      if (boardWrapperRef.current) {
+        boardWrapperRef.current.style.width = `${drawWidth}px`;
+        boardWrapperRef.current.style.height = `${drawHeight}px`;
+      }
 
       const cellW = drawWidth / cols;
       const cellH = drawHeight / rows;
@@ -629,32 +635,32 @@ export default function ColorWarsBoard({
         </span>
       </div>
 
-      <div
-        className="relative flex-1 min-h-0 overflow-hidden rounded-2xl border bg-[#f8fafc]"
-        style={{
-          borderColor: COLORS.border,
-        }}
-      >
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "block",
-            // objectFit: contain was removed here so the canvas fills exactly without letterboxing
-          }}
-        />
-
+      <div className="relative flex-1 min-h-0 overflow-hidden flex items-center justify-center">
         <div
-          style={{
-            position: "absolute",
-            bottom: 24,
-            left: 24,
-            zIndex: 2,
-            pointerEvents: "auto",
-          }}
+          ref={boardWrapperRef}
+          className="relative rounded-2xl border overflow-hidden bg-[#f8fafc]"
+          style={{ borderColor: COLORS.border }}
         >
-          <VirtualJoystick onDirectionChange={emitDirection} />
+          <canvas
+            ref={canvasRef}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              bottom: 24,
+              left: 24,
+              zIndex: 2,
+              pointerEvents: "auto",
+            }}
+          >
+            <VirtualJoystick onDirectionChange={emitDirection} />
+          </div>
         </div>
       </div>
     </div>

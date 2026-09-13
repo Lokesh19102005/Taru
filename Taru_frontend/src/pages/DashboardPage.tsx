@@ -1,27 +1,53 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation, Outlet, NavLink } from 'react-router-dom'
-import { Heart, Menu, Bell, Sparkles, LogOut, ClipboardList, MessageCircle, Gamepad2, Stethoscope, BarChart2, User } from 'lucide-react'
-import COLORS from '../lib/theme'
-import { useAuth } from '../contexts/AuthContext'
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation, Outlet, NavLink } from "react-router-dom";
+import {
+  Heart,
+  Menu,
+  Bell,
+  Sparkles,
+  LogOut,
+  ClipboardList,
+  MessageCircle,
+  Gamepad2,
+  Stethoscope,
+  BarChart2,
+  User,
+  Bot,
+} from "lucide-react";
+import COLORS from "../lib/theme";
+import { useAuth } from "../contexts/AuthContext";
 
 const navItems = [
-  { id: 'check', icon: <ClipboardList size={17} />, label: 'Take a Check' },
-  { id: 'talk', icon: <MessageCircle size={17} />, label: 'Talk to Someone' },
-  { id: 'games', icon: <Gamepad2 size={17} />, label: 'Play Games' },
-  { id: 'psychiatrist', icon: <Stethoscope size={17} />, label: 'Talk to a Psychiatrist' },
-  { id: 'mood', icon: <BarChart2 size={17} />, label: 'Track Your Mood' },
-]
+  { id: "chatbot", icon: <Bot size={17} />, label: "Taru AI Assistant" },
+  { id: "check", icon: <ClipboardList size={17} />, label: "Take a Check" },
+  { id: "talk", icon: <MessageCircle size={17} />, label: "Talk to Someone" },
+  { id: "games", icon: <Gamepad2 size={17} />, label: "Play Games" },
+  {
+    id: "psychiatrist",
+    icon: <Stethoscope size={17} />,
+    label: "Talk to a Psychiatrist",
+  },
+  { id: "mood", icon: <BarChart2 size={17} />, label: "Track Your Mood" },
+];
 
-function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClose: () => void; user: any }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
+function UserDropdown({
+  onLogout,
+  onClose,
+  user,
+}: {
+  onLogout: () => void;
+  onClose: () => void;
+  user: any;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [onClose])
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
 
   return (
     <div
@@ -30,12 +56,24 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
       style={{ background: COLORS.card, borderColor: COLORS.border }}
     >
       {/* Header */}
-      <div className="px-5 py-4 border-b" style={{ borderColor: COLORS.border, background: COLORS.muted }}>
+      <div
+        className="px-5 py-4 border-b"
+        style={{ borderColor: COLORS.border, background: COLORS.muted }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full flex items-center justify-center font-extrabold text-lg" style={{ background: COLORS.primary, color: '#fff' }}>{user?.username?.charAt(0)?.toUpperCase() || 'U'}</div>
+          <div
+            className="w-11 h-11 rounded-full flex items-center justify-center font-extrabold text-lg"
+            style={{ background: COLORS.primary, color: "#fff" }}
+          >
+            {user?.username?.charAt(0)?.toUpperCase() || "U"}
+          </div>
           <div>
-            <div className="font-bold text-sm" style={{ color: COLORS.fg }}>{user?.username || ''}</div>
-            <div className="text-xs" style={{ color: COLORS.fg3 }}>{user?.college || 'Student'}</div>
+            <div className="font-bold text-sm" style={{ color: COLORS.fg }}>
+              {user?.username || ""}
+            </div>
+            <div className="text-xs" style={{ color: COLORS.fg3 }}>
+              {user?.college || "Student"}
+            </div>
           </div>
         </div>
       </div>
@@ -43,7 +81,10 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
       {/* Actions */}
       <div className="py-1">
         <button
-          onClick={() => { onClose(); navigate('/dashboard/profile') }}
+          onClick={() => {
+            onClose();
+            navigate("/dashboard/profile");
+          }}
           className="w-full flex items-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors hover:bg-teal-50"
           style={{ color: COLORS.fg }}
         >
@@ -52,78 +93,122 @@ function UserDropdown({ onLogout, onClose, user }: { onLogout: () => void; onClo
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-2.5 px-5 py-3 text-sm font-medium transition-colors hover:bg-red-50"
-          style={{ color: '#cc0000' }}
+          style={{ color: "#cc0000" }}
         >
           <LogOut size={14} /> Sign out
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 export default function DashboardPage() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { user, logout } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [userOpen, setUserOpen] = useState(false)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
 
   const onLogout = () => {
-    logout()
-    navigate('/')
-  }
+    logout();
+    navigate("/");
+  };
 
   // To match active state check
-  const isOverview = location.pathname === '/dashboard' || location.pathname === '/dashboard/home'
+  const isOverview =
+    location.pathname === "/dashboard" ||
+    location.pathname === "/dashboard/home";
 
   return (
-    <div className="h-screen flex flex-col animate-fade-in" style={{ background: COLORS.muted }}>
+    <div
+      className="h-screen flex flex-col animate-fade-in"
+      style={{ background: COLORS.muted }}
+    >
       {/* Top bar */}
       <header
         className="glass sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
         style={{ borderColor: COLORS.border }}
       >
         <div className="flex items-center gap-3">
-          <button className="md:hidden hover:text-teal-600 transition-colors" style={{ color: COLORS.fg2 }} onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <button
+            className="md:hidden hover:text-teal-600 transition-colors"
+            style={{ color: COLORS.fg2 }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
             <Menu size={19} />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: COLORS.primary }}>
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: COLORS.primary }}
+            >
               <Heart size={13} className="text-white" fill="white" />
             </div>
-            <span className="font-extrabold text-[0.9rem] tracking-tight" style={{ color: COLORS.fg }}>taru</span>
+            <span
+              className="font-extrabold text-[0.9rem] tracking-tight"
+              style={{ color: COLORS.fg }}
+            >
+              taru
+            </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-teal-50 transition-colors" style={{ color: COLORS.fg2 }}>
+          <button
+            className="relative w-8 h-8 rounded-full flex items-center justify-center hover:bg-teal-50 transition-colors"
+            style={{ color: COLORS.fg2 }}
+          >
             <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: COLORS.primary }} />
+            <span
+              className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+              style={{ background: COLORS.primary }}
+            />
           </button>
           <div className="relative">
             <button
               onClick={() => setUserOpen(!userOpen)}
               className="flex items-center gap-2 pl-1 py-1 pr-2 rounded-xl hover:bg-teal-50 transition-colors cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm" style={{ background: COLORS.primary, color: '#fff' }}>{user?.username?.charAt(0)?.toUpperCase() || 'U'}</div>
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-sm"
+                style={{ background: COLORS.primary, color: "#fff" }}
+              >
+                {user?.username?.charAt(0)?.toUpperCase() || "U"}
+              </div>
               <div className="hidden sm:block text-left">
-                <div className="text-xs font-bold leading-tight" style={{ color: COLORS.fg }}>{user?.username || ''}</div>
+                <div
+                  className="text-xs font-bold leading-tight"
+                  style={{ color: COLORS.fg }}
+                >
+                  {user?.username || ""}
+                </div>
                 <div className="text-[10px]" style={{ color: COLORS.fg3 }}>
-                  {user?.college || 'Student'}
+                  {user?.college || "Student"}
                 </div>
               </div>
             </button>
-            {userOpen && <UserDropdown onLogout={onLogout} onClose={() => setUserOpen(false)} user={user} />}
+            {userOpen && (
+              <UserDropdown
+                onLogout={onLogout}
+                onClose={() => setUserOpen(false)}
+                user={user}
+              />
+            )}
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden relative">
-        {sidebarOpen && <div className="md:hidden fixed inset-0 bg-black/30 z-30" onClick={() => setSidebarOpen(false)} />}
+        {sidebarOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/30 z-30"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
         {/* Sidebar */}
         <aside
-          className={`glass fixed md:static top-14 bottom-0 left-0 z-40 w-60 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+          className={`glass fixed md:static top-14 bottom-0 left-0 z-40 w-60 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
           style={{ borderColor: COLORS.border }}
         >
           <nav className="flex-1 p-3 space-y-0.5">
@@ -131,39 +216,64 @@ export default function DashboardPage() {
               to="/dashboard"
               onClick={() => setSidebarOpen(false)}
               className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
-              style={{ background: isOverview ? COLORS.primary : 'transparent', color: isOverview ? '#fff' : COLORS.fg2 }}
+              style={{
+                background: isOverview ? COLORS.primary : "transparent",
+                color: isOverview ? "#fff" : COLORS.fg2,
+              }}
             >
               <Sparkles size={16} /> Overview
             </NavLink>
 
-            <p className="text-[9px] font-bold uppercase tracking-widest px-3 pt-3 pb-1" style={{ fontFamily: 'var(--font-mono)', color: COLORS.fg4 }}>Tools</p>
+            <p
+              className="text-[9px] font-bold uppercase tracking-widest px-3 pt-3 pb-1"
+              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg4 }}
+            >
+              Tools
+            </p>
 
-            {navItems.map(item => {
-              const isActive = location.pathname === `/dashboard/${item.id}`
+            {navItems.map((item) => {
+              const isActive = location.pathname === `/dashboard/${item.id}`;
               return (
                 <NavLink
                   key={item.id}
                   to={`/dashboard/${item.id}`}
                   onClick={() => setSidebarOpen(false)}
                   className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
-                  style={{ background: isActive ? COLORS.primary : 'transparent', color: isActive ? '#fff' : COLORS.fg2 }}
+                  style={{
+                    background: isActive ? COLORS.primary : "transparent",
+                    color: isActive ? "#fff" : COLORS.fg2,
+                  }}
                 >
                   {item.icon}
                   <span className="leading-tight">{item.label}</span>
                 </NavLink>
-              )
+              );
             })}
           </nav>
 
           <div className="p-3 border-t" style={{ borderColor: COLORS.border }}>
-            <div className="rounded-xl p-3 mb-3 border card-hover" style={{ background: COLORS.muted, borderColor: COLORS.border }}>
-              <p className="text-xs font-bold mb-0.5" style={{ color: COLORS.fg }}>Crisis line</p>
-              <p className="text-[10px]" style={{ color: COLORS.fg3 }}>iCall: 9152987821</p>
-              <p className="text-[10px]" style={{ color: COLORS.fg3 }}>Vandrevala: 1860-2662-345</p>
+            <div
+              className="rounded-xl p-3 mb-3 border card-hover"
+              style={{ background: COLORS.muted, borderColor: COLORS.border }}
+            >
+              <p
+                className="text-xs font-bold mb-0.5"
+                style={{ color: COLORS.fg }}
+              >
+                Crisis line
+              </p>
+              <p className="text-[10px]" style={{ color: COLORS.fg3 }}>
+                iCall: 9152987821
+              </p>
+              <p className="text-[10px]" style={{ color: COLORS.fg3 }}>
+                Vandrevala: 1860-2662-345
+              </p>
             </div>
-            <button onClick={onLogout}
+            <button
+              onClick={onLogout}
               className="w-full flex items-center gap-2 text-sm px-3 py-2 rounded-xl transition-colors hover:bg-red-50"
-              style={{ color: '#cc0000' }}>
+              style={{ color: "#cc0000" }}
+            >
               <LogOut size={15} /> Sign out
             </button>
           </div>
@@ -177,5 +287,5 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }
