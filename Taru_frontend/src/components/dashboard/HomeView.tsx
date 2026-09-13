@@ -6,6 +6,7 @@ import {
   Stethoscope,
   BarChart2,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import COLORS from "../../lib/theme";
 import { useAuth } from "../../contexts/AuthContext";
@@ -75,6 +76,61 @@ export default function HomeView() {
           </div>
         </div>
       </div>
+
+      {/* Featured chatbot */}
+      <button
+        type="button"
+        onClick={() => navigate("/dashboard/chatbot")}
+        className="group w-full rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md"
+        style={{
+          background: COLORS.card,
+          borderColor: COLORS.border2,
+        }}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <div
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+              style={{ background: COLORS.gradient }}
+            >
+              <Sparkles size={22} color="#fff" />
+            </div>
+
+            <div className="min-w-0">
+              <div
+                className="mb-1 text-[10px] font-bold uppercase tracking-widest"
+                style={{ color: COLORS.primary }}
+              >
+                Featured for you
+              </div>
+
+              <h3
+                className="text-base font-extrabold"
+                style={{ color: COLORS.fg }}
+              >
+                Talk to Taru AI
+              </h3>
+
+              <p
+                className="mt-1 text-xs leading-relaxed"
+                style={{ color: COLORS.fg2 }}
+              >
+                Share what is on your mind and take a moment to reflect.
+              </p>
+            </div>
+          </div>
+
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform group-hover:translate-x-1"
+            style={{
+              background: COLORS.muted,
+              color: COLORS.primary,
+            }}
+          >
+            <ChevronRight size={18} />
+          </div>
+        </div>
+      </button>
 
       {/* Quick access */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
