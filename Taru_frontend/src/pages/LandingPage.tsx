@@ -38,9 +38,9 @@ export default function LandingPage() {
   ];
 
   const testimonials = [
-    { name: 'Priya M.', year: 'Junior, Psychology', text: 'Taru helped me realize I wasn\'t alone during finals week. The mood tracker is the first thing I open every morning.' },
-    { name: 'Arjun K.', year: 'Sophomore, Engineering', text: 'I booked a psychiatrist appointment in under 2 minutes. Way less scary than I thought it would be.' },
-    { name: 'Sofia R.', year: 'Senior, Literature', text: 'The breathing games actually work. I use them before every presentation and my anxiety is so much more manageable now.' },
+    { name: 'u/SleepyPanda42', year: 'Junior, Psychology', text: 'Taru helped me realize I wasn\'t alone during finals week. Tracking my mood really helped me a lot.' },
+    { name: 'u/CosmicMango99', year: 'Sophomore, Engineering', text: 'I booked a psychiatrist appointment in under 2 minutes. Way less scary than I thought it would be.' },
+    { name: 'u/CalmLlama07', year: 'Senior, Literature', text: 'The breathing games actually work. I use them before every presentation and my anxiety is so much more manageable now.' },
   ];
 
   return (
@@ -63,8 +63,8 @@ export default function LandingPage() {
             <a href="#stories" className="hover:text-teal-700 transition-colors">Stories</a>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            <button onClick={() => navigate('/check')} className="text-sm font-semibold px-4 py-2 rounded-lg border transition-all hover:bg-teal-700 hover:text-white" style={{ borderColor: COLORS.border, color: COLORS.fg }}>
-              Take a Check
+            <button onClick={() => navigate('/auth', { state: { tab: 'register' } })} className="text-sm font-semibold px-4 py-2 rounded-lg border transition-all hover:bg-teal-700 hover:text-white" style={{ borderColor: COLORS.border, color: COLORS.fg }}>
+              Register
             </button>
             <button onClick={() => navigate('/auth')} className="text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-80" style={{ background: COLORS.primary, color: '#fff' }}>
               Sign In
@@ -79,7 +79,7 @@ export default function LandingPage() {
             <a href="#features" className="hover:text-teal-700 pt-3">Features</a>
             <a href="#why" className="hover:text-teal-700">Why us</a>
             <a href="#stories" className="hover:text-teal-700">Stories</a>
-            <button onClick={() => navigate('/check')} className="text-left font-semibold hover:text-teal-700" style={{ color: COLORS.fg }}>Take a Check →</button>
+            <button onClick={() => navigate('/auth', { state: { tab: 'register' } })} className="text-left font-semibold hover:text-teal-700" style={{ color: COLORS.fg }}>Register →</button>
             <button onClick={() => navigate('/auth')} className="text-left font-semibold hover:text-teal-700" style={{ color: COLORS.fg }}>Sign In →</button>
           </div>
         )}
@@ -93,7 +93,7 @@ export default function LandingPage() {
             style={{ borderColor: COLORS.border, color: COLORS.primary, background: COLORS.muted }}
           >
             <Sparkles size={11} />
-            Free for all students
+            Free for students
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold leading-[1.1] mb-5" style={{ color: COLORS.fg }}>
             Your mental<br />
@@ -113,11 +113,11 @@ export default function LandingPage() {
               <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
             <button
-              onClick={() => navigate('/check')}
+              onClick={() => navigate('/auth', { state: { tab: 'register' } })}
               className="flex items-center justify-center gap-2 border font-semibold px-7 py-3.5 rounded-xl transition-all hover:bg-teal-700 hover:text-white text-sm"
               style={{ borderColor: COLORS.fg, color: COLORS.fg, background: 'transparent' }}
             >
-              <ClipboardList size={15} /> Take a Check (no login)
+              Register
             </button>
           </div>
           <div className="flex items-center gap-6 mt-8 flex-wrap">
@@ -284,11 +284,11 @@ export default function LandingPage() {
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
           <button
-            onClick={() => navigate('/check')}
+            onClick={() => navigate('/auth', { state: { tab: 'register' } })}
             className="inline-flex items-center gap-2 border font-semibold px-8 py-4 rounded-xl transition-all hover:bg-teal-700 hover:text-white text-sm"
             style={{ borderColor: COLORS.fg, color: COLORS.fg }}
           >
-            <ClipboardList size={15} /> Try a check first
+            Register
           </button>
         </div>
       </section>

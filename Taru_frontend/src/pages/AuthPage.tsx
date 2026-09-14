@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Heart, X, Lock, GraduationCap, Brain, Stethoscope, ArrowLeft, ArrowRight } from 'lucide-react';
 import { COLORS as C } from '../lib/theme';
 import type { AuthTab } from '../types';
@@ -10,9 +10,10 @@ const GENDER_OPTIONS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const onBack = () => navigate('/');
 
-  const [tab, setTab] = useState<AuthTab>('login');
+  const [tab, setTab] = useState<AuthTab>((location.state as any)?.tab === 'register' ? 'register' : 'login');
   const [regStep, setRegStep] = useState(1); // 1 = email/college/pass, 2 = batch/age/gender
   const [form, setForm] = useState({
     email: '', password: '', college: '',
