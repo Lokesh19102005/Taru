@@ -101,7 +101,7 @@ export default function LandingPage() {
             matters here.
           </h1>
           <p className="text-lg leading-relaxed mb-8 max-w-md" style={{ color: COLORS.fg2 }}>
-            Taru is a safe space built for college students — offering check-ins, peer chat, mood tracking, and professional support, all in one place.
+            Taru is a safe space built for college students. It brings together check-ins, peer chat, mood tracking, and professional support, all in one place.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
@@ -192,7 +192,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-4xl font-extrabold mb-3" style={{ color: COLORS.fg }}>Everything you need to thrive</h2>
-            <p className="max-w-md mx-auto" style={{ color: COLORS.fg2 }}>Tools built with students, for students — grounded in evidence and designed to actually help.</p>
+            <p className="max-w-md mx-auto" style={{ color: COLORS.fg2 }}>Tools built with students, for students. Grounded in evidence and designed to actually help.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map(f => (
@@ -217,7 +217,7 @@ export default function LandingPage() {
               <span style={{ textDecoration: 'underline', textDecorationThickness: '3px', textDecorationColor: COLORS.primary }}>college reality</span>
             </h2>
             <p className="leading-relaxed mb-6 text-sm" style={{ color: COLORS.fg2 }}>
-              1 in 3 college students experience significant anxiety or depression. Most never seek help. Taru lowers the barrier — no appointment needed, no stigma, no waiting list.
+              1 in 3 college students experience significant anxiety or depression. Most never seek help. Taru lowers the barrier so you can get support without appointments, stigma, or waiting lists.
             </p>
             <div className="space-y-3">
               {[
@@ -280,7 +280,7 @@ export default function LandingPage() {
             className="group inline-flex items-center gap-2 font-bold px-8 py-4 rounded-xl transition-all hover:opacity-80"
             style={{ background: COLORS.primary, color: '#fff' }}
           >
-            Get Started — It's Free
+            Get Started, It's Free
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
           <button
