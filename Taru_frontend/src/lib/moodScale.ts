@@ -11,7 +11,9 @@ export function moodForScore(score: number) {
 }
 
 export function moodColor(score: number) {
-  if (score <= 1) return "#059669";
-  if (score === 2) return "#D97706";
+  const roundedScore = Math.max(0, Math.min(4, Math.round(score)));
+
+  if (roundedScore <= 1) return "#059669";
+  if (roundedScore === 2) return "#D97706";
   return "#DC2626";
 }

@@ -56,19 +56,12 @@ async function getMoodTrend(studentId, requestedRange = "week") {
   const currentBucket = bucketStart(now, range);
   const windowStart = shiftBucket(currentBucket, range, 1 - config.count);
 
-  const firstEntry = await DailyCheckIn.findOne({ userId: studentId })
-    .sort({ date: 1 })
-    .select("date")
-    .lean();
-
-  if (!firstEntry) return [];
-
-  const firstBucket = bucketStart(firstEntry.date, range);
-  const start = firstBucket > windowStart ? firstBucket : windowStart;
+  // Create every bucket in the selected range, including periods before
+  // the student's first check-in.
   const buckets = new Map();
 
   for (
-    let date = new Date(start);
+    let date = new Date(windowStart);
     date <= currentBucket;
     date = shiftBucket(date, range, 1)
   ) {
@@ -81,7 +74,7 @@ async function getMoodTrend(studentId, requestedRange = "week") {
 
   const checkins = await DailyCheckIn.find({
     userId: studentId,
-    date: { $gte: start, $lte: now },
+    date: { $gte: windowStart, $lte: now },
   })
     .select("date mood.score")
     .lean();
@@ -89,6 +82,7 @@ async function getMoodTrend(studentId, requestedRange = "week") {
   for (const checkin of checkins) {
     const key = bucketStart(checkin.date, range).getTime();
     const bucket = buckets.get(key);
+
     if (bucket && Number.isFinite(checkin.mood?.score)) {
       bucket.sum += checkin.mood.score;
       bucket.entryCount += 1;
@@ -112,7 +106,7 @@ function getOverviewWindow(range, now = new Date()) {
   if (range === "week") start.setDate(start.getDate() - 7);
   else if (range === "month") start.setDate(start.getDate() - 30);
   else if (range === "semester") start.setDate(start.getDate() - 26 * 7);
-  else start.setMonth(start.getMonth() - 11, 1);
+  else start.setMonth(start.getMonth() - 12, 1);
 
   const previousStart = new Date(start);
   if (range === "year") previousStart.setMonth(previousStart.getMonth() - 12);
@@ -157,11 +151,11 @@ async function getInstitutionMoodOverview(institutionId, options = {}) {
   }
 
   const sortStage = {
-    label: { studentLabel: 1 },
-    score_low: { hasRecentCheckins: -1, averageMood: 1, studentLabel: 1 },
-    score_high: { hasRecentCheckins: -1, averageMood: -1, studentLabel: 1 },
-    checkins: { entryCount: -1, studentLabel: 1 },
-  }[sort] || { studentLabel: 1 };
+    label: { username: 1 },
+    score_low: { hasRecentCheckins: -1, averageMood: 1, username: 1 },
+    score_high: { hasRecentCheckins: -1, averageMood: -1, username: 1 },
+    checkins: { entryCount: -1, username: 1 },
+  }[sort] || { username: 1 };
 
   const pipeline = [
     { $match: match },
