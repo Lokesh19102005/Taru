@@ -1,48 +1,89 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const appointmentSchema = new mongoose.Schema({
   studentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: "User",
+    required: true,
   },
   psychiatristId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Psychiatrist',
-    required: true
+    ref: "Psychiatrist",
+    required: true,
   },
   availabilityId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Availability',
-    required: true
+    ref: "Availability",
+    required: true,
   },
   date: {
     type: Date,
-    required: true
+    required: true,
   },
   startTime: {
     type: String,
-    required: true
+    required: true,
   },
   endTime: {
     type: String,
-    required: true
+    required: true,
   },
   status: {
     type: String,
-    enum: ['requested', 'confirmed', 'completed', 'cancelled', 'no_show'],
-    default: 'requested'
+    enum: ["requested", "confirmed", "completed", "cancelled", "no_show"],
+    default: "requested",
   },
   reason: {
-    type: String
+    type: String,
   },
   notes: {
-    type: String
+    type: String,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
+  aiSummary: {
+    consentGiven: {
+      type: Boolean,
+      default: false,
+    },
+    consentedAt: {
+      type: Date,
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: [
+        "not_requested",
+        "pending",
+        "available",
+        "not_available",
+        "failed",
+      ],
+      default: "not_requested",
+    },
+    feelings: {
+      type: String,
+      default: "",
+    },
+    mainConcern: {
+      type: String,
+      default: "",
+    },
+    context: {
+      type: String,
+      default: "",
+    },
+    generatedAt: {
+      type: String,
+      default: "",
+    },
+    disclaimer: {
+      type: String,
+      default: "AI-generated conversation summary - not a clinical diagnosis.",
+    },
+  },
 });
 
-module.exports = mongoose.model('Appointment', appointmentSchema);
+module.exports = mongoose.model("Appointment", appointmentSchema);
