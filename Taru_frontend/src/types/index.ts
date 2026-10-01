@@ -130,3 +130,36 @@ export interface InstitutionResponse {
   success: boolean;
   user: Institution;
 }
+
+export type MoodTrendRange = "week" | "month" | "semester" | "year";
+
+export interface MoodTrendBucket {
+  label: string;
+  averageMood: number | null;
+  entryCount: number;
+}
+
+export type MoodOverviewRange = "week" | "month" | "semester" | "year";
+export type MoodOverviewStatus = "all" | "checked-in" | "not-checked-in";
+export type MoodOverviewSort =
+  | "label"
+  | "score_low"
+  | "score_high"
+  | "checkins";
+
+export interface InstitutionMoodOverviewRow {
+  studentId: string;
+  studentLabel: string;
+  averageMood: number | null;
+  previousAverageMood: number | null;
+  entryCount: number;
+  previousEntryCount: number;
+  hasRecentCheckins: boolean;
+}
+
+export interface InstitutionMoodOverviewResponse {
+  students: InstitutionMoodOverviewRow[];
+  total: number;
+  page: number;
+  limit: number;
+}

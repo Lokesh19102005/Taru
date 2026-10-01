@@ -20,6 +20,7 @@ import InstitutionOverviewView from "./components/institution/InstitutionOvervie
 import InstitutionStudentsView from "./components/institution/InstitutionStudentsView";
 import MeetingPage from "./pages/MeetingPage";
 import ChatbotView from "./components/dashboard/ChatbotView";
+import InstitutionMoodAnalyticsView from "./components/institution/InstitutionMoodAnalyticsView";
 import ConcernsView from "./components/dashboard/ConcernsView";
 
 export default function App() {
@@ -52,6 +53,10 @@ export default function App() {
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<InstitutionOverviewView />} />
           <Route path="students" element={<InstitutionStudentsView />} />
+          <Route
+            path="mood-analytics"
+            element={<InstitutionMoodAnalyticsView />}
+          />
         </Route>
       </Route>
       <Route path="/meeting/:meetingId" element={<MeetingPage />} />
