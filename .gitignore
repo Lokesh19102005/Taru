@@ -23,3 +23,10 @@ out
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Documents and Reports
+*.pdf
+*.docx
+*.pptx
+*.doc
+*.ppt
