@@ -7,8 +7,11 @@ const {
   voteConcern,
   getComments,
   addComment,
+  getConcernsForInstitution,
 } = require('../controllers/concernController');
 
+router.get('/institution', protect('institution'), getConcernsForInstitution);
+router.get('/institution/:id/comments', protect('institution'), getComments);
 router.post('/', protect('user'), createConcern);
 router.get('/', protect('user'), getConcerns);
 router.post('/:id/vote', protect('user'), voteConcern);

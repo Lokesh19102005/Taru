@@ -18,6 +18,7 @@ import InstitutionDashboardPage from "./pages/InstitutionDashboardPage";
 import { InstitutionProtectedRoute } from "./components/InstitutionProtectedRoute";
 import InstitutionOverviewView from "./components/institution/InstitutionOverviewView";
 import InstitutionStudentsView from "./components/institution/InstitutionStudentsView";
+import InstitutionConcernsView from "./components/institution/InstitutionConcernsView";
 import MeetingPage from "./pages/MeetingPage";
 import ChatbotView from "./components/dashboard/ChatbotView";
 import InstitutionMoodAnalyticsView from "./components/institution/InstitutionMoodAnalyticsView";
@@ -57,6 +58,7 @@ export default function App() {
             path="mood-analytics"
             element={<InstitutionMoodAnalyticsView />}
           />
+          <Route path="concerns" element={<InstitutionConcernsView />} />
         </Route>
       </Route>
       <Route path="/meeting/:meetingId" element={<MeetingPage />} />
