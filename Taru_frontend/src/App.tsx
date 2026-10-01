@@ -20,6 +20,7 @@ import InstitutionOverviewView from "./components/institution/InstitutionOvervie
 import InstitutionStudentsView from "./components/institution/InstitutionStudentsView";
 import MeetingPage from "./pages/MeetingPage";
 import ChatbotView from "./components/dashboard/ChatbotView";
+import ConcernsView from "./components/dashboard/ConcernsView";
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="psychiatrist" element={<PsychiatristView />} />
           <Route path="mood" element={<MoodView />} />
           <Route path="profile" element={<ProfileView />} />
+          <Route path="concerns" element={<ConcernsView />} />
         </Route>
       </Route>
       <Route path="/psychiatrist/signin" element={<PsychiatristAuthPage />} />

@@ -13,6 +13,7 @@ import {
   BarChart2,
   User,
   Bot,
+  Megaphone,
 } from "lucide-react";
 import COLORS from "../lib/theme";
 import { useAuth } from "../contexts/AuthContext";
@@ -252,6 +253,17 @@ export default function DashboardPage() {
           </nav>
 
           <div className="p-3 border-t" style={{ borderColor: COLORS.border }}>
+            <NavLink
+              to="/dashboard/concerns"
+              onClick={() => setSidebarOpen(false)}
+              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50 mb-2"
+              style={{
+                background: location.pathname === '/dashboard/concerns' ? COLORS.primary : 'transparent',
+                color: location.pathname === '/dashboard/concerns' ? '#fff' : COLORS.fg2,
+              }}
+            >
+              <Megaphone size={17} /> Concerns
+            </NavLink>
             <div
               className="rounded-xl p-3 mb-3 border card-hover"
               style={{ background: COLORS.muted, borderColor: COLORS.border }}
