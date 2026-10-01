@@ -56,7 +56,7 @@ interface Concern {
 
 /* ── Comment Section ─────────────────────── */
 
-function CommentSection({ concernId, commentCount }: { concernId: string; commentCount: number }) {
+function CommentSection({ concernId, commentCount, onCommentAdded }: { concernId: string; commentCount: number; onCommentAdded: () => void }) {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
@@ -78,6 +78,7 @@ function CommentSection({ concernId, commentCount }: { concernId: string; commen
       if (res.success) {
         setComments(prev => [...prev, res.data])
         setNewComment('')
+        onCommentAdded()
       }
     } catch (err) {
       console.error(err)
@@ -218,6 +219,7 @@ function ConcernCard({ concern, onVote }: { concern: Concern; onVote: (id: strin
         <CommentSection
           concernId={concern._id}
           commentCount={localCommentCount}
+          onCommentAdded={() => setLocalCommentCount(prev => prev + 1)}
         />
       )}
     </div>
