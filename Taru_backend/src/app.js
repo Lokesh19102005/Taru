@@ -11,6 +11,7 @@ const appointmentRoutes = require("./routes/appointment");
 const institutionRoutes = require("./routes/institution");
 const meetingRoutes = require("./routes/meeting");
 const chatbotRoutes = require("./routes/chatbot");
+const concernRoutes = require("./routes/concern");
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/appointment", appointmentRoutes);
 app.use("/api/institution", institutionRoutes);
 app.use("/api", meetingRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/concern", concernRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
