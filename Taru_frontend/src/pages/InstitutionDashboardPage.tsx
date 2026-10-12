@@ -9,6 +9,7 @@ import {
   Menu,
   BarChart2,
   LineChart,
+  Megaphone,
 } from "lucide-react";
 import { useInstitutionAuth } from "../contexts/InstitutionAuthContext";
 import { COLORS } from "../lib/theme";
@@ -20,6 +21,11 @@ const sidebarItems = [
     id: "mood-analytics",
     icon: <LineChart size={16} />,
     label: "Mood Analytics",
+  },
+  {
+    id: "concerns",
+    icon: <Megaphone size={16} />,
+    label: "Concerns",
   },
 ];
 

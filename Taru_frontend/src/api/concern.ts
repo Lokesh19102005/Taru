@@ -14,3 +14,9 @@ export const getComments = async (concernId: string) =>
 
 export const addComment = async (concernId: string, text: string) =>
   apiRequest(`/api/concern/${concernId}/comment`, { method: 'POST', body: JSON.stringify({ text }) })
+
+export const getConcernsForInstitution = async () =>
+  apiRequest('/api/concern/institution', { method: 'GET' })
+
+export const getInstitutionComments = async (concernId: string) =>
+  apiRequest(`/api/concern/institution/${concernId}/comments`, { method: 'GET' })

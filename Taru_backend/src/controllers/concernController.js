@@ -183,10 +183,32 @@ const addComment = async (req, res) => {
   }
 };
 
+// GET /api/concern/institution — Read-only view for institutions
+const getConcernsForInstitution = async (req, res) => {
+  try {
+    const collegeName = req.user.collegeName;
+    const concerns = await Concern.find({ college: collegeName })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Strip out the raw vote arrays to save bandwidth
+    const result = concerns.map(c => {
+      const { upvotes, downvotes, ...rest } = c;
+      return rest;
+    });
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('getConcernsForInstitution error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   createConcern,
   getConcerns,
   voteConcern,
   getComments,
   addComment,
+  getConcernsForInstitution,
 };
