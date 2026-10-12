@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const {
   getMoodTrend,
   getInstitutionMoodOverview,
+  getInstitutionWellnessTrend,
 } = require("../services/moodAnalytics");
 
 exports.register = async (req, res) => {
@@ -367,6 +368,19 @@ exports.getStudentMoodTrend = async (req, res) => {
     return res.json({ success: true, data });
   } catch (error) {
     console.error("getStudentMoodTrend error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getInstitutionWellnessTrend = async (req, res) => {
+  try {
+    const ranges = ["week", "month", "semester", "year"];
+    const range = ranges.includes(req.query.range) ? req.query.range : "week";
+
+    const data = await getInstitutionWellnessTrend(req.user._id, range);
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error("getInstitutionWellnessTrend error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

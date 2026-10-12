@@ -163,3 +163,41 @@ export interface InstitutionMoodOverviewResponse {
   page: number;
   limit: number;
 }
+
+export interface InstitutionWellnessPoint {
+  label: string;
+  averageMood: number | null;
+  averageEnergy: number | null;
+  averageStress: number | null;
+  averageSleep: number | null;
+  averageConcentration: number | null;
+  averageSupport: number | null;
+  averageMotivation: number | null;
+  activeStudents: number;
+  checkinCount: number;
+  participationRate: number;
+  moodVeryHappyPercent: number | null;
+  moodHappyPercent: number | null;
+  moodNeutralPercent: number | null;
+  moodStressedPercent: number | null;
+  moodSadPercent: number | null;
+}
+
+export interface InstitutionWellnessTrend {
+  totalStudents: number;
+  series: InstitutionWellnessPoint[];
+  periodAverages: {
+    averageMood: number | null;
+    averageStress: number | null;
+    averageSleep: number | null;
+    averageEnergy: number | null;
+    averageConcentration: number | null;
+    averageSupport: number | null;
+    averageMotivation: number | null;
+    participatingStudents: number;
+  };
+  weekdayPattern: {
+    weekday: string;
+    checkinCount: number;
+  }[];
+}

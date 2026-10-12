@@ -9,6 +9,7 @@ const {
   getStudents,
   getMoodOverview,
   getStudentMoodTrend,
+  getInstitutionWellnessTrend,
 } = require("../controllers/institutionController");
 const { protect } = require("../middleware/auth");
 
@@ -41,6 +42,11 @@ router.get(
   "/students/:studentId/mood-trend",
   protect("institution"),
   getStudentMoodTrend,
+);
+router.get(
+  "/analytics/trends",
+  protect("institution"),
+  getInstitutionWellnessTrend,
 );
 
 module.exports = router;

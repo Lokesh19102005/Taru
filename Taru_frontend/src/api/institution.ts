@@ -8,6 +8,7 @@ import {
   MoodOverviewRange,
   MoodOverviewSort,
   MoodOverviewStatus,
+  InstitutionWellnessTrend,
 } from "../types";
 
 export interface MoodOverviewFilters {
@@ -88,3 +89,10 @@ export const fetchStudentMoodTrend = async (
     `/api/institution/students/${encodeURIComponent(studentId)}/mood-trend?range=${range}`,
     { method: "GET" },
   );
+
+export const fetchInstitutionWellnessTrend = async (
+  range: MoodOverviewRange,
+): Promise<{ success: boolean; data: InstitutionWellnessTrend }> =>
+  apiRequest(`/api/institution/analytics/trends?range=${range}`, {
+    method: "GET",
+  });

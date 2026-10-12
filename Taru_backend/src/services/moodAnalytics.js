@@ -277,4 +277,272 @@ async function getInstitutionMoodOverview(institutionId, options = {}) {
   };
 }
 
-module.exports = { getMoodTrend, getInstitutionMoodOverview };
+async function getInstitutionWellnessTrend(
+  institutionId,
+  requestedRange = "week",
+) {
+  const range = RANGE_CONFIG[requestedRange] ? requestedRange : "week";
+  const config = RANGE_CONFIG[range];
+  const now = new Date();
+  const currentBucket = bucketStart(now, range);
+  const windowStart = shiftBucket(currentBucket, range, 1 - config.count);
+
+  const institution = await Institution.findById(institutionId)
+    .select("collegeName")
+    .lean();
+
+  if (!institution) return { totalStudents: 0, series: [] };
+
+  const totalStudents = await User.countDocuments({
+    college: institution.collegeName,
+  });
+
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const dateTrunc = {
+    date: "$date",
+    unit: config.unit,
+    timezone,
+  };
+  if (range === "semester") dateTrunc.startOfWeek = "monday";
+
+  const rows = await User.aggregate([
+    { $match: { college: institution.collegeName } },
+    {
+      $lookup: {
+        from: DailyCheckIn.collection.name,
+        let: { studentId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$userId", "$$studentId"] },
+                  { $gte: ["$date", windowStart] },
+                  { $lte: ["$date", now] },
+                ],
+              },
+            },
+          },
+          { $set: { bucket: { $dateTrunc: dateTrunc } } },
+          {
+            $group: {
+              _id: "$bucket",
+              averageMood: { $avg: "$mood.score" },
+              averageEnergy: { $avg: "$energy" },
+              averageStress: { $avg: "$stress" },
+              averageSleep: { $avg: "$sleep" },
+              averageConcentration: { $avg: "$concentration" },
+              averageSupport: { $avg: "$support" },
+              averageMotivation: { $avg: "$motivation" },
+              entryCount: { $sum: 1 },
+              veryHappyCount: {
+                $sum: { $cond: [{ $eq: ["$mood.score", 0] }, 1, 0] },
+              },
+              happyCount: {
+                $sum: { $cond: [{ $eq: ["$mood.score", 1] }, 1, 0] },
+              },
+              neutralCount: {
+                $sum: { $cond: [{ $eq: ["$mood.score", 2] }, 1, 0] },
+              },
+              stressedCount: {
+                $sum: { $cond: [{ $eq: ["$mood.score", 3] }, 1, 0] },
+              },
+              sadCount: {
+                $sum: { $cond: [{ $eq: ["$mood.score", 4] }, 1, 0] },
+              },
+            },
+          },
+        ],
+        as: "periods",
+      },
+    },
+    { $unwind: "$periods" },
+    {
+      $group: {
+        _id: "$periods._id",
+        averageMood: { $avg: "$periods.averageMood" },
+        averageEnergy: { $avg: "$periods.averageEnergy" },
+        averageStress: { $avg: "$periods.averageStress" },
+        averageSleep: { $avg: "$periods.averageSleep" },
+        averageConcentration: { $avg: "$periods.averageConcentration" },
+        averageSupport: { $avg: "$periods.averageSupport" },
+        averageMotivation: { $avg: "$periods.averageMotivation" },
+        activeStudents: { $sum: 1 },
+        checkinCount: { $sum: "$periods.entryCount" },
+        veryHappyCount: { $sum: "$periods.veryHappyCount" },
+        happyCount: { $sum: "$periods.happyCount" },
+        neutralCount: { $sum: "$periods.neutralCount" },
+        stressedCount: { $sum: "$periods.stressedCount" },
+        sadCount: { $sum: "$periods.sadCount" },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const summaryRows = await User.aggregate([
+    { $match: { college: institution.collegeName } },
+    {
+      $lookup: {
+        from: DailyCheckIn.collection.name,
+        let: { studentId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$userId", "$$studentId"] },
+                  { $gte: ["$date", windowStart] },
+                  { $lte: ["$date", now] },
+                ],
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              averageMood: { $avg: "$mood.score" },
+              averageStress: { $avg: "$stress" },
+              averageSleep: { $avg: "$sleep" },
+              averageEnergy: { $avg: "$energy" },
+              averageConcentration: { $avg: "$concentration" },
+              averageSupport: { $avg: "$support" },
+              averageMotivation: { $avg: "$motivation" },
+            },
+          },
+        ],
+        as: "period",
+      },
+    },
+    { $unwind: "$period" },
+    {
+      $group: {
+        _id: null,
+        averageMood: { $avg: "$period.averageMood" },
+        averageStress: { $avg: "$period.averageStress" },
+        averageSleep: { $avg: "$period.averageSleep" },
+        averageEnergy: { $avg: "$period.averageEnergy" },
+        averageConcentration: { $avg: "$period.averageConcentration" },
+        averageSupport: { $avg: "$period.averageSupport" },
+        averageMotivation: { $avg: "$period.averageMotivation" },
+        participatingStudents: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const periodAverages = summaryRows[0]
+    ? {
+        averageMood: summaryRows[0].averageMood,
+        averageStress: summaryRows[0].averageStress,
+        averageSleep: summaryRows[0].averageSleep,
+        averageEnergy: summaryRows[0].averageEnergy,
+        averageConcentration: summaryRows[0].averageConcentration,
+        averageSupport: summaryRows[0].averageSupport,
+        averageMotivation: summaryRows[0].averageMotivation,
+        participatingStudents: summaryRows[0].participatingStudents,
+      }
+    : {
+        averageMood: null,
+        averageStress: null,
+        averageSleep: null,
+        averageEnergy: null,
+        averageConcentration: null,
+        averageSupport: null,
+        averageMotivation: null,
+        participatingStudents: 0,
+      };
+
+  const weekdayRows = await DailyCheckIn.aggregate([
+    {
+      $match: {
+        date: { $gte: windowStart, $lte: now },
+        userId: {
+          $in: await User.find({ college: institution.collegeName }).distinct(
+            "_id",
+          ),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dayOfWeek: {
+            date: "$date",
+            timezone,
+          },
+        },
+        checkinCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const weekdayCounts = new Map(
+    weekdayRows.map((row) => [row._id, row.checkinCount]),
+  );
+
+  const weekdayPattern = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ].map((weekday, index) => {
+    const mongoDayNumber = index === 6 ? 1 : index + 2;
+    return {
+      weekday,
+      checkinCount: weekdayCounts.get(mongoDayNumber) ?? 0,
+    };
+  });
+
+  const valuesByBucket = new Map(
+    rows.map((row) => [new Date(row._id).getTime(), row]),
+  );
+  const series = [];
+
+  for (
+    let date = new Date(windowStart);
+    date <= currentBucket;
+    date = shiftBucket(date, range, 1)
+  ) {
+    const values = valuesByBucket.get(date.getTime());
+    series.push({
+      label: makeLabel(date, range),
+      averageMood: values?.averageMood ?? null,
+      averageEnergy: values?.averageEnergy ?? null,
+      averageStress: values?.averageStress ?? null,
+      averageSleep: values?.averageSleep ?? null,
+      averageConcentration: values?.averageConcentration ?? null,
+      averageSupport: values?.averageSupport ?? null,
+      averageMotivation: values?.averageMotivation ?? null,
+      activeStudents: values?.activeStudents ?? 0,
+      checkinCount: values?.checkinCount ?? 0,
+      participationRate: totalStudents
+        ? Math.round(((values?.activeStudents ?? 0) / totalStudents) * 100)
+        : 0,
+      moodVeryHappyPercent: values?.checkinCount
+        ? Math.round((values.veryHappyCount / values.checkinCount) * 1000) / 10
+        : null,
+      moodHappyPercent: values?.checkinCount
+        ? Math.round((values.happyCount / values.checkinCount) * 1000) / 10
+        : null,
+      moodNeutralPercent: values?.checkinCount
+        ? Math.round((values.neutralCount / values.checkinCount) * 1000) / 10
+        : null,
+      moodStressedPercent: values?.checkinCount
+        ? Math.round((values.stressedCount / values.checkinCount) * 1000) / 10
+        : null,
+      moodSadPercent: values?.checkinCount
+        ? Math.round((values.sadCount / values.checkinCount) * 1000) / 10
+        : null,
+    });
+  }
+
+  return { totalStudents, series, periodAverages, weekdayPattern };
+}
+
+module.exports = {
+  getMoodTrend,
+  getInstitutionMoodOverview,
+  getInstitutionWellnessTrend,
+};
