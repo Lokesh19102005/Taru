@@ -8,7 +8,32 @@ const {
   getMoodTrend,
   getInstitutionMoodOverview,
   getInstitutionWellnessTrend,
+  getInstitutionWellnessFilterOptions: loadInstitutionWellnessFilterOptions,
+  buildStudentMatch,
 } = require("../services/moodAnalytics");
+
+const AGE_RANGES = {
+  under18: { ageMax: 17 },
+  "18-20": { ageMin: 18, ageMax: 20 },
+  "21-23": { ageMin: 21, ageMax: 23 },
+  "24plus": { ageMin: 24 },
+};
+
+function getCohortFilters(query) {
+  const filters = {};
+
+  for (const field of ["batch", "gender"]) {
+    const value = String(query[field] || "")
+      .trim()
+      .slice(0, 80);
+    if (value) filters[field] = value;
+  }
+
+  const ageRange = AGE_RANGES[query.ageRange];
+  if (ageRange) Object.assign(filters, ageRange);
+
+  return filters;
+}
 
 exports.register = async (req, res) => {
   const errors = validationResult(req);
@@ -107,10 +132,9 @@ exports.getMe = async (req, res) => {
 
 exports.getAnalytics = async (req, res) => {
   try {
-    const collegeName = req.user.collegeName;
-
-    // Find all students from this college
-    const students = await User.find({ college: collegeName }).select("_id");
+    const filters = getCohortFilters(req.query);
+    const studentMatch = buildStudentMatch(req.user.collegeName, filters);
+    const students = await User.find(studentMatch).select("_id");
     const studentIds = students.map((s) => s._id);
     const totalStudents = studentIds.length;
 
@@ -377,10 +401,25 @@ exports.getInstitutionWellnessTrend = async (req, res) => {
     const ranges = ["week", "month", "semester", "year"];
     const range = ranges.includes(req.query.range) ? req.query.range : "week";
 
-    const data = await getInstitutionWellnessTrend(req.user._id, range);
+    const filters = getCohortFilters(req.query);
+    const data = await getInstitutionWellnessTrend(
+      req.user._id,
+      range,
+      filters,
+    );
     return res.json({ success: true, data });
   } catch (error) {
     console.error("getInstitutionWellnessTrend error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getInstitutionWellnessFilterOptions = async (req, res) => {
+  try {
+    const data = await loadInstitutionWellnessFilterOptions(req.user._id);
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error("getInstitutionWellnessFilterOptions error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

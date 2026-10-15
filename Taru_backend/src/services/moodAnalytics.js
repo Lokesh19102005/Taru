@@ -123,6 +123,50 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function buildStudentMatch(collegeName, filters = {}) {
+  const match = { college: collegeName };
+
+  for (const field of ["batch", "gender"]) {
+    const value = String(filters[field] || "").trim();
+    if (value) match[field] = value;
+  }
+
+  if (filters.ageMin !== undefined || filters.ageMax !== undefined) {
+    match.age = {};
+    if (filters.ageMin !== undefined) match.age.$gte = filters.ageMin;
+    if (filters.ageMax !== undefined) match.age.$lte = filters.ageMax;
+  }
+
+  return match;
+}
+
+async function getInstitutionWellnessFilterOptions(institutionId) {
+  const institution = await Institution.findById(institutionId)
+    .select("collegeName")
+    .lean();
+
+  if (!institution) {
+    return { batches: [], genders: [] };
+  }
+
+  const studentMatch = { college: institution.collegeName };
+
+  const [batches, genders] = await Promise.all([
+    User.distinct("batch", studentMatch),
+    User.distinct("gender", studentMatch),
+  ]);
+
+  const clean = (values) =>
+    values
+      .filter((value) => typeof value === "string" && value.trim())
+      .sort((a, b) => a.localeCompare(b));
+
+  return {
+    batches: clean(batches),
+    genders: clean(genders),
+  };
+}
+
 async function getInstitutionMoodOverview(institutionId, options = {}) {
   const {
     range = "week",
@@ -280,6 +324,7 @@ async function getInstitutionMoodOverview(institutionId, options = {}) {
 async function getInstitutionWellnessTrend(
   institutionId,
   requestedRange = "week",
+  filters = {},
 ) {
   const range = RANGE_CONFIG[requestedRange] ? requestedRange : "week";
   const config = RANGE_CONFIG[range];
@@ -293,9 +338,9 @@ async function getInstitutionWellnessTrend(
 
   if (!institution) return { totalStudents: 0, series: [] };
 
-  const totalStudents = await User.countDocuments({
-    college: institution.collegeName,
-  });
+  const studentMatch = buildStudentMatch(institution.collegeName, filters);
+
+  const totalStudents = await User.countDocuments(studentMatch);
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const dateTrunc = {
@@ -306,7 +351,7 @@ async function getInstitutionWellnessTrend(
   if (range === "semester") dateTrunc.startOfWeek = "monday";
 
   const rows = await User.aggregate([
-    { $match: { college: institution.collegeName } },
+    { $match: studentMatch },
     {
       $lookup: {
         from: DailyCheckIn.collection.name,
@@ -380,7 +425,7 @@ async function getInstitutionWellnessTrend(
   ]);
 
   const summaryRows = await User.aggregate([
-    { $match: { college: institution.collegeName } },
+    { $match: studentMatch },
     {
       $lookup: {
         from: DailyCheckIn.collection.name,
@@ -456,9 +501,7 @@ async function getInstitutionWellnessTrend(
       $match: {
         date: { $gte: windowStart, $lte: now },
         userId: {
-          $in: await User.find({ college: institution.collegeName }).distinct(
-            "_id",
-          ),
+          $in: await User.find(studentMatch).distinct("_id"),
         },
       },
     },
@@ -545,4 +588,6 @@ module.exports = {
   getMoodTrend,
   getInstitutionMoodOverview,
   getInstitutionWellnessTrend,
+  getInstitutionWellnessFilterOptions,
+  buildStudentMatch,
 };

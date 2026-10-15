@@ -10,6 +10,7 @@ const {
   getMoodOverview,
   getStudentMoodTrend,
   getInstitutionWellnessTrend,
+  getInstitutionWellnessFilterOptions,
 } = require("../controllers/institutionController");
 const { protect } = require("../middleware/auth");
 
@@ -47,6 +48,11 @@ router.get(
   "/analytics/trends",
   protect("institution"),
   getInstitutionWellnessTrend,
+);
+router.get(
+  "/analytics/filter-options",
+  protect("institution"),
+  getInstitutionWellnessFilterOptions,
 );
 
 module.exports = router;

@@ -9,7 +9,28 @@ import {
   MoodOverviewSort,
   MoodOverviewStatus,
   InstitutionWellnessTrend,
+  InstitutionCohortFilters,
+  InstitutionWellnessFilterOptions,
 } from "../types";
+
+function cohortParams(filters: InstitutionCohortFilters) {
+  const params = new URLSearchParams();
+
+  for (const field of ["batch", "gender"] as const) {
+    if (filters[field]) params.set(field, filters[field]);
+  }
+
+  if (filters.ageRange) params.set("ageRange", filters.ageRange);
+  return params;
+}
+
+export const fetchInstitutionWellnessFilterOptions = async () =>
+  apiRequest("/api/institution/analytics/filter-options", {
+    method: "GET",
+  }) as Promise<{
+    success: boolean;
+    data: InstitutionWellnessFilterOptions;
+  }>;
 
 export interface MoodOverviewFilters {
   range: MoodOverviewRange;
@@ -48,8 +69,11 @@ export const fetchInstitutionProfile =
     return apiRequest("/api/institution/me", { method: "GET" });
   };
 
-export const fetchAnalytics = async () => {
-  return apiRequest("/api/institution/analytics", { method: "GET" });
+export const fetchAnalytics = async (filters: InstitutionCohortFilters) => {
+  const params = cohortParams(filters);
+  return apiRequest(`/api/institution/analytics?${params.toString()}`, {
+    method: "GET",
+  });
 };
 
 export const fetchStudents = async () => {
@@ -92,7 +116,12 @@ export const fetchStudentMoodTrend = async (
 
 export const fetchInstitutionWellnessTrend = async (
   range: MoodOverviewRange,
-): Promise<{ success: boolean; data: InstitutionWellnessTrend }> =>
-  apiRequest(`/api/institution/analytics/trends?range=${range}`, {
+  filters: InstitutionCohortFilters,
+): Promise<{ success: boolean; data: InstitutionWellnessTrend }> => {
+  const params = cohortParams(filters);
+  params.set("range", range);
+
+  return apiRequest(`/api/institution/analytics/trends?${params.toString()}`, {
     method: "GET",
   });
+};

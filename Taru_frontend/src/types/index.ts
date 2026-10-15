@@ -201,3 +201,16 @@ export interface InstitutionWellnessTrend {
     checkinCount: number;
   }[];
 }
+
+export type AgeRange = "" | "under18" | "18-20" | "21-23" | "24plus";
+
+export interface InstitutionCohortFilters {
+  batch: string;
+  gender: string;
+  ageRange: AgeRange;
+}
+
+export interface InstitutionWellnessFilterOptions {
+  batches: string[];
+  genders: string[];
+}

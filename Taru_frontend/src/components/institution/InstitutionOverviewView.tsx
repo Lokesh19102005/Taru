@@ -3,9 +3,16 @@ import { Activity } from "lucide-react";
 import { COLORS } from "../../lib/theme";
 import {
   fetchAnalytics,
+  fetchInstitutionWellnessFilterOptions,
   fetchInstitutionWellnessTrend,
 } from "../../api/institution";
-import { InstitutionWellnessTrend, MoodOverviewRange } from "@/types";
+import {
+  AgeRange,
+  InstitutionCohortFilters,
+  InstitutionWellnessFilterOptions,
+  InstitutionWellnessTrend,
+  MoodOverviewRange,
+} from "@/types";
 import {
   Bar,
   BarChart,
@@ -77,6 +84,24 @@ export default function InstitutionOverviewView() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<MoodOverviewRange>("week");
+  const [filters, setFilters] = useState<InstitutionCohortFilters>({
+    batch: "",
+    gender: "",
+    ageRange: "",
+  });
+
+  const [filterOptions, setFilterOptions] =
+    useState<InstitutionWellnessFilterOptions>({
+      batches: [],
+      genders: [],
+    });
+
+  const updateFilter = <K extends keyof InstitutionCohortFilters>(
+    key: K,
+    value: InstitutionCohortFilters[K],
+  ) => {
+    setFilters((current) => ({ ...current, [key]: value }));
+  };
   const [trend, setTrend] = useState<InstitutionWellnessTrend | null>(null);
   const [selectedMetric, setSelectedMetric] =
     useState<TrendMetric>("averageMood");
@@ -89,19 +114,25 @@ export default function InstitutionOverviewView() {
   const latestBucket = trendSeries[trendSeries.length - 1];
 
   useEffect(() => {
-    fetchInstitutionWellnessTrend(range)
-      .then((response) => setTrend(response.data))
+    fetchInstitutionWellnessFilterOptions()
+      .then((response) => setFilterOptions(response.data))
       .catch(console.error);
-  }, [range]);
+  }, []);
 
   useEffect(() => {
-    fetchAnalytics()
+    fetchInstitutionWellnessTrend(range, filters)
+      .then((response) => setTrend(response.data))
+      .catch(console.error);
+  }, [range, filters]);
+
+  useEffect(() => {
+    fetchAnalytics(filters)
       .then((res) => {
         if (res.success) setAnalytics(res.data);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [filters]);
 
   const metrics = analytics
     ? [
@@ -271,6 +302,65 @@ export default function InstitutionOverviewView() {
               <option value="month">Last 30 days</option>
               <option value="semester">Last 26 weeks</option>
               <option value="year">Last 12 months</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {(
+            [
+              ["batch", "Batch / Academic Year", filterOptions.batches],
+              ["gender", "Gender", filterOptions.genders],
+            ] as const
+          ).map(([key, label, options]) => (
+            <label
+              key={key}
+              className="text-xs font-semibold"
+              style={{ color: COLORS.fg2 }}
+            >
+              {label}
+              <select
+                value={filters[key]}
+                onChange={(event) => updateFilter(key, event.target.value)}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+                style={{
+                  background: COLORS.card,
+                  borderColor: COLORS.border,
+                  color: COLORS.fg,
+                }}
+              >
+                <option value="">All {label.toLowerCase()}s</option>
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+
+          <label
+            className="text-xs font-semibold"
+            style={{ color: COLORS.fg2 }}
+          >
+            Age range
+            <select
+              value={filters.ageRange}
+              onChange={(event) =>
+                updateFilter("ageRange", event.target.value as AgeRange)
+              }
+              className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+              style={{
+                background: COLORS.card,
+                borderColor: COLORS.border,
+                color: COLORS.fg,
+              }}
+            >
+              <option value="">All ages</option>
+              <option value="under18">Under 18</option>
+              <option value="18-20">18-20</option>
+              <option value="21-23">21-23</option>
+              <option value="24plus">24+</option>
             </select>
           </label>
         </div>
