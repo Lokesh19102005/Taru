@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+
+const WAIT_TIMEOUT_MS = 7000;
 import { MessageCircle, Search, X, Send, LogOut, ArrowRight, Shield, Heart, Users } from 'lucide-react'
 import COLORS from '../../lib/theme'
 import { socket, connectSocket } from '../../lib/socket'
@@ -10,7 +12,7 @@ interface ChatMessage {
   timestamp: number
 }
 
-type ViewState = 'landing' | 'searching' | 'chatting' | 'ended'
+type ViewState = 'landing' | 'searching' | 'chatting' | 'ended' | 'no_user'
 
 export default function TalkView() {
   const [viewState, setViewState] = useState<ViewState>('landing')
@@ -22,6 +24,7 @@ export default function TalkView() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
+  const waitTimerRef = useRef<number | undefined>(undefined)
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -44,6 +47,7 @@ export default function TalkView() {
     }
 
     const onChatMatched = (data: { roomId: string; partnerName: string }) => {
+      window.clearTimeout(waitTimerRef.current)
       setRoomId(data.roomId)
       setPartnerName(data.partnerName)
       setMessages([])
@@ -81,9 +85,13 @@ export default function TalkView() {
   const handleStartSearching = () => {
     connectSocket()
     socket.emit('chat_join_queue')
+    waitTimerRef.current = window.setTimeout(() => {
+      setViewState('no_user')
+    }, WAIT_TIMEOUT_MS)
   }
 
   const handleCancelSearch = () => {
+    window.clearTimeout(waitTimerRef.current)
     socket.emit('chat_leave_queue')
     setViewState('landing')
   }
@@ -198,6 +206,37 @@ export default function TalkView() {
           >
             Start Talking
             <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── NO USER AVAILABLE ──────────────────────────────────────
+  if (viewState === 'no_user') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] px-4 animate-fade-in">
+        <div className="w-full max-w-sm text-center">
+          <div className="flex justify-center mb-6">
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
+              style={{ background: COLORS.muted }}
+            >
+              😕
+            </div>
+          </div>
+          <h2 className="text-xl md:text-2xl font-extrabold mb-3" style={{ color: COLORS.fg }}>
+            No one available right now
+          </h2>
+          <p className="text-sm leading-relaxed mb-8" style={{ color: COLORS.fg2 }}>
+            Sorry, no other user is available right now. Please try again later.
+          </p>
+          <button
+            onClick={() => setViewState('landing')}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold text-white transition-all hover:opacity-90"
+            style={{ background: COLORS.primary }}
+          >
+            Back to Home
           </button>
         </div>
       </div>

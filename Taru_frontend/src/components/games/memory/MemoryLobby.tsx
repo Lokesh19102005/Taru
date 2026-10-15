@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import COLORS from "../../../lib/theme";
 import { connectSocket, disconnectSocket, socket } from "../../../lib/socket";
 import { EVENT_NAMES, GameStartedPayload } from "../../../types/game";
@@ -8,12 +8,15 @@ interface MemoryLobbyProps {
   onCancel: () => void;
 }
 
+const WAIT_TIMEOUT_MS = 7000;
+
 export default function MemoryLobby({ onStarted, onCancel }: MemoryLobbyProps) {
   const [status, setStatus] = useState<
-    "connecting" | "waiting" | "found" | "error"
+    "connecting" | "waiting" | "found" | "error" | "no_user"
   >("connecting");
   const [error, setError] = useState("");
   const [playerFound, setPlayerFound] = useState(false);
+  const waitTimerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     let transitionTimer: number | undefined;
@@ -21,22 +24,27 @@ export default function MemoryLobby({ onStarted, onCancel }: MemoryLobbyProps) {
     const handleRoomState = (payload: { status?: string }) => {
       if (payload.status === "waiting") {
         setStatus("waiting");
+        // Start 5-second no-user timeout
+        waitTimerRef.current = window.setTimeout(() => {
+          setStatus("no_user");
+        }, WAIT_TIMEOUT_MS);
       }
     };
 
     const handleMatchFound = () => {
+      window.clearTimeout(waitTimerRef.current);
       setPlayerFound(true);
       setStatus("found");
     };
 
     const handleGameStarted = (payload: GameStartedPayload) => {
-      // Keep the confirmation visible briefly before showing the board.
       transitionTimer = window.setTimeout(() => {
         onStarted(payload);
       }, 1200);
     };
 
     const handleError = (payload: { message?: string }) => {
+      window.clearTimeout(waitTimerRef.current);
       setError(payload.message || "Unable to find a match.");
       setStatus("error");
     };
@@ -50,6 +58,9 @@ export default function MemoryLobby({ onStarted, onCancel }: MemoryLobbyProps) {
 
     const joinQueue = () => {
       setStatus("waiting");
+      waitTimerRef.current = window.setTimeout(() => {
+        setStatus("no_user");
+      }, WAIT_TIMEOUT_MS);
       activeSocket.emit(EVENT_NAMES.JOIN_QUEUE, { gameType: "memory" });
     };
 
@@ -65,18 +76,48 @@ export default function MemoryLobby({ onStarted, onCancel }: MemoryLobbyProps) {
       socket.off(EVENT_NAMES.MATCH_FOUND, handleMatchFound);
       socket.off(EVENT_NAMES.GAME_STARTED, handleGameStarted);
       socket.off(EVENT_NAMES.ERROR, handleError);
-
-      if (transitionTimer !== undefined) {
-        window.clearTimeout(transitionTimer);
-      }
+      window.clearTimeout(transitionTimer);
+      window.clearTimeout(waitTimerRef.current);
     };
   }, [onStarted]);
 
   const cancel = () => {
+    window.clearTimeout(waitTimerRef.current);
     socket.emit(EVENT_NAMES.LEAVE_QUEUE, { gameType: "memory" });
     disconnectSocket();
     onCancel();
   };
+
+  // ── No user available ──
+  if (status === "no_user") {
+    return (
+      <div
+        className="max-w-md w-full mx-auto rounded-3xl border p-8 sm:p-10 text-center shadow-xl animate-fade-in"
+        style={{ background: COLORS.card, borderColor: COLORS.border }}
+      >
+        <div className="flex justify-center mb-5">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+            style={{ background: COLORS.muted }}>
+            😕
+          </div>
+        </div>
+        <h2 className="text-xl font-extrabold mb-2" style={{ color: COLORS.fg }}>
+          No one available right now
+        </h2>
+        <p className="text-sm mb-6 leading-relaxed" style={{ color: COLORS.fg2 }}>
+          Sorry, no other user is available right now. Please try again later.
+        </p>
+        <button
+          type="button"
+          onClick={cancel}
+          className="w-full py-3 px-6 rounded-2xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
+          style={{ background: COLORS.primary }}
+        >
+          Back to Games
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
