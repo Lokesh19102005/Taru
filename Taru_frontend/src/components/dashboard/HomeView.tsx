@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ClipboardList,
@@ -7,11 +8,14 @@ import {
   BarChart2,
   ChevronRight,
   Sparkles,
+  CalendarClock,
 } from "lucide-react";
 import COLORS from "../../lib/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCheckinHistory } from "../../api/checkin";
+import { getMyAppointments } from "../../api/appointment";
 import WeeklyMoodChart from "./WeeklyMoodChart";
+import type { Appointment } from "../../types";
 
 const navItems = [
   { id: "check", icon: <ClipboardList size={17} />, label: "Take a Check" },
@@ -25,11 +29,71 @@ const navItems = [
   { id: "mood", icon: <BarChart2 size={17} />, label: "Track Your Mood" },
 ];
 
+/* ── Time Helpers ── */
+function formatActivityTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+
+  if (date >= todayStart) {
+    return (
+      "Today, " +
+      date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    );
+  } else if (date >= yesterdayStart) {
+    return "Yesterday";
+  } else {
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  }
+}
+
+function formatAppointmentDate(dateStr: string, startTime: string): string {
+  const date = new Date(dateStr);
+  const weekday = date.toLocaleDateString([], { weekday: "short" });
+  const month = date.toLocaleDateString([], { month: "short" });
+  const day = date.getDate();
+  return `${weekday}, ${month} ${day} · ${startTime}`;
+}
+
 export default function HomeView() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: historyRes } = useCheckinHistory();
   const checkins = historyRes?.data || [];
+
+  const [upcomingAppts, setUpcomingAppts] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    getMyAppointments()
+      .then((res) => {
+        if (res.success) {
+          const now = new Date();
+          const todayMidnight = new Date(now.toDateString());
+          // Show confirmed OR pending (requested) appointments from today onwards, max 2
+          const future = res.data
+            .filter(
+              (a) =>
+                (a.status === "confirmed" || a.status === "requested") &&
+                new Date(a.date) >= todayMidnight
+            )
+            .sort(
+              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            )
+            .slice(0, 2);
+          setUpcomingAppts(future);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Build recent activity: last 4 check-ins from history
+  const recentActivities = checkins.slice(0, 4).map((c) => ({
+    icon: <BarChart2 size={12} />,
+    text: `Mood check-in · ${c.mood.label}`,
+    time: formatActivityTime(c.createdAt),
+  }));
 
   function getGreeting() {
     const hour = new Date().getHours();
@@ -95,7 +159,6 @@ export default function HomeView() {
             >
               <Sparkles size={22} color="#fff" />
             </div>
-
             <div className="min-w-0">
               <div
                 className="mb-1 text-[10px] font-bold uppercase tracking-widest"
@@ -103,14 +166,12 @@ export default function HomeView() {
               >
                 Featured for you
               </div>
-
               <h3
                 className="text-base font-extrabold"
                 style={{ color: COLORS.fg }}
               >
                 Talk to Taru AI
               </h3>
-
               <p
                 className="mt-1 text-xs leading-relaxed"
                 style={{ color: COLORS.fg2 }}
@@ -119,13 +180,9 @@ export default function HomeView() {
               </p>
             </div>
           </div>
-
           <div
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform group-hover:translate-x-1"
-            style={{
-              background: COLORS.muted,
-              color: COLORS.primary,
-            }}
+            style={{ background: COLORS.muted, color: COLORS.primary }}
           >
             <ChevronRight size={18} />
           </div>
@@ -163,7 +220,7 @@ export default function HomeView() {
         style={{ background: COLORS.card, borderColor: COLORS.border }}
       >
         <div className="flex items-center justify-between mb-0">
-          <div /> {/* WeeklyMoodChart renders its own title */}
+          <div />
           <button
             onClick={() => navigate("/dashboard/mood")}
             className="text-xs font-medium flex items-center gap-1 hover:underline"
@@ -179,8 +236,10 @@ export default function HomeView() {
         />
       </div>
 
-      {/* Activity + upcoming */}
+      {/* Activity + Upcoming */}
       <div className="grid sm:grid-cols-2 gap-4">
+
+        {/* ── Recent Activity (dynamic — last 4 check-ins) ── */}
         <div
           className="rounded-2xl p-5 border"
           style={{ background: COLORS.card, borderColor: COLORS.border }}
@@ -188,52 +247,50 @@ export default function HomeView() {
           <h3 className="font-bold text-sm mb-4" style={{ color: COLORS.fg }}>
             Recent activity
           </h3>
-          <div className="space-y-3">
-            {[
-              {
-                icon: <BarChart2 size={12} />,
-                text: "Logged mood",
-                time: "Today, 9:14am",
-              },
-              {
-                icon: <ClipboardList size={12} />,
-                text: "Taru check-in complete",
-                time: "Yesterday",
-              },
-              {
-                icon: <Gamepad2 size={12} />,
-                text: "Played breathing game",
-                time: "Yesterday",
-              },
-              {
-                icon: <MessageCircle size={12} />,
-                text: "Peer chat session",
-                time: "Jul 18",
-              },
-            ].map((a, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: COLORS.muted, color: COLORS.fg }}
-                >
-                  {a.icon}
-                </div>
-                <div>
-                  <div
-                    className="text-xs font-semibold"
-                    style={{ color: COLORS.fg }}
-                  >
-                    {a.text}
-                  </div>
-                  <div className="text-[10px]" style={{ color: COLORS.fg3 }}>
-                    {a.time}
-                  </div>
-                </div>
+
+          {recentActivities.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center mb-2"
+                style={{ background: COLORS.muted }}
+              >
+                <BarChart2 size={16} style={{ color: COLORS.fg3 }} />
               </div>
-            ))}
-          </div>
+              <p className="text-xs font-medium" style={{ color: COLORS.fg3 }}>
+                No activity yet
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: COLORS.fg3 }}>
+                Complete your first check-in to see it here
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentActivities.map((a, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div
+                    className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: COLORS.muted, color: COLORS.fg }}
+                  >
+                    {a.icon}
+                  </div>
+                  <div>
+                    <div
+                      className="text-xs font-semibold"
+                      style={{ color: COLORS.fg }}
+                    >
+                      {a.text}
+                    </div>
+                    <div className="text-[10px]" style={{ color: COLORS.fg3 }}>
+                      {a.time}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
+        {/* ── Upcoming (dynamic — confirmed/requested appointments) ── */}
         <div
           className="rounded-2xl p-5 border"
           style={{ background: COLORS.card, borderColor: COLORS.border }}
@@ -241,26 +298,69 @@ export default function HomeView() {
           <h3 className="font-bold text-sm mb-4" style={{ color: COLORS.fg }}>
             Upcoming
           </h3>
-          <div
-            className="rounded-xl p-3 border mb-3"
-            style={{ background: COLORS.muted, borderColor: COLORS.border }}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Stethoscope size={12} style={{ color: COLORS.fg }} />
-              <span className="text-xs font-bold" style={{ color: COLORS.fg }}>
-                Psychiatrist Session
-              </span>
+
+          {upcomingAppts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center mb-2"
+                style={{ background: COLORS.muted }}
+              >
+                <CalendarClock size={16} style={{ color: COLORS.fg3 }} />
+              </div>
+              <p className="text-xs font-medium" style={{ color: COLORS.fg3 }}>
+                No upcoming sessions
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: COLORS.fg3 }}>
+                Book a session with a psychiatrist
+              </p>
             </div>
-            <div className="text-xs" style={{ color: COLORS.fg2 }}>
-              Dr. Ananya Singh
+          ) : (
+            <div className="space-y-2">
+              {upcomingAppts.map((appt) => {
+                const doc = appt.psychiatristId as
+                  | { _id: string; name: string }
+                  | string
+                  | null;
+                const docName =
+                  typeof doc === "object" && doc !== null ? doc.name : "Psychiatrist";
+                return (
+                  <div
+                    key={appt._id}
+                    className="rounded-xl p-3 border"
+                    style={{
+                      background: COLORS.muted,
+                      borderColor: COLORS.border,
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Stethoscope size={12} style={{ color: COLORS.primary }} />
+                      <span
+                        className="text-xs font-bold"
+                        style={{ color: COLORS.fg }}
+                      >
+                        Psychiatrist Session
+                      </span>
+                      {appt.status === "requested" && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 ml-auto">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs" style={{ color: COLORS.fg2 }}>
+                      {docName}
+                    </div>
+                    <div className="text-xs" style={{ color: COLORS.fg2 }}>
+                      {formatAppointmentDate(appt.date, appt.startTime)}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="text-xs" style={{ color: COLORS.fg2 }}>
-              Wed, Jul 23 · 11:00am
-            </div>
-          </div>
+          )}
+
           <button
             onClick={() => navigate("/dashboard/psychiatrist")}
-            className="text-xs font-medium hover:underline flex items-center gap-1"
+            className="text-xs font-medium hover:underline flex items-center gap-1 mt-3"
             style={{ color: COLORS.fg }}
           >
             Book another session <ChevronRight size={11} />
