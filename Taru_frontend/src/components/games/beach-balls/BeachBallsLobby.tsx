@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import COLORS from "../../../lib/theme";
 import { connectSocket, disconnectSocket, socket } from "../../../lib/socket";
 import {
@@ -11,14 +11,17 @@ interface BeachBallsLobbyProps {
   onCancel: () => void;
 }
 
+const WAIT_TIMEOUT_MS = 7000;
+
 export default function BeachBallsLobby({
   onStarted,
   onCancel,
 }: BeachBallsLobbyProps) {
   const [status, setStatus] = useState<
-    "connecting" | "waiting" | "found" | "error"
+    "connecting" | "waiting" | "found" | "error" | "no_user"
   >("connecting");
   const [error, setError] = useState("");
+  const waitTimerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     let startTimer: number | undefined;
@@ -26,10 +29,14 @@ export default function BeachBallsLobby({
     const handleRoomState = (payload: { status?: string }) => {
       if (payload.status === "waiting") {
         setStatus("waiting");
+        waitTimerRef.current = window.setTimeout(() => {
+          setStatus("no_user");
+        }, WAIT_TIMEOUT_MS);
       }
     };
 
     const handleMatchFound = () => {
+      window.clearTimeout(waitTimerRef.current);
       setStatus("found");
     };
 
@@ -40,6 +47,7 @@ export default function BeachBallsLobby({
     };
 
     const handleError = (payload: { message?: string }) => {
+      window.clearTimeout(waitTimerRef.current);
       setError(payload.message || "Unable to find a match.");
       setStatus("error");
     };
@@ -53,6 +61,9 @@ export default function BeachBallsLobby({
 
     const joinQueue = () => {
       setStatus("waiting");
+      waitTimerRef.current = window.setTimeout(() => {
+        setStatus("no_user");
+      }, WAIT_TIMEOUT_MS);
       activeSocket.emit(EVENT_NAMES.JOIN_QUEUE, {
         gameType: "beach_balls",
       });
@@ -70,20 +81,50 @@ export default function BeachBallsLobby({
       socket.off(EVENT_NAMES.MATCH_FOUND, handleMatchFound);
       socket.off(EVENT_NAMES.BEACH_BALLS_GAME_STARTED, handleGameStarted);
       socket.off(EVENT_NAMES.ERROR, handleError);
-
-      if (startTimer !== undefined) {
-        window.clearTimeout(startTimer);
-      }
+      window.clearTimeout(startTimer);
+      window.clearTimeout(waitTimerRef.current);
     };
   }, [onStarted]);
 
   const cancel = () => {
+    window.clearTimeout(waitTimerRef.current);
     socket.emit(EVENT_NAMES.LEAVE_QUEUE, {
       gameType: "beach_balls",
     });
     disconnectSocket();
     onCancel();
   };
+
+  // ── No user available ──
+  if (status === "no_user") {
+    return (
+      <div
+        className="max-w-md w-full mx-auto rounded-3xl border p-8 sm:p-10 text-center shadow-xl animate-fade-in"
+        style={{ background: COLORS.card, borderColor: COLORS.border }}
+      >
+        <div className="flex justify-center mb-5">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+            style={{ background: COLORS.muted }}>
+            😕
+          </div>
+        </div>
+        <h2 className="text-xl font-extrabold mb-2" style={{ color: COLORS.fg }}>
+          No one available right now
+        </h2>
+        <p className="text-sm mb-6 leading-relaxed" style={{ color: COLORS.fg2 }}>
+          Sorry, no other user is available right now. Please try again later.
+        </p>
+        <button
+          type="button"
+          onClick={cancel}
+          className="w-full py-3 px-6 rounded-2xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
+          style={{ background: COLORS.primary }}
+        >
+          Back to Games
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div

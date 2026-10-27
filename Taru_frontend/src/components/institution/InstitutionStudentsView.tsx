@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Users, Search, Filter, X } from 'lucide-react'
 import { COLORS } from '../../lib/theme'
 import { fetchStudents } from '../../api/institution'
+import { TOTAL_SCORE_MAX } from '../../lib/moodScale'
+import { topicSummary } from '../../lib/checkinTree'
 
 interface StudentCheckin {
   username: string
@@ -12,16 +14,18 @@ interface StudentCheckin {
   gender: string
   todayCheckin: {
     mood: { label: string; score: number }
-    energy: number; stress: number; sleep: number
-    concentration: number; support: number; motivation: number
+    category: string | null; rootCause: string | null; specificIssue: string | null
+    // 0 (best) – 4 (worst), null = skipped
+    energy: number | null; stress: number | null; motivation: number | null
     totalScore: number; feedback: string
   } | null
 }
 
+// All scores: lower is better (ratings 0–4, total 0–16)
 const getColor = (value: number, max: number) => {
-  if (max === 28) {
-    if (value >= 21) return '#DC2626'
-    if (value >= 14) return '#D97706'
+  if (max === TOTAL_SCORE_MAX) {
+    if (value >= 12) return '#DC2626'
+    if (value >= 8) return '#D97706'
     return '#059669'
   }
   if (value >= 3) return '#DC2626'
@@ -315,16 +319,22 @@ export default function InstitutionStudentsView() {
 
               {s.todayCheckin ? (
                 <div className="mt-3 pt-3 border-t transition-colors hover:bg-teal-50/30 -mx-5 -mb-5 px-5 pb-5 rounded-b-2xl" style={{ borderColor: COLORS.border }}>
-                  <div className="grid grid-cols-4 gap-2 text-xs">
+                  <div className="grid grid-cols-5 gap-2 text-xs">
                     <div><span style={{ color: COLORS.fg3 }}>Mood</span><br/><span className="font-bold" style={{ color: COLORS.fg }}>{getMoodEmoji(s.todayCheckin.mood.score)} {s.todayCheckin.mood.label} ({s.todayCheckin.mood.score})</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Energy</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.energy, 4) }}>{s.todayCheckin.energy}</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Stress</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.stress, 4) }}>{s.todayCheckin.stress}</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Sleep</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.sleep, 4) }}>{s.todayCheckin.sleep}</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Concentration</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.concentration, 4) }}>{s.todayCheckin.concentration}</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Support</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.support, 4) }}>{s.todayCheckin.support}</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Motivation</span><br/><span className="font-bold" style={{ color: getColor(s.todayCheckin.motivation, 4) }}>{s.todayCheckin.motivation}</span></div>
-                    <div><span style={{ color: COLORS.fg3 }}>Total</span><br/><span className="font-extrabold" style={{ color: getColor(s.todayCheckin.totalScore, 28) }}>{s.todayCheckin.totalScore}/28</span></div>
+                    {([
+                      ['Energy', s.todayCheckin.energy],
+                      ['Stress', s.todayCheckin.stress],
+                      ['Motivation', s.todayCheckin.motivation],
+                    ] as [string, number | null][]).map(([label, value]) => (
+                      <div key={label}><span style={{ color: COLORS.fg3 }}>{label}</span><br/><span className="font-bold" style={{ color: value === null ? COLORS.fg3 : getColor(value, 4) }}>{value ?? '—'}</span></div>
+                    ))}
+                    <div><span style={{ color: COLORS.fg3 }}>Total</span><br/><span className="font-extrabold" style={{ color: getColor(s.todayCheckin.totalScore, TOTAL_SCORE_MAX) }}>{s.todayCheckin.totalScore}/{TOTAL_SCORE_MAX}</span></div>
                   </div>
+                  {topicSummary(s.todayCheckin) && (
+                    <div className="mt-2 text-xs" style={{ color: COLORS.fg3 }}>
+                      <span className="font-semibold" style={{ color: COLORS.fg2 }}>On their mind:</span> {topicSummary(s.todayCheckin)}
+                    </div>
+                  )}
                   {s.todayCheckin.feedback && (
                     <div className="mt-2 text-xs" style={{ color: COLORS.fg3 }}>
                       <span className="font-semibold" style={{ color: COLORS.fg2 }}>Feedback:</span> {s.todayCheckin.feedback}

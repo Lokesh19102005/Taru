@@ -5,81 +5,168 @@ import { useNavigate } from "react-router-dom";
 import { COLORS } from "../lib/theme";
 import { useSubmitCheckin } from "../api/checkin";
 import { MOOD_SCALE } from "../lib/moodScale";
+import {
+  CATEGORY_TREES,
+  POSITIVE_TREE,
+  findTree,
+  topicSummary,
+} from "../lib/checkinTree";
 
 interface CheckFlowProps {
   isGuest?: boolean;
 }
 
+type StepId =
+  | "intro"
+  | "mood"
+  | "category"
+  | "rootCause"
+  | "specificIssue"
+  | "energy"
+  | "stress"
+  | "motivation"
+  | "review";
+
+// Steps shown in the progress bar as "1 of 8" … "8 of 8"
+const PROGRESS_STEPS: StepId[] = [
+  "mood",
+  "category",
+  "rootCause",
+  "specificIssue",
+  "energy",
+  "stress",
+  "motivation",
+  "review",
+];
+
+// A tree answer: a prebuilt option, or the student's own words for "Others".
+interface TreeChoice {
+  value: string;
+  other: boolean;
+}
+
+interface ChoiceOption {
+  value: string;
+  label: string;
+  emoji?: string;
+}
+
+interface RatingOption {
+  emoji: string;
+  label: string;
+  hint: string;
+  score: number; // 0 = best, 4 = worst
+}
+
 const MOOD_OPTIONS = MOOD_SCALE;
 
-const ENERGY_OPTIONS = [
-  { label: "Very Energetic", score: 0 },
-  { label: "Energetic", score: 1 },
-  { label: "Neutral", score: 2 },
-  { label: "Tired", score: 3 },
-  { label: "Very Tired", score: 4 },
+const ENERGY_OPTIONS: RatingOption[] = [
+  { emoji: "🪫", label: "Completely Drained", hint: "exhausted, can barely get out of bed", score: 4 },
+  { emoji: "🥱", label: "Low Energy", hint: "feeling sluggish, hard to focus", score: 3 },
+  { emoji: "⚡", label: "Moderate / Okay", hint: "getting through the day normally", score: 2 },
+  { emoji: "🔋", label: "Good Energy", hint: "feeling active, alert, refreshed", score: 1 },
+  { emoji: "🚀", label: "High Energy", hint: "full stamina, ready to tackle tasks", score: 0 },
 ];
 
-const STRESS_OPTIONS = [
-  { label: "Not at all", score: 0 },
-  { label: "A little", score: 1 },
-  { label: "Moderately", score: 2 },
-  { label: "Quite a lot", score: 3 },
-  { label: "Extremely", score: 4 },
+const STRESS_OPTIONS: RatingOption[] = [
+  { emoji: "😌", label: "Calm & Relaxed", hint: "no noticeable tension or worry", score: 0 },
+  { emoji: "🌿", label: "Mild Stress", hint: "manageable, normal everyday pressure", score: 1 },
+  { emoji: "⚖️", label: "Moderate Stress", hint: "feeling tense or anxious at times", score: 2 },
+  { emoji: "😣", label: "High Stress", hint: "feeling overwhelmed and struggling", score: 3 },
+  { emoji: "🚨", label: "Severe / Overloaded", hint: "panicked, burnt out, cannot cope", score: 4 },
 ];
 
-const SLEEP_OPTIONS = [
-  { label: "Very Well", score: 0 },
-  { label: "Well", score: 1 },
-  { label: "Average", score: 2 },
-  { label: "Poorly", score: 3 },
-  { label: "Very Poorly", score: 4 },
+const MOTIVATION_OPTIONS: RatingOption[] = [
+  { emoji: "🛑", label: "Zero Motivation", hint: "struggling to start anything, stuck", score: 4 },
+  { emoji: "📉", label: "Low Motivation", hint: "doing only the bare minimum required", score: 3 },
+  { emoji: "📈", label: "Moderate / Neutral", hint: "pushing through tasks steadily", score: 2 },
+  { emoji: "💪", label: "Motivated", hint: "feeling productive and focused", score: 1 },
+  { emoji: "🔥", label: "Highly Driven", hint: "inspired, ambitious, proactive today", score: 0 },
 ];
 
-const FOCUS_OPTIONS = [
-  { label: "Very Easy", score: 0 },
-  { label: "Easy", score: 1 },
-  { label: "Neutral", score: 2 },
-  { label: "Difficult", score: 3 },
-  { label: "Very Difficult", score: 4 },
-];
+const CATEGORY_OPTIONS: ChoiceOption[] = CATEGORY_TREES.map((t) => ({
+  value: t.key,
+  label: t.label,
+  emoji: t.emoji,
+}));
 
-const SUPPORT_OPTIONS = [
-  { label: "Very Supported", score: 0 },
-  { label: "Supported", score: 1 },
-  { label: "Neutral", score: 2 },
-  { label: "Slightly Isolated", score: 3 },
-  { label: "Very Isolated", score: 4 },
-];
+const sameChoice = (a: TreeChoice | null, b: TreeChoice | null) =>
+  a?.value === b?.value && a?.other === b?.other;
 
-const MOTIVATION_OPTIONS = [
-  { label: "Very Motivated", score: 0 },
-  { label: "Motivated", score: 1 },
-  { label: "Neutral", score: 2 },
-  { label: "Unmotivated", score: 3 },
-  { label: "Very Unmotivated", score: 4 },
-];
+// Value sent to the API: option key/label or trimmed free text, null if skipped.
+const treeValue = (c: TreeChoice | null) => c?.value.trim() || null;
+
+const ratingLabel = (options: RatingOption[], score: number | null) =>
+  options.find((o) => o.score === score)?.label ?? "Skipped";
 
 export default function CheckinFlow({ isGuest }: CheckFlowProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const mutation = useSubmitCheckin();
 
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState<StepId>("intro");
+  const [history, setHistory] = useState<StepId[]>([]);
   const [mood, setMood] = useState<{ label: string; score: number } | null>(
     null,
   );
+  const [category, setCategory] = useState<TreeChoice | null>(null);
+  const [rootCause, setRootCause] = useState<TreeChoice | null>(null);
+  const [specificIssue, setSpecificIssue] = useState<TreeChoice | null>(null);
   const [energy, setEnergy] = useState<number | null>(null);
   const [stress, setStress] = useState<number | null>(null);
-  const [sleep, setSleep] = useState<number | null>(null);
-  const [concentration, setConcentration] = useState<number | null>(null);
-  const [support, setSupport] = useState<number | null>(null);
   const [motivation, setMotivation] = useState<number | null>(null);
   const [feedback, setFeedback] = useState("");
   const [done, setDone] = useState(false);
 
-  const total = 8;
-  const pct = Math.round((step / total) * 100);
+  // The prebuilt branch the student is in (undefined after "Others" or Skip)
+  const tree = category && !category.other ? findTree(category.value) : undefined;
+  const activeRoot =
+    tree && rootCause && !rootCause.other
+      ? tree.rootCauses.find((r) => r.label === rootCause.value)
+      : undefined;
+
+  const total = PROGRESS_STEPS.length;
+  const current = PROGRESS_STEPS.indexOf(step) + 1; // intro → 0
+  const pct = Math.round((current / total) * 100);
+
+  const goTo = (next: StepId) => {
+    setHistory((h) => [...h, step]);
+    setStep(next);
+  };
+
+  const goBack = () => {
+    const prev = history[history.length - 1];
+    if (!prev) return;
+    setHistory(history.slice(0, -1));
+    setStep(prev);
+  };
+
+  // Changing an answer clears the deeper levels that depended on it.
+  const chooseCategory = (choice: TreeChoice | null) => {
+    if (!sameChoice(choice, category)) {
+      setRootCause(null);
+      setSpecificIssue(null);
+    }
+    setCategory(choice);
+  };
+
+  const chooseRootCause = (choice: TreeChoice | null) => {
+    if (!sameChoice(choice, rootCause)) setSpecificIssue(null);
+    setRootCause(choice);
+  };
+
+  const continueFromMood = () => {
+    // Very Happy / Happy go straight to the Positive Momentum tree
+    if (mood !== null && mood.score <= 1) {
+      chooseCategory({ value: POSITIVE_TREE.key, other: false });
+      goTo("rootCause");
+      return;
+    }
+    if (category?.value === POSITIVE_TREE.key && !category.other) {
+      chooseCategory(null);
+    }
+    goTo("category");
+  };
 
   const handleBack = () => {
     if (isGuest) {
@@ -98,26 +185,18 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
   };
 
   const handleSubmit = () => {
-    if (
-      mood === null ||
-      energy === null ||
-      stress === null ||
-      sleep === null ||
-      concentration === null ||
-      support === null ||
-      motivation === null
-    ) {
+    if (mood === null) {
       return;
     }
 
     mutation.mutate(
       {
         mood,
+        category: treeValue(category),
+        rootCause: treeValue(rootCause),
+        specificIssue: treeValue(specificIssue),
         energy,
         stress,
-        sleep,
-        concentration,
-        support,
         motivation,
         feedback,
       },
@@ -212,7 +291,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
             className="text-[11px] whitespace-nowrap"
             style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
           >
-            {step} of {total}
+            {current} of {total}
           </span>
           <button
             onClick={handleBack}
@@ -225,460 +304,184 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
       </div>
 
       <div className="flex-1 max-w-lg mx-auto w-full px-6 py-8">
-        {/* Step 0 — Intro */}
-        {step === 0 && (
+        {/* Intro */}
+        {step === "intro" && (
           <div className="animate-slide-up">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              daily check-in
-            </p>
-            <h1
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              Welcome to your daily check-in.
-            </h1>
-            <p
-              className="text-sm leading-relaxed mb-8"
-              style={{ color: COLORS.fg2 }}
-            >
-              Take a moment to reflect on your day. This quick check-in helps
-              you track your wellbeing, energy, and stress over time.
-            </p>
+            <StepHeader
+              eyebrow="daily check-in"
+              title="Welcome to your daily check-in."
+              subtitle="Take a moment to reflect on your day. This quick check-in helps you track your wellbeing, energy, and stress over time. You can skip any question you'd rather not answer."
+            />
             <button
               className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 card-hover"
               style={{ background: COLORS.gradient, color: "#fff" }}
-              onClick={() => setStep(1)}
+              onClick={() => goTo("mood")}
             >
               let's begin →
             </button>
           </div>
         )}
 
-        {/* Step 1 — Mood */}
-        {step === 1 && (
+        {/* Step 1 — Mood (required: powers streaks and mood charts) */}
+        {step === "mood" && (
           <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              mood
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              How are you feeling today?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              No right answer. Just what is true right now.
-            </p>
+            <StepHeader
+              eyebrow="mood"
+              title="How are you feeling today?"
+              subtitle="No right answer. Just what is true right now."
+            />
             <div className="flex flex-col gap-2.5 mb-8">
               {MOOD_OPTIONS.map((m) => (
-                <button
+                <OptionCard
                   key={m.score}
+                  emoji={m.emoji}
+                  label={m.label}
+                  selected={mood?.score === m.score}
                   onClick={() => setMood({ label: m.label, score: m.score })}
-                  className={`p-4 rounded-xl border-2 flex items-center gap-3 text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${mood?.score === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      mood?.score === m.score ? COLORS.primary : COLORS.border,
-                    background:
-                      mood?.score === m.score ? COLORS.muted : undefined,
-                  }}
-                >
-                  <span className="text-2xl shrink-0">{m.emoji}</span>
-                  <div>
-                    <div
-                      className="text-sm font-bold"
-                      style={{ color: COLORS.fg }}
-                    >
-                      {m.label}
-                    </div>
-                  </div>
-                </button>
+                />
               ))}
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(0)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={mood === null}
-                onClick={() => setStep(2)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
+            <NavRow
+              onBack={goBack}
+              onContinue={continueFromMood}
+              continueDisabled={mood === null}
+            />
           </div>
         )}
 
-        {/* Step 2 — Energy */}
-        {step === 2 && (
-          <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              energy
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              How energetic did you feel today?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              Reflect on your overall energy levels.
-            </p>
-            <div className="flex flex-col gap-2.5 mb-8">
-              {ENERGY_OPTIONS.map((m) => (
-                <button
-                  key={m.score}
-                  onClick={() => setEnergy(m.score)}
-                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${energy === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      energy === m.score ? COLORS.primary : COLORS.border,
-                    background: energy === m.score ? COLORS.muted : undefined,
-                    color: COLORS.fg,
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(1)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={energy === null}
-                onClick={() => setStep(3)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
-          </div>
+        {/* Step 2 — Category */}
+        {step === "category" && (
+          <TreeStep
+            eyebrow="what's on your mind"
+            title="What is weighing on your mind most?"
+            subtitle="Pick the one that feels closest."
+            options={CATEGORY_OPTIONS}
+            choice={category}
+            onChoose={chooseCategory}
+            onBack={goBack}
+            onContinue={() =>
+              goTo(category && !category.other ? "rootCause" : "energy")
+            }
+            onSkip={() => {
+              chooseCategory(null);
+              goTo("energy");
+            }}
+          />
         )}
 
-        {/* Step 3 — Academic Stress */}
-        {step === 3 && (
-          <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              academic stress
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              How stressed did your studies or assignments make you feel today?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              Consider classes, homework, and exams.
-            </p>
-            <div className="flex flex-col gap-2.5 mb-8">
-              {STRESS_OPTIONS.map((m) => (
-                <button
-                  key={m.score}
-                  onClick={() => setStress(m.score)}
-                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${stress === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      stress === m.score ? COLORS.primary : COLORS.border,
-                    background: stress === m.score ? COLORS.muted : undefined,
-                    color: COLORS.fg,
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(2)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={stress === null}
-                onClick={() => setStep(4)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
-          </div>
+        {/* Step 3 — Root cause */}
+        {step === "rootCause" && tree && (
+          <TreeStep
+            eyebrow={tree.label.toLowerCase()}
+            title={tree.question}
+            subtitle="Pick what fits best."
+            options={tree.rootCauses.map((r) => ({
+              value: r.label,
+              label: r.label,
+            }))}
+            choice={rootCause}
+            onChoose={chooseRootCause}
+            onBack={goBack}
+            onContinue={() =>
+              goTo(rootCause && !rootCause.other ? "specificIssue" : "energy")
+            }
+            onSkip={() => {
+              chooseRootCause(null);
+              goTo("energy");
+            }}
+          />
         )}
 
-        {/* Step 4 — Sleep */}
-        {step === 4 && (
-          <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              sleep
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              How well did you sleep last night?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              Think about sleep quality and duration.
-            </p>
-            <div className="flex flex-col gap-2.5 mb-8">
-              {SLEEP_OPTIONS.map((m) => (
-                <button
-                  key={m.score}
-                  onClick={() => setSleep(m.score)}
-                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${sleep === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      sleep === m.score ? COLORS.primary : COLORS.border,
-                    background: sleep === m.score ? COLORS.muted : undefined,
-                    color: COLORS.fg,
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(3)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={sleep === null}
-                onClick={() => setStep(5)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
-          </div>
+        {/* Step 4 — Specific issue */}
+        {step === "specificIssue" && activeRoot && (
+          <TreeStep
+            eyebrow={activeRoot.label.toLowerCase()}
+            title={activeRoot.question}
+            subtitle="Pick what fits best."
+            options={activeRoot.issues.map((issue) => ({
+              value: issue,
+              label: issue,
+            }))}
+            choice={specificIssue}
+            onChoose={setSpecificIssue}
+            onBack={goBack}
+            onContinue={() => goTo("energy")}
+            onSkip={() => {
+              setSpecificIssue(null);
+              goTo("energy");
+            }}
+          />
         )}
 
-        {/* Step 5 — Focus */}
-        {step === 5 && (
-          <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              focus
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              How easy was it to concentrate on your studies today?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              Reflect on your ability to stay focused and productive.
-            </p>
-            <div className="flex flex-col gap-2.5 mb-8">
-              {FOCUS_OPTIONS.map((m) => (
-                <button
-                  key={m.score}
-                  onClick={() => setConcentration(m.score)}
-                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${concentration === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      concentration === m.score
-                        ? COLORS.primary
-                        : COLORS.border,
-                    background:
-                      concentration === m.score ? COLORS.muted : undefined,
-                    color: COLORS.fg,
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(4)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={concentration === null}
-                onClick={() => setStep(6)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
-          </div>
+        {/* Step 5 — Energy */}
+        {step === "energy" && (
+          <RatingStep
+            eyebrow="energy"
+            title="How is your energy level today?"
+            subtitle="Reflect on your overall energy levels."
+            options={ENERGY_OPTIONS}
+            value={energy}
+            onChange={setEnergy}
+            onBack={goBack}
+            onContinue={() => goTo("stress")}
+            onSkip={() => {
+              setEnergy(null);
+              goTo("stress");
+            }}
+          />
         )}
 
-        {/* Step 6 — Social Connection */}
-        {step === 6 && (
-          <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              social connection
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              Did you feel supported by friends, classmates, or family today?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              Your connections and support system.
-            </p>
-            <div className="flex flex-col gap-2.5 mb-8">
-              {SUPPORT_OPTIONS.map((m) => (
-                <button
-                  key={m.score}
-                  onClick={() => setSupport(m.score)}
-                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${support === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      support === m.score ? COLORS.primary : COLORS.border,
-                    background: support === m.score ? COLORS.muted : undefined,
-                    color: COLORS.fg,
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(5)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={support === null}
-                onClick={() => setStep(7)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
-          </div>
+        {/* Step 6 — Stress */}
+        {step === "stress" && (
+          <RatingStep
+            eyebrow="stress"
+            title="How stressed are you feeling today?"
+            subtitle="Think about the pressure you've felt through the day."
+            options={STRESS_OPTIONS}
+            value={stress}
+            onChange={setStress}
+            onBack={goBack}
+            onContinue={() => goTo("motivation")}
+            onSkip={() => {
+              setStress(null);
+              goTo("motivation");
+            }}
+          />
         )}
 
         {/* Step 7 — Motivation */}
-        {step === 7 && (
-          <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              motivation
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              How motivated did you feel to complete your work today?
-            </h2>
-            <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
-              Drive and willingness to get things done.
-            </p>
-            <div className="flex flex-col gap-2.5 mb-8">
-              {MOTIVATION_OPTIONS.map((m) => (
-                <button
-                  key={m.score}
-                  onClick={() => setMotivation(m.score)}
-                  className={`p-4 rounded-xl border-2 text-sm font-bold text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${motivation === m.score ? "" : "bg-white"}`}
-                  style={{
-                    borderColor:
-                      motivation === m.score ? COLORS.primary : COLORS.border,
-                    background:
-                      motivation === m.score ? COLORS.muted : undefined,
-                    color: COLORS.fg,
-                  }}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep(6)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
-              >
-                ←
-              </button>
-              <button
-                disabled={motivation === null}
-                onClick={() => setStep(8)}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                continue →
-              </button>
-            </div>
-          </div>
+        {step === "motivation" && (
+          <RatingStep
+            eyebrow="motivation"
+            title="How motivated do you feel to get things done?"
+            subtitle="Drive and willingness to get things done."
+            options={MOTIVATION_OPTIONS}
+            value={motivation}
+            onChange={setMotivation}
+            onBack={goBack}
+            onContinue={() => goTo("review")}
+            onSkip={() => {
+              setMotivation(null);
+              goTo("review");
+            }}
+          />
         )}
 
-        {/* Step 8 — Feedback + Submit */}
-        {step === 8 && (
+        {/* Step 8 — Review, feedback + submit */}
+        {step === "review" && (
           <div className="animate-fade-in">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-            >
-              feedback
-            </p>
-            <h2
-              className="text-2xl font-bold mb-2"
-              style={{ color: COLORS.fg }}
-            >
-              Anything else you want to share?
-            </h2>
-            <p className="text-sm mb-5" style={{ color: COLORS.fg2 }}>
-              Optional notes about your day.
-            </p>
+            <StepHeader
+              eyebrow="review"
+              title="Anything else you'd like to share today?"
+              subtitle="Optional notes about your day."
+            />
 
             <textarea
               rows={4}
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="Write your thoughts here..."
-              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none mb-8 transition-all hover:border-teal-400 focus:border-teal-500 bg-white focus:ring-1 focus:ring-teal-500"
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none mb-5 transition-all hover:border-teal-400 focus:border-teal-500 bg-white focus:ring-1 focus:ring-teal-500"
               style={{
                 borderColor: COLORS.border,
                 color: COLORS.fg,
@@ -686,26 +489,309 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               }}
             />
 
-            <div className="flex gap-3 mb-4">
-              <button
-                onClick={() => setStep(7)}
-                className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
-                style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
+            <div
+              className="rounded-xl border bg-white p-4 mb-8 text-sm space-y-1.5"
+              style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
               >
-                ←
-              </button>
-              <button
-                disabled={mutation.isPending}
-                onClick={handleSubmit}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
-                style={{ background: COLORS.primary, color: "#fff" }}
-              >
-                {mutation.isPending ? "submitting..." : "submit check-in →"}
-              </button>
+                today's check-in
+              </p>
+              <SummaryRow label="Mood" value={mood?.label ?? "—"} />
+              <SummaryRow
+                label="Topic"
+                value={
+                  topicSummary({
+                    category: treeValue(category),
+                    rootCause: treeValue(rootCause),
+                    specificIssue: treeValue(specificIssue),
+                  }) ?? "Skipped"
+                }
+              />
+              <SummaryRow label="Energy" value={ratingLabel(ENERGY_OPTIONS, energy)} />
+              <SummaryRow label="Stress" value={ratingLabel(STRESS_OPTIONS, stress)} />
+              <SummaryRow
+                label="Motivation"
+                value={ratingLabel(MOTIVATION_OPTIONS, motivation)}
+              />
             </div>
+
+            <NavRow
+              onBack={goBack}
+              onContinue={handleSubmit}
+              continueDisabled={mutation.isPending}
+              continueLabel={
+                mutation.isPending ? "submitting..." : "submit check-in →"
+              }
+            />
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function StepHeader({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <>
+      <p
+        className="text-xs font-semibold uppercase tracking-widest mb-2"
+        style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
+      >
+        {eyebrow}
+      </p>
+      <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.fg }}>
+        {title}
+      </h2>
+      <p className="text-sm mb-6" style={{ color: COLORS.fg2 }}>
+        {subtitle}
+      </p>
+    </>
+  );
+}
+
+function OptionCard({
+  emoji,
+  label,
+  hint,
+  selected,
+  onClick,
+}: {
+  emoji?: string;
+  label: string;
+  hint?: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`p-4 rounded-xl border-2 flex items-center gap-3 text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${selected ? "" : "bg-white"}`}
+      style={{
+        borderColor: selected ? COLORS.primary : COLORS.border,
+        background: selected ? COLORS.muted : undefined,
+      }}
+    >
+      {emoji && <span className="text-2xl shrink-0">{emoji}</span>}
+      <div>
+        <div className="text-sm font-bold" style={{ color: COLORS.fg }}>
+          {label}
+        </div>
+        {hint && (
+          <div className="text-xs mt-0.5" style={{ color: COLORS.fg3 }}>
+            {hint}
+          </div>
+        )}
+      </div>
+    </button>
+  );
+}
+
+// "Others" card: expands into a free-text box; the typed text is the answer.
+function OthersCard({
+  choice,
+  onChange,
+}: {
+  choice: TreeChoice | null;
+  onChange: (choice: TreeChoice) => void;
+}) {
+  const selected = !!choice?.other;
+  return (
+    <div
+      className={`rounded-xl border-2 transition-all ${selected ? "" : "bg-white hover:bg-teal-50 hover:border-teal-400"}`}
+      style={{
+        borderColor: selected ? COLORS.primary : COLORS.border,
+        background: selected ? COLORS.muted : undefined,
+      }}
+    >
+      <button
+        onClick={() => !selected && onChange({ value: "", other: true })}
+        className="w-full p-4 flex items-center gap-3 text-left"
+      >
+        <span className="text-2xl shrink-0">✏️</span>
+        <span className="text-sm font-bold" style={{ color: COLORS.fg }}>
+          Others — tell us in your own words
+        </span>
+      </button>
+      {selected && (
+        <div className="px-4 pb-4">
+          <textarea
+            autoFocus
+            rows={3}
+            maxLength={300}
+            value={choice.value}
+            onChange={(e) => onChange({ value: e.target.value, other: true })}
+            placeholder="What is on your mind? (type freely)..."
+            className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none resize-none bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+            style={{
+              borderColor: COLORS.border,
+              color: COLORS.fg,
+              lineHeight: 1.6,
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NavRow({
+  onBack,
+  onContinue,
+  continueDisabled,
+  continueLabel = "continue →",
+  onSkip,
+}: {
+  onBack: () => void;
+  onContinue: () => void;
+  continueDisabled: boolean;
+  continueLabel?: string;
+  onSkip?: () => void;
+}) {
+  return (
+    <>
+      <div className="flex gap-3">
+        <button
+          onClick={onBack}
+          className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
+          style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
+        >
+          ←
+        </button>
+        <button
+          disabled={continueDisabled}
+          onClick={onContinue}
+          className="flex-1 py-3 rounded-xl font-semibold text-sm disabled:opacity-30 hover:opacity-90 transition-all card-hover"
+          style={{ background: COLORS.primary, color: "#fff" }}
+        >
+          {continueLabel}
+        </button>
+      </div>
+      {onSkip && (
+        <button
+          onClick={onSkip}
+          className="w-full mt-3 py-2 text-xs font-medium transition-colors hover:text-teal-600"
+          style={{ color: COLORS.fg3 }}
+        >
+          skip this question ⏭
+        </button>
+      )}
+    </>
+  );
+}
+
+function TreeStep({
+  eyebrow,
+  title,
+  subtitle,
+  options,
+  choice,
+  onChoose,
+  onBack,
+  onContinue,
+  onSkip,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  options: ChoiceOption[];
+  choice: TreeChoice | null;
+  onChoose: (choice: TreeChoice) => void;
+  onBack: () => void;
+  onContinue: () => void;
+  onSkip: () => void;
+}) {
+  const canContinue = !!choice && (!choice.other || !!choice.value.trim());
+  return (
+    <div className="animate-fade-in">
+      <StepHeader eyebrow={eyebrow} title={title} subtitle={subtitle} />
+      <div className="flex flex-col gap-2.5 mb-8">
+        {options.map((o) => (
+          <OptionCard
+            key={o.value}
+            emoji={o.emoji}
+            label={o.label}
+            selected={!!choice && !choice.other && choice.value === o.value}
+            onClick={() => onChoose({ value: o.value, other: false })}
+          />
+        ))}
+        <OthersCard choice={choice} onChange={onChoose} />
+      </div>
+      <NavRow
+        onBack={onBack}
+        onContinue={onContinue}
+        continueDisabled={!canContinue}
+        onSkip={onSkip}
+      />
+    </div>
+  );
+}
+
+function RatingStep({
+  eyebrow,
+  title,
+  subtitle,
+  options,
+  value,
+  onChange,
+  onBack,
+  onContinue,
+  onSkip,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  options: RatingOption[];
+  value: number | null;
+  onChange: (score: number) => void;
+  onBack: () => void;
+  onContinue: () => void;
+  onSkip: () => void;
+}) {
+  return (
+    <div className="animate-fade-in">
+      <StepHeader eyebrow={eyebrow} title={title} subtitle={subtitle} />
+      <div className="flex flex-col gap-2.5 mb-8">
+        {options.map((o) => (
+          <OptionCard
+            key={o.score}
+            emoji={o.emoji}
+            label={o.label}
+            hint={o.hint}
+            selected={value === o.score}
+            onClick={() => onChange(o.score)}
+          />
+        ))}
+      </div>
+      <NavRow
+        onBack={onBack}
+        onContinue={onContinue}
+        continueDisabled={value === null}
+        onSkip={onSkip}
+      />
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-3">
+      <span className="w-24 shrink-0" style={{ color: COLORS.fg3 }}>
+        {label}
+      </span>
+      <span className="font-semibold" style={{ color: COLORS.fg }}>
+        {value}
+      </span>
     </div>
   );
 }

@@ -17,3 +17,22 @@ export function moodColor(score: number) {
   if (roundedScore === 2) return "#D97706";
   return "#DC2626";
 }
+
+// Check-in totalScore = mood + energy + stress + motivation, each 0 (best) – 4 (worst).
+export const TOTAL_SCORE_MAX = 16;
+
+export function getScoreColor(score: number) {
+  if (score <= 3) return "#15803d";
+  if (score <= 6) return "#4ade80";
+  if (score <= 9) return "#facc15";
+  if (score <= 12) return "#f97316";
+  return "#ef4444";
+}
+
+export function getScoreLabel(score: number) {
+  if (score <= 3) return "Very Well";
+  if (score <= 6) return "Well";
+  if (score <= 9) return "Moderate";
+  if (score <= 12) return "Stressed";
+  return "High Strain";
+}

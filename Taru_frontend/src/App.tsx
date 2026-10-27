@@ -8,6 +8,7 @@ import HomeView from "./components/dashboard/HomeView";
 import TalkView from "./components/dashboard/TalkView";
 import GamesView from "./components/dashboard/GamesView";
 import PsychiatristView from "./components/dashboard/PsychiatristView";
+import PsychiatristComingSoon from "./components/dashboard/PsychiatristComingSoon";
 import MoodView from "./components/dashboard/MoodView";
 import ProfileView from "./components/dashboard/ProfileView";
 import PsychiatristAuthPage from "./pages/PsychiatristAuthPage";
@@ -24,6 +25,12 @@ import ChatbotView from "./components/dashboard/ChatbotView";
 import InstitutionMoodAnalyticsView from "./components/institution/InstitutionMoodAnalyticsView";
 import ConcernsView from "./components/dashboard/ConcernsView";
 
+// ─── FEATURE FLAGS ───────────────────────────────────────────────────────────
+// Set to `true` when psychiatrists are onboarded and ready.
+// To re-enable: change false → true (one line change).
+const PSYCHIATRIST_LIVE = false;
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function App() {
   return (
     <Routes>
@@ -38,7 +45,7 @@ export default function App() {
           <Route path="talk" element={<TalkView />} />
           <Route path="chatbot" element={<ChatbotView />} />
           <Route path="games" element={<GamesView />} />
-          <Route path="psychiatrist" element={<PsychiatristView />} />
+          <Route path="psychiatrist" element={PSYCHIATRIST_LIVE ? <PsychiatristView /> : <PsychiatristComingSoon />} />
           <Route path="mood" element={<MoodView />} />
           <Route path="profile" element={<ProfileView />} />
           <Route path="concerns" element={<ConcernsView />} />

@@ -287,9 +287,6 @@ async function seedStudent(student, studentIndex) {
       },
       energy,
       stress,
-      sleep,
-      concentration,
-      support,
       motivation,
       feedback: "",
       totalScore:

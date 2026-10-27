@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardList } from 'lucide-react'
 import COLORS from '../../lib/theme'
+import { TOTAL_SCORE_MAX, getScoreColor, getScoreLabel } from '../../lib/moodScale'
+import { topicSummary } from '../../lib/checkinTree'
 import { useCheckinHistory } from '../../api/checkin'
 import WeeklyMoodChart from './WeeklyMoodChart'
 
@@ -12,22 +14,6 @@ const MOOD_MAP = [
   { emoji: '😕', label: 'Stressed' },
   { emoji: '😢', label: 'Sad' },
 ]
-
-function getScoreColor(score: number): string {
-  if (score <= 5) return '#15803d'
-  if (score <= 10) return '#4ade80'
-  if (score <= 16) return '#facc15'
-  if (score <= 22) return '#f97316'
-  return '#ef4444'
-}
-
-function getScoreLabel(score: number): string {
-  if (score <= 5) return 'Very Well'
-  if (score <= 10) return 'Well'
-  if (score <= 16) return 'Moderate'
-  if (score <= 22) return 'Stressed'
-  return 'High Strain'
-}
 
 interface DayCell {
   date: Date
@@ -220,7 +206,7 @@ function CalendarHeatmap({ checkins }: { checkins: any[] }) {
                     className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                     style={{ background: scoreColor, color: '#fff' }}
                   >
-                    {c.totalScore}/28
+                    {c.totalScore}/{TOTAL_SCORE_MAX}
                   </span>
                   <span className="text-[10px]" style={{ color: COLORS.fg3 }}>
                     {getScoreLabel(c.totalScore ?? 0)}
@@ -232,17 +218,21 @@ function CalendarHeatmap({ checkins }: { checkins: any[] }) {
                   {[
                     { label: 'Energy', val: c.energy },
                     { label: 'Stress', val: c.stress },
-                    { label: 'Sleep', val: c.sleep },
-                    { label: 'Focus', val: c.concentration },
-                    { label: 'Support', val: c.support },
                     { label: 'Motivation', val: c.motivation },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center justify-between">
                       <span className="text-[10px]" style={{ color: COLORS.fg3 }}>{item.label}</span>
-                      <span className="text-[10px] font-bold" style={{ color: COLORS.fg }}>{item.val}/4</span>
+                      <span className="text-[10px] font-bold" style={{ color: COLORS.fg }}>{item.val ?? '—'}/4</span>
                     </div>
                   ))}
                 </div>
+
+                {/* Topic from the decision tree */}
+                {topicSummary(c) && (
+                  <p className="mt-2 text-[10px] leading-relaxed" style={{ color: COLORS.fg2 }}>
+                    {topicSummary(c)}
+                  </p>
+                )}
 
                 {/* Feedback */}
                 {c.feedback && (
@@ -331,14 +321,15 @@ export default function MoodView() {
                       </div>
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: getScoreColor(c.totalScore ?? 0), color: '#fff' }}>
-                          Score: {c.totalScore}/28
+                          Score: {c.totalScore}/{TOTAL_SCORE_MAX}
                         </span>
-                        {c.energy !== undefined && (
-                          <span className="text-[10px]" style={{ color: COLORS.fg3 }}>
-                            E:{c.energy} S:{c.stress} Sl:{c.sleep} F:{c.concentration} So:{c.support} M:{c.motivation}
-                          </span>
-                        )}
+                        <span className="text-[10px]" style={{ color: COLORS.fg3 }}>
+                          Energy {c.energy ?? '—'} · Stress {c.stress ?? '—'} · Motivation {c.motivation ?? '—'}
+                        </span>
                       </div>
+                      {topicSummary(c) && (
+                        <p className="text-[11px] mt-1" style={{ color: COLORS.fg3 }}>{topicSummary(c)}</p>
+                      )}
                       {c.feedback && (
                         <p className="text-xs mt-1 leading-relaxed" style={{ color: COLORS.fg2 }}>"{c.feedback}"</p>
                       )}
