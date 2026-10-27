@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Activity } from "lucide-react";
 import { COLORS } from "../../lib/theme";
 import { TOTAL_SCORE_MAX } from "../../lib/moodScale";
+import { findTree } from "../../lib/checkinTree";
 import {
   fetchAnalytics,
   fetchInstitutionWellnessFilterOptions,
@@ -38,6 +39,8 @@ interface AnalyticsData {
     motivation: number | null;
     totalScore: number | null;
   };
+  // Top 5 issue categories today; "others" = students' own words
+  topCategories: { category: string; count: number }[];
 }
 
 // All scores: lower is better (ratings 0–4, total 0–16)
@@ -67,6 +70,14 @@ const getMoodLabel = (score: number) => {
   if (score >= 1) return "Happy";
   return "Very Happy";
 };
+
+function categoryDisplay(category: string) {
+  if (category === "others") {
+    return { emoji: "✏️", label: "Others (in their own words)" };
+  }
+  const tree = findTree(category);
+  return { emoji: tree?.emoji ?? "•", label: tree?.label ?? category };
+}
 
 const trendMetrics = [
   { key: "averageMood", label: "Mood" },
@@ -239,6 +250,71 @@ export default function InstitutionOverviewView() {
           <p className="text-xs" style={{ color: COLORS.fg3 }}>
             Student wellness data will appear here once they start checking in.
           </p>
+        </div>
+      )}
+
+      {/* Most common issue categories today */}
+      {analytics && analytics.studentsCheckedIn > 0 && (
+        <div
+          className="rounded-2xl p-5 border"
+          style={{ background: COLORS.card, borderColor: COLORS.border }}
+        >
+          <h3 className="text-sm font-bold" style={{ color: COLORS.fg }}>
+            Most common reasons
+          </h3>
+          <p className="text-xs mb-4" style={{ color: COLORS.fg3 }}>
+            What is weighing on students' minds today, out of{" "}
+            {analytics.studentsCheckedIn} check-ins
+          </p>
+
+          {analytics.topCategories.length === 0 ? (
+            <p className="text-xs" style={{ color: COLORS.fg3 }}>
+              No issues reported today.
+            </p>
+          ) : (
+            <ol className="space-y-3">
+              {analytics.topCategories.map(({ category, count }, index) => {
+                const { emoji, label } = categoryDisplay(category);
+                const percent = Math.round(
+                  (count / analytics.studentsCheckedIn) * 100,
+                );
+                return (
+                  <li key={category}>
+                    <div className="flex items-center gap-2 text-sm mb-1">
+                      <span
+                        className="w-5 text-xs font-bold"
+                        style={{ color: COLORS.fg3 }}
+                      >
+                        {index + 1}.
+                      </span>
+                      <span>{emoji}</span>
+                      <span
+                        className="flex-1 font-semibold"
+                        style={{ color: COLORS.fg }}
+                      >
+                        {label}
+                      </span>
+                      <span className="text-xs" style={{ color: COLORS.fg2 }}>
+                        {count} student{count !== 1 ? "s" : ""} · {percent}%
+                      </span>
+                    </div>
+                    <div
+                      className="ml-7 h-2 rounded-full overflow-hidden"
+                      style={{ background: COLORS.muted }}
+                    >
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${percent}%`,
+                          background: COLORS.primary,
+                        }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </div>
       )}
 

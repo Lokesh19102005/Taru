@@ -19,6 +19,37 @@ const AGE_RANGES = {
   "24plus": { ageMin: 24 },
 };
 
+// Prebuilt check-in categories (keys from Taru_frontend/src/lib/checkinTree.ts).
+// "positive" is the happy-mood tree, so it is not an issue.
+const ISSUE_CATEGORIES = new Set([
+  "placements",
+  "academics",
+  "exams",
+  "family",
+  "relationships",
+  "loneliness",
+  "health",
+  "money",
+  "overthinking",
+]);
+const TOP_CATEGORY_LIMIT = 5;
+
+// Most common issue categories; free-text "Others" answers are grouped as "others"
+function getTopCategories(checkins) {
+  const counts = new Map();
+
+  for (const { category } of checkins) {
+    if (!category || category === "positive") continue;
+    const key = ISSUE_CATEGORIES.has(category) ? category : "others";
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+
+  return [...counts]
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, TOP_CATEGORY_LIMIT);
+}
+
 function getCohortFilters(query) {
   const filters = {};
 
@@ -181,7 +212,12 @@ exports.getAnalytics = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: { totalStudents, studentsCheckedIn, averages },
+      data: {
+        totalStudents,
+        studentsCheckedIn,
+        averages,
+        topCategories: getTopCategories(checkins),
+      },
     });
   } catch (error) {
     console.error(error);
