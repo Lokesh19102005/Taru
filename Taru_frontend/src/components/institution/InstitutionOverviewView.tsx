@@ -1,13 +1,7 @@
-<<<<<<< HEAD
-import { useState, useEffect } from 'react'
-import { Activity } from 'lucide-react'
-import { COLORS } from '../../lib/theme'
-import { fetchAnalytics } from '../../api/institution'
-import { TOTAL_SCORE_MAX } from '../../lib/moodScale'
-=======
 import { useState, useEffect } from "react";
 import { Activity } from "lucide-react";
 import { COLORS } from "../../lib/theme";
+import { TOTAL_SCORE_MAX } from "../../lib/moodScale";
 import {
   fetchAnalytics,
   fetchInstitutionWellnessFilterOptions,
@@ -32,43 +26,26 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
->>>>>>> aeabc816eea7999d5385d2ef60cb62ceea7b2854
 
 interface AnalyticsData {
   totalStudents: number;
   studentsCheckedIn: number;
   averages: {
-<<<<<<< HEAD
     // null when no student answered that question today
-    mood: number | null; energy: number | null; stress: number | null
-    motivation: number | null; totalScore: number | null
-  }
-=======
-    mood: number;
-    energy: number;
-    stress: number;
-    sleep: number;
-    concentration: number;
-    support: number;
-    motivation: number;
-    totalScore: number;
+    mood: number | null;
+    energy: number | null;
+    stress: number | null;
+    motivation: number | null;
+    totalScore: number | null;
   };
->>>>>>> aeabc816eea7999d5385d2ef60cb62ceea7b2854
 }
 
 // All scores: lower is better (ratings 0–4, total 0–16)
 const getColor = (value: number, max: number) => {
-<<<<<<< HEAD
   if (max === TOTAL_SCORE_MAX) {
-    if (value >= 12) return '#DC2626'
-    if (value >= 8) return '#D97706'
-    return '#059669'
-=======
-  if (max === 28) {
-    if (value >= 21) return "#DC2626";
-    if (value >= 14) return "#D97706";
+    if (value >= 12) return "#DC2626";
+    if (value >= 8) return "#D97706";
     return "#059669";
->>>>>>> aeabc816eea7999d5385d2ef60cb62ceea7b2854
   }
   if (value >= 3) return "#DC2626";
   if (value >= 2) return "#D97706";
@@ -94,10 +71,7 @@ const getMoodLabel = (score: number) => {
 const trendMetrics = [
   { key: "averageMood", label: "Mood" },
   { key: "averageStress", label: "Stress" },
-  { key: "averageSleep", label: "Sleep" },
   { key: "averageEnergy", label: "Energy" },
-  { key: "averageConcentration", label: "Concentration" },
-  { key: "averageSupport", label: "Support" },
   { key: "averageMotivation", label: "Motivation" },
 ] as const;
 
@@ -142,15 +116,6 @@ export default function InstitutionOverviewView() {
       .catch(console.error);
   }, []);
 
-<<<<<<< HEAD
-  const metrics = analytics ? [
-    { label: 'Mood', value: analytics.averages.mood, max: 4 },
-    { label: 'Energy', value: analytics.averages.energy, max: 4 },
-    { label: 'Stress', value: analytics.averages.stress, max: 4 },
-    { label: 'Motivation', value: analytics.averages.motivation, max: 4 },
-    { label: 'Total Score', value: analytics.averages.totalScore, max: TOTAL_SCORE_MAX },
-  ] : []
-=======
   useEffect(() => {
     fetchInstitutionWellnessTrend(range, filters)
       .then((response) => setTrend(response.data))
@@ -171,18 +136,14 @@ export default function InstitutionOverviewView() {
         { label: "Mood", value: analytics.averages.mood, max: 4 },
         { label: "Energy", value: analytics.averages.energy, max: 4 },
         { label: "Stress", value: analytics.averages.stress, max: 4 },
-        { label: "Sleep", value: analytics.averages.sleep, max: 4 },
-        {
-          label: "Concentration",
-          value: analytics.averages.concentration,
-          max: 4,
-        },
-        { label: "Support", value: analytics.averages.support, max: 4 },
         { label: "Motivation", value: analytics.averages.motivation, max: 4 },
-        { label: "Total Score", value: analytics.averages.totalScore, max: 28 },
+        {
+          label: "Total Score",
+          value: analytics.averages.totalScore,
+          max: TOTAL_SCORE_MAX,
+        },
       ]
     : [];
->>>>>>> aeabc816eea7999d5385d2ef60cb62ceea7b2854
 
   if (loading) {
     return (
@@ -227,16 +188,7 @@ export default function InstitutionOverviewView() {
                 {m.label}
               </div>
               <div className="flex items-center gap-2">
-<<<<<<< HEAD
-                {m.label === 'Mood' && m.value !== null && <span className="text-2xl">{getMoodEmoji(Math.round(m.value))}</span>}
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-extrabold" style={{ color: m.value === null ? COLORS.fg3 : getColor(m.value, m.max) }}>{m.value ?? '—'}</span>
-                  <span className="text-xs font-semibold" style={{ color: COLORS.fg4 }}>/{m.max}</span>
-                </div>
-              </div>
-              {m.label === 'Mood' && m.value !== null && <div className="text-[10px] mt-1 font-semibold" style={{ color: COLORS.fg3 }}>{getMoodLabel(Math.round(m.value))}</div>}
-=======
-                {m.label === "Mood" && (
+                {m.label === "Mood" && m.value !== null && (
                   <span className="text-2xl">
                     {getMoodEmoji(Math.round(m.value))}
                   </span>
@@ -244,9 +196,14 @@ export default function InstitutionOverviewView() {
                 <div className="flex items-baseline gap-1">
                   <span
                     className="text-2xl font-extrabold"
-                    style={{ color: getColor(m.value, m.max) }}
+                    style={{
+                      color:
+                        m.value === null
+                          ? COLORS.fg3
+                          : getColor(m.value, m.max),
+                    }}
                   >
-                    {m.value}
+                    {m.value ?? "—"}
                   </span>
                   <span
                     className="text-xs font-semibold"
@@ -256,7 +213,7 @@ export default function InstitutionOverviewView() {
                   </span>
                 </div>
               </div>
-              {m.label === "Mood" && (
+              {m.label === "Mood" && m.value !== null && (
                 <div
                   className="text-[10px] mt-1 font-semibold"
                   style={{ color: COLORS.fg3 }}
@@ -264,7 +221,6 @@ export default function InstitutionOverviewView() {
                   {getMoodLabel(Math.round(m.value))}
                 </div>
               )}
->>>>>>> aeabc816eea7999d5385d2ef60cb62ceea7b2854
             </div>
           ))}
         </div>
@@ -565,20 +521,8 @@ export default function InstitutionOverviewView() {
                         score: trend.periodAverages.averageStress,
                       },
                       {
-                        dimension: "Sleep",
-                        score: trend.periodAverages.averageSleep,
-                      },
-                      {
                         dimension: "Energy",
                         score: trend.periodAverages.averageEnergy,
-                      },
-                      {
-                        dimension: "Concentration",
-                        score: trend.periodAverages.averageConcentration,
-                      },
-                      {
-                        dimension: "Support",
-                        score: trend.periodAverages.averageSupport,
                       },
                       {
                         dimension: "Motivation",

@@ -169,9 +169,6 @@ export interface InstitutionWellnessPoint {
   averageMood: number | null;
   averageEnergy: number | null;
   averageStress: number | null;
-  averageSleep: number | null;
-  averageConcentration: number | null;
-  averageSupport: number | null;
   averageMotivation: number | null;
   activeStudents: number;
   checkinCount: number;
@@ -189,10 +186,7 @@ export interface InstitutionWellnessTrend {
   periodAverages: {
     averageMood: number | null;
     averageStress: number | null;
-    averageSleep: number | null;
     averageEnergy: number | null;
-    averageConcentration: number | null;
-    averageSupport: number | null;
     averageMotivation: number | null;
     participatingStudents: number;
   };
