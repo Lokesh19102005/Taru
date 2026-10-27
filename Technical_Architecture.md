@@ -206,15 +206,15 @@ DailyCheckIn {
   _id           : ObjectId (auto)
   userId        : ObjectId → ref: User (null for guest check-ins)
   date          : Date
-  mood          : { label: String, score: Number }  → e.g., { label: "Happy", score: 9 }
-  energy        : Number (1–10)
-  stress        : Number (1–10)
-  sleep         : Number (1–10)
-  concentration : Number (1–10)
-  support       : Number (1–10)
-  motivation    : Number (1–10)
+  mood          : { label: String, score: Number }  → 0 Very Happy … 4 Sad (required)
+  category      : String | null → tree key (e.g. "placements", "positive") or student's "Others" text
+  rootCause     : String | null → prebuilt option label or "Others" text
+  specificIssue : String | null → prebuilt option label or "Others" text
+  energy        : Number | null (0 best – 4 worst, null = skipped)
+  stress        : Number | null (0 best – 4 worst, null = skipped)
+  motivation    : Number | null (0 best – 4 worst, null = skipped)
   feedback      : String (optional free text)
-  totalScore    : Number → Auto-calculated as sum of all 7 numeric fields
+  totalScore    : Number → mood + energy + stress + motivation (skipped = 0), 0–16, lower is better
   createdAt     : Date (auto)
 }
 ```
@@ -530,7 +530,10 @@ App.tsx mounts → AuthContext initializes
 Student clicks "Check In"
        │
        ▼
-CheckinFlow component loads (7-step questionnaire)
+CheckinFlow component loads (8-step questionnaire:
+  mood → category → root cause → specific issue → energy → stress → motivation → review)
+  Happy / Very Happy moods skip the category step and use the Positive Momentum tree.
+  "Others" or Skip at a tree step jumps straight to energy. Tree data: src/lib/checkinTree.ts
        │
        ▼
 Student fills each step (stored in local React state)
@@ -540,12 +543,12 @@ Final step: Submit
        │
        ▼
 POST /api/checkin
-  Body: { mood, energy, stress, sleep, concentration, support, motivation, feedback }
+  Body: { mood, category, rootCause, specificIssue, energy, stress, motivation, feedback }
        │
        ▼
 Backend: checkinController
   1. Save DailyCheckIn to MongoDB (with req.user._id)
-  2. Calculate totalScore = sum of all 7 scores
+  2. Validate input, calculate totalScore = mood + energy + stress + motivation
   3. Check if yesterday also had a check-in → update User.checkinStreak
   4. Return saved check-in + new streak
        │

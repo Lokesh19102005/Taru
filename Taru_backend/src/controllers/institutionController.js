@@ -139,52 +139,20 @@ exports.getAnalytics = async (req, res) => {
     const studentsCheckedIn = checkins.length;
 
     // Compute averages ONLY from students who checked in
-    let averages = {
-      mood: 0,
-      energy: 0,
-      stress: 0,
-      sleep: 0,
-      concentration: 0,
-      support: 0,
-      motivation: 0,
-      totalScore: 0,
+    // Ratings can be skipped, so each one is averaged over the students who answered it
+    const average = (getValue) => {
+      const values = checkins.map(getValue).filter((v) => typeof v === "number");
+      if (!values.length) return null;
+      return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10) / 10;
     };
 
-    if (studentsCheckedIn > 0) {
-      let sums = {
-        mood: 0,
-        energy: 0,
-        stress: 0,
-        sleep: 0,
-        concentration: 0,
-        support: 0,
-        motivation: 0,
-        totalScore: 0,
-      };
-
-      checkins.forEach((c) => {
-        sums.mood += c.mood?.score || 0;
-        sums.energy += c.energy || 0;
-        sums.stress += c.stress || 0;
-        sums.sleep += c.sleep || 0;
-        sums.concentration += c.concentration || 0;
-        sums.support += c.support || 0;
-        sums.motivation += c.motivation || 0;
-        sums.totalScore += c.totalScore || 0;
-      });
-
-      averages = {
-        mood: Math.round((sums.mood / studentsCheckedIn) * 10) / 10,
-        energy: Math.round((sums.energy / studentsCheckedIn) * 10) / 10,
-        stress: Math.round((sums.stress / studentsCheckedIn) * 10) / 10,
-        sleep: Math.round((sums.sleep / studentsCheckedIn) * 10) / 10,
-        concentration:
-          Math.round((sums.concentration / studentsCheckedIn) * 10) / 10,
-        support: Math.round((sums.support / studentsCheckedIn) * 10) / 10,
-        motivation: Math.round((sums.motivation / studentsCheckedIn) * 10) / 10,
-        totalScore: Math.round((sums.totalScore / studentsCheckedIn) * 10) / 10,
-      };
-    }
+    const averages = {
+      mood: average((c) => c.mood?.score),
+      energy: average((c) => c.energy),
+      stress: average((c) => c.stress),
+      motivation: average((c) => c.motivation),
+      totalScore: average((c) => c.totalScore),
+    };
 
     res.status(200).json({
       success: true,
@@ -247,11 +215,11 @@ exports.getStudents = async (req, res) => {
         todayCheckin: checkin
           ? {
               mood: checkin.mood,
+              category: checkin.category,
+              rootCause: checkin.rootCause,
+              specificIssue: checkin.specificIssue,
               energy: checkin.energy,
               stress: checkin.stress,
-              sleep: checkin.sleep,
-              concentration: checkin.concentration,
-              support: checkin.support,
               motivation: checkin.motivation,
               totalScore: checkin.totalScore,
               feedback: checkin.feedback,

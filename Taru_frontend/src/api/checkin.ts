@@ -1,14 +1,16 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiRequest } from './client'
 
+// Scores are 0 (best) – 4 (worst); null means the student skipped that question.
 export interface DailyCheckinData {
   mood: { label: string; score: number }
-  energy: number
-  stress: number
-  sleep: number
-  concentration: number
-  support: number
-  motivation: number
+  // Prebuilt category key / option label, or the student's own "Others" text
+  category: string | null
+  rootCause: string | null
+  specificIssue: string | null
+  energy: number | null
+  stress: number | null
+  motivation: number | null
   feedback: string
 }
 

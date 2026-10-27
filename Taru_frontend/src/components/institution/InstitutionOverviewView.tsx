@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react'
 import { Activity } from 'lucide-react'
 import { COLORS } from '../../lib/theme'
 import { fetchAnalytics } from '../../api/institution'
+import { TOTAL_SCORE_MAX } from '../../lib/moodScale'
 
 interface AnalyticsData {
   totalStudents: number
   studentsCheckedIn: number
   averages: {
-    mood: number; energy: number; stress: number; sleep: number
-    concentration: number; support: number; motivation: number; totalScore: number
+    // null when no student answered that question today
+    mood: number | null; energy: number | null; stress: number | null
+    motivation: number | null; totalScore: number | null
   }
 }
 
+// All scores: lower is better (ratings 0–4, total 0–16)
 const getColor = (value: number, max: number) => {
-  if (max === 28) {
-    if (value >= 21) return '#DC2626'
-    if (value >= 14) return '#D97706'
+  if (max === TOTAL_SCORE_MAX) {
+    if (value >= 12) return '#DC2626'
+    if (value >= 8) return '#D97706'
     return '#059669'
   }
   if (value >= 3) return '#DC2626'
@@ -54,11 +57,8 @@ export default function InstitutionOverviewView() {
     { label: 'Mood', value: analytics.averages.mood, max: 4 },
     { label: 'Energy', value: analytics.averages.energy, max: 4 },
     { label: 'Stress', value: analytics.averages.stress, max: 4 },
-    { label: 'Sleep', value: analytics.averages.sleep, max: 4 },
-    { label: 'Concentration', value: analytics.averages.concentration, max: 4 },
-    { label: 'Support', value: analytics.averages.support, max: 4 },
     { label: 'Motivation', value: analytics.averages.motivation, max: 4 },
-    { label: 'Total Score', value: analytics.averages.totalScore, max: 28 },
+    { label: 'Total Score', value: analytics.averages.totalScore, max: TOTAL_SCORE_MAX },
   ] : []
 
   if (loading) {
@@ -85,13 +85,13 @@ export default function InstitutionOverviewView() {
             <div key={m.label} className="rounded-2xl p-4 border card-hover transition-all" style={{ background: COLORS.card, borderColor: COLORS.border }}>
               <div className="text-xs font-bold mb-2" style={{ color: COLORS.fg2 }}>{m.label}</div>
               <div className="flex items-center gap-2">
-                {m.label === 'Mood' && <span className="text-2xl">{getMoodEmoji(Math.round(m.value))}</span>}
+                {m.label === 'Mood' && m.value !== null && <span className="text-2xl">{getMoodEmoji(Math.round(m.value))}</span>}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-extrabold" style={{ color: getColor(m.value, m.max) }}>{m.value}</span>
+                  <span className="text-2xl font-extrabold" style={{ color: m.value === null ? COLORS.fg3 : getColor(m.value, m.max) }}>{m.value ?? '—'}</span>
                   <span className="text-xs font-semibold" style={{ color: COLORS.fg4 }}>/{m.max}</span>
                 </div>
               </div>
-              {m.label === 'Mood' && <div className="text-[10px] mt-1 font-semibold" style={{ color: COLORS.fg3 }}>{getMoodLabel(Math.round(m.value))}</div>}
+              {m.label === 'Mood' && m.value !== null && <div className="text-[10px] mt-1 font-semibold" style={{ color: COLORS.fg3 }}>{getMoodLabel(Math.round(m.value))}</div>}
             </div>
           ))}
         </div>

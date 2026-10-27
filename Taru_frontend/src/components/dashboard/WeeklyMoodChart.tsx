@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import COLORS from '../../lib/theme'
+import { TOTAL_SCORE_MAX, getScoreColor, getScoreLabel } from '../../lib/moodScale'
+import { topicSummary } from '../../lib/checkinTree'
 
 const MOOD_MAP = [
   { emoji: '😄', label: 'Very Happy' },
@@ -8,22 +10,6 @@ const MOOD_MAP = [
   { emoji: '😕', label: 'Stressed' },
   { emoji: '😢', label: 'Sad' },
 ]
-
-function getScoreColor(score: number): string {
-  if (score <= 5) return '#15803d'
-  if (score <= 10) return '#4ade80'
-  if (score <= 16) return '#facc15'
-  if (score <= 22) return '#f97316'
-  return '#ef4444'
-}
-
-function getScoreLabel(score: number): string {
-  if (score <= 5) return 'Very Well'
-  if (score <= 10) return 'Well'
-  if (score <= 16) return 'Moderate'
-  if (score <= 22) return 'Stressed'
-  return 'High Strain'
-}
 
 interface WeekDay {
   day: string       // e.g. "Mon"
@@ -103,7 +89,7 @@ export default function WeeklyMoodChart({ checkins, title = 'Mood this week', ma
           const hasData = wd.checkin !== null
           const score = wd.checkin?.totalScore ?? 0
           // Bar height proportional to score (higher score = taller bar = more stress)
-          const barH = hasData ? Math.max(6, (score / 28) * maxBarHeight) : 0
+          const barH = hasData ? Math.max(6, (score / TOTAL_SCORE_MAX) * maxBarHeight) : 0
           const barColor = hasData ? getScoreColor(score) : COLORS.muted
           const isToday = i === 6
 
@@ -177,7 +163,7 @@ export default function WeeklyMoodChart({ checkins, title = 'Mood this week', ma
                     className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                     style={{ background: scoreColor, color: '#fff' }}
                   >
-                    {c.totalScore}/28
+                    {c.totalScore}/{TOTAL_SCORE_MAX}
                   </span>
                   <span className="text-[10px]" style={{ color: COLORS.fg3 }}>
                     {getScoreLabel(c.totalScore ?? 0)}
@@ -189,17 +175,21 @@ export default function WeeklyMoodChart({ checkins, title = 'Mood this week', ma
                   {[
                     { label: 'Energy', val: c.energy },
                     { label: 'Stress', val: c.stress },
-                    { label: 'Sleep', val: c.sleep },
-                    { label: 'Focus', val: c.concentration },
-                    { label: 'Support', val: c.support },
                     { label: 'Motivation', val: c.motivation },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center justify-between">
                       <span className="text-[10px]" style={{ color: COLORS.fg3 }}>{item.label}</span>
-                      <span className="text-[10px] font-bold" style={{ color: COLORS.fg }}>{item.val}/4</span>
+                      <span className="text-[10px] font-bold" style={{ color: COLORS.fg }}>{item.val ?? '—'}/4</span>
                     </div>
                   ))}
                 </div>
+
+                {/* Topic from the decision tree */}
+                {topicSummary(c) && (
+                  <p className="mt-2 text-[10px] leading-relaxed" style={{ color: COLORS.fg2 }}>
+                    {topicSummary(c)}
+                  </p>
+                )}
 
                 {/* Feedback */}
                 {c.feedback && (

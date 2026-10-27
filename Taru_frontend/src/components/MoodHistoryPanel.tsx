@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react'
 import { X, Activity, TrendingUp, TrendingDown, Minus, Calendar, Brain } from 'lucide-react'
 import { getStudentMoodHistory } from '../api/meeting'
+import { TOTAL_SCORE_MAX, getScoreColor, getScoreLabel } from '../lib/moodScale'
+import { topicSummary } from '../lib/checkinTree'
 
 interface CheckIn {
   _id: string
   date: string
   mood: { label: string; score: number }
-  energy: number
-  stress: number
-  sleep: number
-  concentration: number
-  support: number
-  motivation: number
+  category: string | null
+  rootCause: string | null
+  specificIssue: string | null
+  // 0 (best) – 4 (worst), null = skipped
+  energy: number | null
+  stress: number | null
+  motivation: number | null
   totalScore: number
   feedback: string
 }
@@ -36,37 +39,28 @@ const MOOD_EMOJIS: Record<string, string> = {
   'Grateful': '🙏',
 }
 
-function getScoreColor(score: number): string {
-  if (score <= 5) return '#15803d'
-  if (score <= 10) return '#4ade80'
-  if (score <= 16) return '#facc15'
-  if (score <= 22) return '#f97316'
-  return '#ef4444'
-}
-
-function getScoreLabel(score: number): string {
-  if (score <= 5) return 'Very Well'
-  if (score <= 10) return 'Well'
-  if (score <= 16) return 'Moderate'
-  if (score <= 22) return 'Stressed'
-  return 'High Strain'
-}
-
 function getScoreBg(score: number): string {
-  if (score <= 5) return 'bg-green-900/30 text-green-400'
-  if (score <= 10) return 'bg-green-900/20 text-green-300'
-  if (score <= 16) return 'bg-yellow-900/30 text-yellow-400'
-  if (score <= 22) return 'bg-orange-900/30 text-orange-400'
+  if (score <= 3) return 'bg-green-900/30 text-green-400'
+  if (score <= 6) return 'bg-green-900/20 text-green-300'
+  if (score <= 9) return 'bg-yellow-900/30 text-yellow-400'
+  if (score <= 12) return 'bg-orange-900/30 text-orange-400'
   return 'bg-red-900/30 text-red-400'
+}
+
+// Average of the answered values (skipped = null are ignored)
+function averageOf(values: (number | null)[]): string | null {
+  const answered = values.filter((v): v is number => typeof v === 'number')
+  if (!answered.length) return null
+  return (answered.reduce((s, v) => s + v, 0) / answered.length).toFixed(1)
 }
 
 function getTrendIcon(checkins: CheckIn[]) {
   if (checkins.length < 2) return { icon: Minus, label: 'Not enough data', color: 'text-[#9aa0a6]' }
   const recent = checkins.slice(0, 3).reduce((s, c) => s + c.totalScore, 0) / Math.min(3, checkins.length)
   const older = checkins.slice(-3).reduce((s, c) => s + c.totalScore, 0) / Math.min(3, checkins.length)
-  // Lower score = better (0-28 scale, 0 is best)
-  if (recent < older - 2) return { icon: TrendingUp, label: 'Improving', color: 'text-green-400' }
-  if (recent > older + 2) return { icon: TrendingDown, label: 'Declining', color: 'text-red-400' }
+  // Lower score = better (0-16 scale, 0 is best)
+  if (recent < older - 1) return { icon: TrendingUp, label: 'Improving', color: 'text-green-400' }
+  if (recent > older + 1) return { icon: TrendingDown, label: 'Declining', color: 'text-red-400' }
   return { icon: Minus, label: 'Stable', color: 'text-[#8ab4f8]' }
 }
 
@@ -102,12 +96,9 @@ export default function MoodHistoryPanel({ meetingId, studentName, isOpen, onClo
 
   // Dimension averages
   const dimAvg = checkins.length > 0 ? {
-    energy: (checkins.reduce((s, c) => s + c.energy, 0) / checkins.length).toFixed(1),
-    stress: (checkins.reduce((s, c) => s + c.stress, 0) / checkins.length).toFixed(1),
-    sleep: (checkins.reduce((s, c) => s + c.sleep, 0) / checkins.length).toFixed(1),
-    focus: (checkins.reduce((s, c) => s + c.concentration, 0) / checkins.length).toFixed(1),
-    support: (checkins.reduce((s, c) => s + c.support, 0) / checkins.length).toFixed(1),
-    motivation: (checkins.reduce((s, c) => s + c.motivation, 0) / checkins.length).toFixed(1),
+    energy: averageOf(checkins.map(c => c.energy)),
+    stress: averageOf(checkins.map(c => c.stress)),
+    motivation: averageOf(checkins.map(c => c.motivation)),
   } : null
 
   return (
@@ -164,7 +155,7 @@ export default function MoodHistoryPanel({ meetingId, studentName, isOpen, onClo
                         <span className="text-2xl font-bold" style={{ color: getScoreColor(avgScore) }}>
                           {avgScore}
                         </span>
-                        <span className="text-[#9aa0a6] text-xs">/28</span>
+                        <span className="text-[#9aa0a6] text-xs">/{TOTAL_SCORE_MAX}</span>
                       </div>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full mt-1 inline-block ${getScoreBg(avgScore)}`}>
                         {getScoreLabel(avgScore)}
@@ -194,11 +185,8 @@ export default function MoodHistoryPanel({ meetingId, studentName, isOpen, onClo
                     {([
                       ['Energy', dimAvg.energy],
                       ['Stress', dimAvg.stress],
-                      ['Sleep', dimAvg.sleep],
-                      ['Focus', dimAvg.focus],
-                      ['Support', dimAvg.support],
                       ['Motivation', dimAvg.motivation],
-                    ] as [string, string][]).map(([label, val]) => (
+                    ] as [string, string | null][]).map(([label, val]) => (
                       <div key={label} className="flex items-center justify-between">
                         <span className="text-[#9aa0a6]">{label}</span>
                         <div className="flex items-center gap-1.5">
@@ -206,12 +194,12 @@ export default function MoodHistoryPanel({ meetingId, studentName, isOpen, onClo
                             <div 
                               className="h-full rounded-full transition-all"
                               style={{ 
-                                width: `${(parseFloat(val) / 4) * 100}%`,
-                                backgroundColor: getScoreColor(parseFloat(val) * 7)
+                                width: `${(parseFloat(val ?? '0') / 4) * 100}%`,
+                                backgroundColor: getScoreColor(parseFloat(val ?? '0') * 4)
                               }}
                             />
                           </div>
-                          <span className="text-[#e8eaed] font-medium w-7 text-right">{val}/4</span>
+                          <span className="text-[#e8eaed] font-medium w-7 text-right">{val ?? '—'}/4</span>
                         </div>
                       </div>
                     ))}
@@ -241,36 +229,30 @@ export default function MoodHistoryPanel({ meetingId, studentName, isOpen, onClo
                           <span 
                             className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${getScoreBg(c.totalScore)}`}
                           >
-                            {c.totalScore}/28
+                            {c.totalScore}/{TOTAL_SCORE_MAX}
                           </span>
                         </div>
                         
-                        <div className="grid grid-cols-6 gap-1 text-[10px] text-[#9aa0a6]">
+                        <div className="grid grid-cols-3 gap-1 text-[10px] text-[#9aa0a6]">
                           <div className="text-center">
-                            <div className="text-[#e8eaed] font-medium">{c.energy}</div>
-                            <div>E</div>
+                            <div className="text-[#e8eaed] font-medium">{c.energy ?? '—'}</div>
+                            <div>Energy</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-[#e8eaed] font-medium">{c.stress}</div>
-                            <div>St</div>
+                            <div className="text-[#e8eaed] font-medium">{c.stress ?? '—'}</div>
+                            <div>Stress</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-[#e8eaed] font-medium">{c.sleep}</div>
-                            <div>Sl</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-[#e8eaed] font-medium">{c.concentration}</div>
-                            <div>F</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-[#e8eaed] font-medium">{c.support}</div>
-                            <div>Su</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-[#e8eaed] font-medium">{c.motivation}</div>
-                            <div>M</div>
+                            <div className="text-[#e8eaed] font-medium">{c.motivation ?? '—'}</div>
+                            <div>Motivation</div>
                           </div>
                         </div>
+
+                        {topicSummary(c) && (
+                          <p className="text-[#bdc1c6] text-[11px] mt-2 leading-relaxed">
+                            {topicSummary(c)}
+                          </p>
+                        )}
 
                         {c.feedback && (
                           <p className="text-[#9aa0a6] text-[11px] mt-2 italic border-t border-[#3c4043] pt-2">

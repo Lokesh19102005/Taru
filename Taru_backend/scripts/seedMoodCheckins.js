@@ -9,6 +9,22 @@ const User = require("../src/models/User");
 const STUDENT_COUNT = 5;
 const HISTORY_DAYS = 180;
 const MOOD_LABELS = ["Very Happy", "Happy", "Neutral", "Stressed", "Sad"];
+// [category, rootCause, specificIssue] — null marks a skipped level.
+const SAMPLE_TOPICS = [
+  ["placements", "Rejections / not getting shortlisted", "Resume not clearing ATS screening"],
+  ["academics", "Attendance shortage (75% rule / debarment risk)", "Missing 8 AM classes due to exhaustion"],
+  ["exams", "Huge syllabus and not enough time left", null],
+  ["family", "Pressure to get a high-paying job or top rank", "Every call ends with placement questions"],
+  ["loneliness", "Severe homesickness — missing family and home", null],
+  ["health", "Staying awake till 3 or 4 AM every night", "Doomscrolling Reels, Shorts, or Reddit in bed"],
+  ["overthinking", null, null],
+  [null, null, null],
+];
+const POSITIVE_TOPICS = [
+  ["positive", "Finished study work or submitted a project", "Finished project before deadline for once"],
+  ["positive", "Spent great time with friends", null],
+  [null, null, null],
+];
 
 function demoEmail(index) {
   return `mood.demo.${String(index + 1).padStart(2, "0")}@example.test`;
@@ -117,36 +133,30 @@ async function seedStudent(student, studentIndex) {
     if (existingDates.has(dateKey(date))) continue;
 
     const moodScore = scoreFor(studentIndex, daysBack);
-    const energy = Math.floor(randomValue(daysBack + studentIndex * 200) * 5);
-    const stress = Math.floor(randomValue(daysBack + studentIndex * 300) * 5);
-    const sleep = Math.floor(randomValue(daysBack + studentIndex * 400) * 5);
-    const concentration = Math.floor(
-      randomValue(daysBack + studentIndex * 500) * 5,
-    );
-    const support = Math.floor(randomValue(daysBack + studentIndex * 600) * 5);
-    const motivation = Math.floor(
-      randomValue(daysBack + studentIndex * 700) * 5,
-    );
+    // Around 10% of ratings are skipped (null), like real check-ins.
+    const rating = (offset) => {
+      if (randomValue(daysBack + studentIndex * offset + 0.5) < 0.1) return null;
+      return Math.floor(randomValue(daysBack + studentIndex * offset) * 5);
+    };
+    const energy = rating(200);
+    const stress = rating(300);
+    const motivation = rating(700);
+    const topics = moodScore <= 1 ? POSITIVE_TOPICS : SAMPLE_TOPICS;
+    const [category, rootCause, specificIssue] =
+      topics[Math.floor(randomValue(daysBack + studentIndex * 800) * topics.length)];
 
     entries.push({
       userId: student._id,
       date,
       mood: { label: MOOD_LABELS[moodScore], score: moodScore },
+      category,
+      rootCause,
+      specificIssue,
       energy,
       stress,
-      sleep,
-      concentration,
-      support,
       motivation,
       feedback: "Synthetic demo check-in",
-      totalScore:
-        moodScore +
-        energy +
-        stress +
-        sleep +
-        concentration +
-        support +
-        motivation,
+      totalScore: moodScore + (energy ?? 0) + (stress ?? 0) + (motivation ?? 0),
     });
   }
 

@@ -1,13 +1,53 @@
 const DailyCheckIn = require('../models/DailyCheckIn');
 const User = require('../models/User');
 
+const MAX_TREE_TEXT = 500;
+const MAX_FEEDBACK = 2000;
+
+function cleanText(value, maxLength) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim().slice(0, maxLength);
+  return trimmed || null;
+}
+
+function cleanScore(value) {
+  return Number.isInteger(value) && value >= 0 && value <= 4 ? value : null;
+}
+
+// Validates the request body and returns the fields to store, or null if mood is invalid.
+function parseCheckin(body) {
+  const { mood } = body;
+  const moodScore = cleanScore(mood?.score);
+  const moodLabel = cleanText(mood?.label, 50);
+  if (moodScore === null || !moodLabel) return null;
+
+  // A deeper level only makes sense when its parent was answered.
+  const category = cleanText(body.category, MAX_TREE_TEXT);
+  const rootCause = category ? cleanText(body.rootCause, MAX_TREE_TEXT) : null;
+  const specificIssue = rootCause ? cleanText(body.specificIssue, MAX_TREE_TEXT) : null;
+
+  return {
+    mood: { label: moodLabel, score: moodScore },
+    category,
+    rootCause,
+    specificIssue,
+    energy: cleanScore(body.energy),
+    stress: cleanScore(body.stress),
+    motivation: cleanScore(body.motivation),
+    feedback: cleanText(body.feedback, MAX_FEEDBACK) || ''
+  };
+}
+
 const submitCheckin = async (req, res) => {
   try {
     const userId = req.user ? (req.user._id || req.user.id) : null;
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const { mood, energy, stress, sleep, concentration, support, motivation, feedback } = req.body;
+
+    const fields = parseCheckin(req.body);
+    if (!fields) {
+      return res.status(400).json({ success: false, message: 'A valid mood is required' });
+    }
 
     let checkin;
     let isUpdate = false;
@@ -17,16 +57,9 @@ const submitCheckin = async (req, res) => {
         userId,
         date: { $gte: today }
       });
-      
+
       if (existingCheckIn) {
-        existingCheckIn.mood = mood;
-        existingCheckIn.energy = energy;
-        existingCheckIn.stress = stress;
-        existingCheckIn.sleep = sleep;
-        existingCheckIn.concentration = concentration;
-        existingCheckIn.support = support;
-        existingCheckIn.motivation = motivation;
-        existingCheckIn.feedback = feedback || '';
+        existingCheckIn.set(fields);
         await existingCheckIn.save();
         checkin = existingCheckIn;
         isUpdate = true;
@@ -37,14 +70,7 @@ const submitCheckin = async (req, res) => {
       checkin = new DailyCheckIn({
         userId,
         date: today,
-        mood,
-        energy,
-        stress,
-        sleep,
-        concentration,
-        support,
-        motivation,
-        feedback
+        ...fields
       });
       await checkin.save();
 
@@ -53,7 +79,7 @@ const submitCheckin = async (req, res) => {
         if (user) {
           const yesterday = new Date(today);
           yesterday.setDate(yesterday.getDate() - 1);
-          
+
           const checkedInYesterday = await DailyCheckIn.findOne({
             userId,
             date: { $gte: yesterday, $lt: today }
@@ -82,7 +108,7 @@ const getHistory = async (req, res) => {
     const checkins = await DailyCheckIn.find({ userId })
       .sort({ date: -1 })
       .limit(30);
-      
+
     res.status(200).json({ success: true, count: checkins.length, data: checkins });
   } catch (error) {
     console.error(error);
@@ -95,12 +121,12 @@ const getToday = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     const checkin = await DailyCheckIn.findOne({
       userId,
       date: { $gte: today }
     });
-    
+
     if (checkin) {
       res.status(200).json({ success: true, checkedIn: true, checkin });
     } else {
