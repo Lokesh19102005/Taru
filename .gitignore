@@ -8,9 +8,6 @@ yarn-error.log*
 # Dependency directories
 node_modules/
 
-#scripts
-scripts/
-
 # Environment variables
 .env
 .env.local
