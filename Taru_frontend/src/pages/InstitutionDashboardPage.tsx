@@ -10,12 +10,14 @@ import {
   BarChart2,
   LineChart,
   Megaphone,
+  TrendingUp,
 } from "lucide-react";
 import { useInstitutionAuth } from "../contexts/InstitutionAuthContext";
 import { COLORS } from "../lib/theme";
 
 const sidebarItems = [
   { id: "overview", icon: <Activity size={16} />, label: "Overview" },
+  { id: "trends", icon: <TrendingUp size={16} />, label: "Campus Trends" },
   { id: "students", icon: <Users size={16} />, label: "Students" },
   {
     id: "mood-analytics",

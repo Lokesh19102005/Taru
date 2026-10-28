@@ -19,6 +19,7 @@ import InstitutionDashboardPage from "./pages/InstitutionDashboardPage";
 import { InstitutionProtectedRoute } from "./components/InstitutionProtectedRoute";
 import InstitutionOverviewView from "./components/institution/InstitutionOverviewView";
 import InstitutionStudentsView from "./components/institution/InstitutionStudentsView";
+import InstitutionTrendsView from "./components/institution/InstitutionTrendsView";
 import InstitutionConcernsView from "./components/institution/InstitutionConcernsView";
 import MeetingPage from "./pages/MeetingPage";
 import ChatbotView from "./components/dashboard/ChatbotView";
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="dashboard" element={<InstitutionDashboardPage />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<InstitutionOverviewView />} />
+          <Route path="trends" element={<InstitutionTrendsView />} />
           <Route path="students" element={<InstitutionStudentsView />} />
           <Route
             path="mood-analytics"
