@@ -1,5 +1,5 @@
 node_modules/
 .env
 
-#scripts
-scripts/*
+# Local one-off DB scripts (seed / reset) — not pushed
+scripts/
