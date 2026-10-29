@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send, Sparkles, Loader2, RotateCcw } from "lucide-react";
-import COLORS from "../../lib/theme";
+import COLORS from "../../lib/studentTheme";
 import { sendChatbotMessage } from "../../api/chatbot";
 
 const CHAT_STORAGE_KEY = "taru_chatbot_messages";
@@ -198,7 +198,7 @@ export default function ChatbotView() {
                   <button
                     key={s}
                     onClick={() => void handleSend(s)}
-                    className="rounded-full border px-3.5 py-2 text-xs font-medium transition-all hover:border-teal-300 hover:bg-teal-50 active:scale-95"
+                    className="rounded-full border px-3.5 py-2 text-xs font-medium transition-all hover:border-[#E3B393] hover:bg-[#F8EFE3] active:scale-95"
                     style={{ borderColor: '#e2e8f0', color: COLORS.fg }}
                   >
                     {s}

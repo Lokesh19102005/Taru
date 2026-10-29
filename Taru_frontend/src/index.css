@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@300;400;500&family=Nunito:wght@300;400;500;600;700;800;900&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap");
 @import "tailwindcss";
 
 @theme inline {
@@ -141,7 +141,7 @@ body {
   box-shadow:
     0 8px 25px -5px rgba(13, 148, 136, 0.12),
     0 4px 10px -3px rgba(13, 148, 136, 0.08);
-  border-color: #99f6e4 !important;
+  border-color: var(--card-hover-border, #99f6e4) !important;
 }
 
 /* ── Gradient text ────────────────────────── */
@@ -150,4 +150,51 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ── Student app theme (editorial orchid) ─── */
+.student-app {
+  --card-hover-border: #DECDB9;
+  font-family: "Inter", system-ui, sans-serif;
+  color: #1F1A17;
+  background-color: #FFFDFA;
+  background-image:
+    radial-gradient(900px 520px at 0% 0%, rgba(250,214,190, 0.55), transparent 60%),
+    radial-gradient(800px 520px at 100% 0%, rgba(240,223,196, 0.6), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+.student-app h1,
+.student-app h2,
+.student-app h3 {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-weight: 300 !important;
+  letter-spacing: 0.005em;
+}
+.student-app .font-display {
+  font-family: "Oswald", sans-serif;
+  font-weight: 300;
+}
+.student-app .card-hover:hover {
+  transform: none;
+  box-shadow: 0 18px 40px -22px rgba(58,47,40, 0.35);
+}
+.student-app *::-webkit-scrollbar-thumb {
+  background: #DECDB9;
+}
+.student-app .glass,
+.student-app .glass-teal {
+  background: rgba(255, 255, 255, 0.7);
+}
+.student-app .gradient-text {
+  background: linear-gradient(135deg, #d98e68, #b8704f);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.student-app .hairline-row {
+  border-top: 1px solid #EEE4D7;
+  transition: background 0.2s;
+}
+.student-app .hairline-row:hover {
+  background: rgba(247, 240, 248, 0.7);
 }

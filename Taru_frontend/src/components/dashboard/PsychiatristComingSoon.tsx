@@ -1,5 +1,5 @@
 import { Stethoscope, CheckCircle, Bell } from "lucide-react";
-import COLORS from "../../lib/theme";
+import COLORS from "../../lib/studentTheme";
 
 export default function PsychiatristComingSoon() {
   return (
@@ -10,7 +10,7 @@ export default function PsychiatristComingSoon() {
         <div className="flex justify-center mb-6">
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-md"
-            style={{ background: "linear-gradient(135deg, #0D9488, #059669)" }}
+            style={{ background: "linear-gradient(135deg, #1F1A17, #3A2F28)" }}
           >
             <Stethoscope size={38} className="text-white" />
           </div>
@@ -22,7 +22,7 @@ export default function PsychiatristComingSoon() {
         </p>
         <h1
           className="text-4xl font-extrabold mb-8 leading-tight"
-          style={{ background: "linear-gradient(135deg, #0D9488, #059669)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+          style={{ background: "linear-gradient(135deg, #1F1A17, #3A2F28)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
         >
           Coming Soon
         </h1>

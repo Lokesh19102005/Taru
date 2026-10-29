@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { COLORS } from "../lib/theme";
+import { COLORS } from "../lib/studentTheme";
 import { useSubmitCheckin } from "../api/checkin";
 import { MOOD_SCALE } from "../lib/moodScale";
 import {
@@ -245,7 +245,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
           )}
           <button
             onClick={handleBack}
-            className="text-sm font-medium transition-colors hover:text-teal-600"
+            className="text-sm font-medium transition-colors hover:text-[#3A2F28]"
             style={{ color: COLORS.fg3 }}
           >
             ← {isGuest ? "Back to home" : "Back to dashboard"}
@@ -295,7 +295,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
           </span>
           <button
             onClick={handleBack}
-            className="transition-colors hover:text-teal-600"
+            className="transition-colors hover:text-[#3A2F28]"
             style={{ color: COLORS.fg3 }}
           >
             <X size={16} />
@@ -481,7 +481,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="Write your thoughts here..."
-              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none mb-5 transition-all hover:border-teal-400 focus:border-teal-500 bg-white focus:ring-1 focus:ring-teal-500"
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none mb-5 transition-all hover:border-[#E3B393] focus:border-[#E3B393] bg-white focus:ring-1 focus:ring-[#E3B393]"
               style={{
                 borderColor: COLORS.border,
                 color: COLORS.fg,
@@ -576,7 +576,7 @@ function OptionCard({
   return (
     <button
       onClick={onClick}
-      className={`p-4 rounded-xl border-2 flex items-center gap-3 text-left transition-all hover:bg-teal-50 hover:border-teal-400 card-hover ${selected ? "" : "bg-white"}`}
+      className={`p-4 rounded-xl border-2 flex items-center gap-3 text-left transition-all hover:bg-[#F8EFE3] hover:border-[#E3B393] card-hover ${selected ? "" : "bg-white"}`}
       style={{
         borderColor: selected ? COLORS.primary : COLORS.border,
         background: selected ? COLORS.muted : undefined,
@@ -608,7 +608,7 @@ function OthersCard({
   const selected = !!choice?.other;
   return (
     <div
-      className={`rounded-xl border-2 transition-all ${selected ? "" : "bg-white hover:bg-teal-50 hover:border-teal-400"}`}
+      className={`rounded-xl border-2 transition-all ${selected ? "" : "bg-white hover:bg-[#F8EFE3] hover:border-[#E3B393]"}`}
       style={{
         borderColor: selected ? COLORS.primary : COLORS.border,
         background: selected ? COLORS.muted : undefined,
@@ -632,7 +632,7 @@ function OthersCard({
             value={choice.value}
             onChange={(e) => onChange({ value: e.target.value, other: true })}
             placeholder="What is on your mind? (type freely)..."
-            className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none resize-none bg-white focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+            className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none resize-none bg-white focus:border-[#E3B393] focus:ring-1 focus:ring-[#E3B393]"
             style={{
               borderColor: COLORS.border,
               color: COLORS.fg,
@@ -663,7 +663,7 @@ function NavRow({
       <div className="flex gap-3">
         <button
           onClick={onBack}
-          className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-teal-50 hover:border-teal-400 transition-all"
+          className="px-5 py-3 rounded-xl border text-sm font-semibold bg-white hover:bg-[#F8EFE3] hover:border-[#E3B393] transition-all"
           style={{ borderColor: COLORS.border, color: COLORS.fg2 }}
         >
           ←
@@ -680,7 +680,7 @@ function NavRow({
       {onSkip && (
         <button
           onClick={onSkip}
-          className="w-full mt-3 py-2 text-xs font-medium transition-colors hover:text-teal-600"
+          className="w-full mt-3 py-2 text-xs font-medium transition-colors hover:text-[#3A2F28]"
           style={{ color: COLORS.fg3 }}
         >
           skip this question ⏭

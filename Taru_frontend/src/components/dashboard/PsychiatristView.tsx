@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle, ChevronRight, Clock, Video } from "lucide-react";
-import COLORS from "../../lib/theme";
+import COLORS from "../../lib/studentTheme";
 import { fetchAllPsychiatrists } from "../../api/psychiatrist";
 import { getAvailabilityForPsychiatrist } from "../../api/availability";
 import { bookAppointment, getMyAppointments } from "../../api/appointment";
@@ -405,7 +405,7 @@ export default function PsychiatristView() {
           <div
             key={doc._id}
             onClick={() => handleDoctorSelect(doc._id)}
-            className="rounded-2xl p-5 border cursor-pointer card-hover hover:border-teal-400 hover:shadow-sm transition-all group"
+            className="rounded-2xl p-5 border cursor-pointer card-hover hover:border-[#E3B393] hover:shadow-sm transition-all group"
             style={{ background: COLORS.card, borderColor: COLORS.border }}
           >
             <div className="flex items-start gap-3 mb-3">
@@ -428,7 +428,7 @@ export default function PsychiatristView() {
               </div>
               <ChevronRight
                 size={14}
-                className="shrink-0 mt-1 group-hover:text-teal-600"
+                className="shrink-0 mt-1 group-hover:text-[#3A2F28]"
                 style={{ color: COLORS.fg4 }}
               />
             </div>

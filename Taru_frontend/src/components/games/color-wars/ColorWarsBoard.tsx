@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import COLORS from "../../../lib/theme";
+import COLORS from "../../../lib/studentTheme";
 import { disconnectSocket, socket } from "../../../lib/socket";
 import VirtualJoystick from "./VirtualJoystick";
 import {

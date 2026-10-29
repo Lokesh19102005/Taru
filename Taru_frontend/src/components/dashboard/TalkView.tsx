@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 
 const WAIT_TIMEOUT_MS = 7000;
 import { MessageCircle, Search, X, Send, LogOut, ArrowRight, Shield, Heart, Users } from 'lucide-react'
-import COLORS from '../../lib/theme'
+import COLORS from '../../lib/studentTheme'
 import { socket, connectSocket } from '../../lib/socket'
 
 interface ChatMessage {
@@ -148,7 +148,7 @@ export default function TalkView() {
             <div className="relative">
               <div
                 className="w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center shadow-lg"
-                style={{ background: 'linear-gradient(135deg, #0D9488, #059669)' }}
+                style={{ background: 'linear-gradient(135deg, #1F1A17, #3A2F28)' }}
               >
                 <MessageCircle size={36} className="text-white md:hidden" />
                 <MessageCircle size={44} className="text-white hidden md:block" />
@@ -350,7 +350,7 @@ export default function TalkView() {
             <div className="relative">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                style={{ background: 'linear-gradient(135deg, #0D9488, #059669)', color: '#fff' }}
+                style={{ background: 'linear-gradient(135deg, #1F1A17, #3A2F28)', color: '#fff' }}
               >
                 {partnerName.charAt(0)}
               </div>

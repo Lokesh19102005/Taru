@@ -12,7 +12,7 @@ import {
   Palette,
   PaintRoller,
 } from "lucide-react";
-import COLORS from "../../lib/theme";
+import COLORS from "../../lib/studentTheme";
 import MemoryLobby from "../games/memory/MemoryLobby";
 import MemoryBoard from "../games/memory/MemoryBoard";
 import { disconnectSocket } from "../../lib/socket";
@@ -622,12 +622,12 @@ export default function GamesView() {
       {games.map((g) => (
         <div
           key={g.id}
-          className="rounded-2xl p-5 border flex items-center gap-4 cursor-pointer hover:border-teal-400 hover:shadow-sm transition-all group card-hover"
+          className="rounded-2xl p-5 border flex items-center gap-4 cursor-pointer hover:border-[#E3B393] hover:shadow-sm transition-all group card-hover"
           style={{ background: COLORS.card, borderColor: COLORS.border }}
           onClick={() => setActive(g.id)}
         >
           <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 transition-colors group-hover:bg-teal-600 group-hover:text-white"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 transition-colors group-hover:bg-[#1F1A17] group-hover:text-white"
             style={{ background: COLORS.muted, color: COLORS.fg }}
           >
             {g.icon}
@@ -653,7 +653,7 @@ export default function GamesView() {
           </div>
           <ChevronRight
             size={15}
-            className="shrink-0 transition-colors group-hover:text-teal-600"
+            className="shrink-0 transition-colors group-hover:text-[#3A2F28]"
             style={{ color: COLORS.fg4 }}
           />
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MessageCircle, ChevronUp, ChevronDown, Plus, Send, X, Megaphone } from 'lucide-react'
-import COLORS from '../../lib/theme'
+import COLORS from '../../lib/studentTheme'
 import {
   getConcerns as fetchConcerns,
   createConcern,
@@ -124,7 +124,7 @@ function CommentSection({ concernId, commentCount, onCommentAdded }: { concernId
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           placeholder="Write a comment..."
           maxLength={1000}
-          className="flex-1 text-xs px-3 py-2 rounded-lg border outline-none transition-all focus:border-teal-500"
+          className="flex-1 text-xs px-3 py-2 rounded-lg border outline-none transition-all focus:border-[#E3B393]"
           style={{ background: COLORS.bg, borderColor: COLORS.border, color: COLORS.fg }}
         />
         <button
@@ -156,7 +156,7 @@ function ConcernCard({ concern, onVote }: { concern: Concern; onVote: (id: strin
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span
           className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: '#F0FDFA', color: COLORS.primary, border: `1px solid ${COLORS.border2}` }}
+          style={{ background: '#F8EFE3', color: COLORS.primary, border: `1px solid ${COLORS.border2}` }}
         >
           {typeInfo.emoji} {typeInfo.label}
         </span>
@@ -202,7 +202,7 @@ function ConcernCard({ concern, onVote }: { concern: Concern; onVote: (id: strin
         {/* Comment toggle */}
         <button
           onClick={() => setShowComments(!showComments)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all hover:bg-teal-50 ml-1"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all hover:bg-[#F8EFE3] ml-1"
           style={{
             color: showComments ? COLORS.primary : COLORS.fg2,
             border: `1px solid ${showComments ? COLORS.primary : COLORS.border}`,
@@ -364,7 +364,7 @@ export default function ConcernsView() {
             <h3 className="text-sm font-bold" style={{ color: COLORS.fg }}>Raise a new concern</h3>
             <button
               onClick={() => { setShowForm(false); setFormType(''); setFormDesc(''); setError('') }}
-              className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-teal-50 transition-colors"
+              className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[#F8EFE3] transition-colors"
               style={{ color: COLORS.fg3 }}
             >
               <X size={15} />
@@ -380,7 +380,7 @@ export default function ConcernsView() {
                 onClick={() => setFormType(key)}
                 className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left"
                 style={{
-                  background: formType === key ? '#F0FDFA' : COLORS.card,
+                  background: formType === key ? '#F8EFE3' : COLORS.card,
                   border: `1.5px solid ${formType === key ? COLORS.primary : COLORS.border}`,
                   color: formType === key ? COLORS.primary : COLORS.fg2,
                 }}
@@ -399,7 +399,7 @@ export default function ConcernsView() {
             placeholder="Describe your concern in detail..."
             maxLength={2000}
             rows={4}
-            className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 resize-none"
+            className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all focus:border-[#E3B393] resize-none"
             style={{ background: COLORS.bg, borderColor: COLORS.border, color: COLORS.fg }}
           />
           <div className="flex items-center justify-between mt-1 mb-4">
@@ -422,7 +422,7 @@ export default function ConcernsView() {
             </button>
             <button
               onClick={() => { setShowForm(false); setFormType(''); setFormDesc(''); setError('') }}
-              className="px-5 py-3 rounded-xl text-sm font-semibold border transition-all hover:bg-teal-50"
+              className="px-5 py-3 rounded-xl text-sm font-semibold border transition-all hover:bg-[#F8EFE3]"
               style={{ color: COLORS.fg2, borderColor: COLORS.border }}
             >
               Cancel

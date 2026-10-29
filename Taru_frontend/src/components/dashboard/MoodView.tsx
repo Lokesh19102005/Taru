@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardList } from 'lucide-react'
-import COLORS from '../../lib/theme'
+import COLORS from '../../lib/studentTheme'
 import { TOTAL_SCORE_MAX, getScoreColor, getScoreLabel } from '../../lib/moodScale'
 import { topicSummary } from '../../lib/checkinTree'
 import { useCheckinHistory } from '../../api/checkin'
