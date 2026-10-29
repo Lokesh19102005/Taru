@@ -198,3 +198,20 @@ body {
 .student-app .hairline-row:hover {
   background: rgba(247, 240, 248, 0.7);
 }
+
+/* ── Warm tint (mimics a ~50% night-light filter) ──
+   Multiplies every colour on student pages by a warm cream, reducing blue.
+   Tune --student-warmth: closer to #fff = less warm, e.g. #fff8ee; more warm, e.g. #ffead2; remove the
+   ::after block to disable. */
+.student-app {
+  --student-warmth: #fff3e3;
+}
+.student-app::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  background: var(--student-warmth);
+  mix-blend-mode: multiply;
+}
