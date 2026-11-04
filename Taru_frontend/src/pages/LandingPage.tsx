@@ -16,7 +16,6 @@ import {
   Smile,
   Star,
   CheckCircle,
-  Users,
   Lock,
   GraduationCap,
   Brain
@@ -218,49 +217,51 @@ export default function LandingPage() {
 
       {/* Why */}
       <section id="why" className="pb-24 animate-fade-in">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
-          <div className="rounded-[2rem] overflow-hidden h-[420px] md:h-[520px] order-2 md:order-1">
-            <img
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=75"
-              alt=""
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
-          <div className="order-1 md:order-2">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-[1.1fr_1fr] gap-12 md:gap-16 items-center">
+          <div>
             <h2 className="text-4xl md:text-5xl leading-tight mb-5" style={{ color: COLORS.fg }}>
               Built for the <span style={{ color: COLORS.accent }}>college reality</span>
             </h2>
-            <p className="leading-relaxed mb-7 text-sm" style={{ color: COLORS.fg2 }}>
+            <p className="leading-relaxed mb-8 text-sm md:text-base max-w-xl" style={{ color: COLORS.fg2 }}>
               Many college students struggle quietly and never reach out for help. Taru lowers the barrier so you can get support without appointments, stigma, or waiting lists.
             </p>
-            <div className="mb-8 border-t" style={{ borderColor: COLORS.border }}>
+            <div className="border-t" style={{ borderColor: COLORS.border }}>
               {[
                 'Available 24/7, between lectures and at 3am',
                 'Anonymous peer chat with fellow college students who get it',
                 'Clinically validated mental health assessments',
                 'Direct booking with certified external psychiatrists',
               ].map(item => (
-                <div key={item} className="flex items-start gap-3 py-3.5 border-b" style={{ borderColor: COLORS.border }}>
+                <div key={item} className="flex items-start gap-3 py-4 border-b" style={{ borderColor: COLORS.border }}>
                   <CheckCircle size={16} style={{ color: COLORS.primary, marginTop: 2 }} className="shrink-0" />
                   <span className="text-sm" style={{ color: COLORS.fg }}>{item}</span>
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              {[
-                { icon: <Heart size={16} />, stat: '24/7', sub: 'Taru AI assistant to talk to' },
-                { icon: <BarChart2 size={16} />, stat: '5', sub: 'games to play solo or with friends' },
-                { icon: <Users size={16} />, stat: '2', sub: 'crisis helplines, one tap away' },
-                { icon: <Stethoscope size={16} />, stat: '1', sub: 'place for check-ins, chat and mood' },
-              ].map(card => (
-                <div key={card.stat}>
-                  <div className="font-display text-4xl leading-none" style={{ color: COLORS.fg }}>{card.stat}</div>
-                  <div className="w-8 h-[2px] mt-2 mb-1.5" style={{ background: COLORS.primary }} />
-                  <div className="text-xs leading-snug" style={{ color: COLORS.fg3 }}>{card.sub}</div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: <Heart size={18} />, stat: '24/7', sub: 'Taru AI assistant to talk to', bg: 'linear-gradient(140deg, #FCE3D2 0%, #F7E8D6 100%)' },
+              { icon: <Gamepad2 size={18} />, stat: '5', sub: 'games to play solo or with friends', bg: 'rgba(255,255,255,0.8)' },
+              { icon: <ClipboardList size={18} />, stat: '6', sub: 'wellbeing tools, all in one app', bg: 'rgba(255,255,255,0.8)' },
+              { icon: <Stethoscope size={18} />, stat: '1', sub: 'place for check-ins, chat and mood', bg: 'linear-gradient(140deg, #F7E8D6 0%, #EEDFC9 100%)' },
+            ].map(card => (
+              <div
+                key={card.stat}
+                className="rounded-3xl p-6 md:p-7 border card-hover flex flex-col justify-between min-h-[180px] md:min-h-[210px]"
+                style={{ borderColor: COLORS.border, background: card.bg }}
+              >
+                <span className="w-10 h-10 rounded-full flex items-center justify-center bg-white/80" style={{ color: COLORS.primary }}>
+                  {card.icon}
+                </span>
+                <div>
+                  <div className="font-display text-5xl md:text-6xl leading-none" style={{ color: COLORS.fg }}>{card.stat}</div>
+                  <div className="w-8 h-[2px] mt-3 mb-2" style={{ background: COLORS.primary }} />
+                  <div className="text-xs md:text-sm leading-snug" style={{ color: COLORS.fg2 }}>{card.sub}</div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
