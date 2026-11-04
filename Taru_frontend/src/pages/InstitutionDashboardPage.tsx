@@ -34,6 +34,10 @@ interface RailProps {
 // Round icon buttons straight on the page (no container). On hover / keyboard
 // focus the circles widen into pills that show their label.
 function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
+  // A clicked link keeps focus, which would hold the rail open via
+  // focus-within after the cursor leaves. Drop focus once it's activated.
+  const releaseFocus = (e: React.MouseEvent<HTMLElement>) => e.currentTarget.blur();
+
   const label = expanded
     ? "opacity-100"
     : "opacity-0 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100";
@@ -58,7 +62,10 @@ function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
       )}
       <NavLink
         to="/institution/dashboard/overview"
-        onClick={onNavigate}
+        onClick={(e) => {
+          releaseFocus(e);
+          onNavigate();
+        }}
         aria-label="Taru campus"
         className="flex items-center gap-3 h-10 mb-5 whitespace-nowrap"
       >
@@ -82,7 +89,10 @@ function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
           <NavLink
             key={id}
             to={path}
-            onClick={onNavigate}
+            onClick={(e) => {
+              releaseFocus(e);
+              onNavigate();
+            }}
             aria-label={text}
             title={text}
             className={`${item} ${active ? "" : "hover:bg-[#F8EFE3]"}`}
@@ -100,7 +110,10 @@ function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
       })}
 
       <button
-        onClick={onLogout}
+        onClick={(e) => {
+          releaseFocus(e);
+          onLogout();
+        }}
         aria-label="Sign out"
         title="Sign out"
         className={`${item} mt-auto bg-white hover:bg-red-50`}
