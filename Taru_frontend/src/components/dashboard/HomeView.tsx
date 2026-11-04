@@ -127,6 +127,7 @@ export default function HomeView() {
   }
 
   const streak = user?.checkinStreak ?? 0;
+
   const stats = [
     { value: streak, label: "Day check-in streak" },
     { value: checkins.length, label: "Total check-ins" },
@@ -135,68 +136,84 @@ export default function HomeView() {
 
   return (
     <div className="animate-fade-in">
-      {/* Hero */}
-      <section className="grid md:grid-cols-[1.15fr_1fr] gap-10 items-center pt-6 pb-12">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.22em] mb-5" style={{ color: COLORS.primary }}>
-            {getGreeting()}
-          </p>
-          <h1 className="text-5xl md:text-6xl leading-[1.05] mb-5" style={{ color: COLORS.fg }}>
-            Hello, {user?.username || "there"}.<br />
-            <span style={{ color: COLORS.accent }}>How are you feeling?</span>
-          </h1>
-          <p className="text-sm leading-relaxed max-w-md mb-8" style={{ color: COLORS.fg2 }}>
-            {streak > 0
-              ? `You've checked in ${streak} day${streak !== 1 ? "s" : ""} in a row. That's something to be proud of.`
-              : "Start your check-in journey today!"}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => navigate("/dashboard/check")}
-              className="flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full text-white transition-all hover:-translate-y-0.5"
-              style={{ background: COLORS.gradient, boxShadow: "0 12px 24px -12px rgba(31,26,23,0.8)" }}
-            >
-              <ClipboardList size={14} /> Today's check-in
-            </button>
-            <button
-              onClick={() => navigate("/dashboard/mood")}
-              className="flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full border bg-white/70 hover:bg-white transition-colors"
-              style={{ borderColor: COLORS.border2, color: COLORS.fg }}
-            >
-              <BarChart2 size={14} /> View mood
-            </button>
-          </div>
-        </div>
-        <div className="relative hidden md:block">
-          <div className="rounded-[2rem] overflow-hidden h-[340px]">
-            <img
-              src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=70"
-              alt=""
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
-          <div
-            className="absolute -bottom-5 -left-6 rounded-2xl px-5 py-3.5 bg-white/90 backdrop-blur border"
-            style={{ borderColor: COLORS.border, boxShadow: "0 20px 40px -20px rgba(58,47,40,0.45)" }}
+      {/* Hero banner */}
+      <section className="mt-4 mb-12">
+        <div
+          className="relative overflow-hidden rounded-[2.25rem] px-7 md:px-14 pt-12 md:pt-14 pb-24 md:pb-28"
+          style={{ background: "linear-gradient(120deg, #FCE3D2 0%, #F8E6D3 50%, #EEDFC9 100%)" }}
+        >
+          {/* Decorative leaves + waves */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 800 400"
+            preserveAspectRatio="xMaxYMid slice"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            fill="none"
           >
-            <div className="font-display text-3xl leading-none" style={{ color: COLORS.primary }}>{streak}</div>
-            <div className="text-[11px] mt-1" style={{ color: COLORS.fg3 }}>day streak</div>
+            <g stroke="#D98E68" strokeWidth="1.2" opacity="0.28">
+              <path d="M0 300 C 120 260, 200 340, 320 300 S 520 250, 640 290 S 760 320, 800 300" />
+              <path d="M0 330 C 120 290, 200 370, 320 330 S 520 280, 640 320 S 760 350, 800 330" />
+              <path d="M0 360 C 120 320, 200 400, 320 360 S 520 310, 640 350 S 760 380, 800 360" />
+            </g>
+            <g fill="#D98E68" opacity="0.16">
+              <path d="M690 40 C 740 50, 775 95, 770 150 C 715 145, 680 100, 690 40 Z" />
+              <path d="M610 90 C 650 85, 690 115, 700 160 C 655 170, 615 140, 610 90 Z" />
+              <path d="M740 150 C 775 160, 795 195, 790 235 C 750 230, 730 195, 740 150 Z" />
+            </g>
+            <g stroke="#D98E68" strokeWidth="1.2" opacity="0.3" strokeLinecap="round">
+              <path d="M690 40 Q 730 110 770 150" />
+              <path d="M610 90 Q 660 125 700 160" />
+            </g>
+          </svg>
+          <div className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-white/50 blur-3xl pointer-events-none" />
+
+          <div className="relative max-w-xl">
+            <p className="text-xs font-medium uppercase tracking-[0.22em] mb-5" style={{ color: COLORS.primaryDark }}>
+              {getGreeting()}
+            </p>
+            <h1 className="text-5xl md:text-6xl leading-[1.05] mb-5" style={{ color: COLORS.fg }}>
+              Hello, {user?.username || "there"}.<br />
+              <span style={{ color: COLORS.accent }}>How are you feeling?</span>
+            </h1>
+            <p className="text-sm md:text-base leading-relaxed max-w-md mb-8" style={{ color: COLORS.fg2 }}>
+              {streak > 0
+                ? `You've checked in ${streak} day${streak !== 1 ? "s" : ""} in a row. That's something to be proud of.`
+                : "Start your check-in journey today!"}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => navigate("/dashboard/check")}
+                className="flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full text-white transition-all hover:-translate-y-0.5"
+                style={{ background: COLORS.gradient, boxShadow: "0 12px 24px -12px rgba(31,26,23,0.8)" }}
+              >
+                <ClipboardList size={14} /> Today's check-in
+              </button>
+              <button
+                onClick={() => navigate("/dashboard/mood")}
+                className="flex items-center gap-2 text-sm font-medium px-6 py-3 rounded-full border bg-white/70 hover:bg-white transition-colors"
+                style={{ borderColor: COLORS.border2, color: COLORS.fg }}
+              >
+                <BarChart2 size={14} /> View mood
+              </button>
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* Stats */}
-      <section className="grid grid-cols-3 border-y py-8 mb-12" style={{ borderColor: COLORS.border }}>
-        {stats.map((st, i) => (
-          <div key={st.label} className={`px-4 md:px-8 ${i > 0 ? "border-l" : ""}`} style={{ borderColor: COLORS.border }}>
-            <div className="font-display text-5xl md:text-6xl leading-none" style={{ color: COLORS.fg }}>
-              {st.value}
+        {/* Stats straddling the banner's lower edge */}
+        <div
+          className="relative -mt-14 mx-4 md:mx-12 grid grid-cols-3 rounded-3xl border bg-white py-6 md:py-7"
+          style={{ borderColor: COLORS.border, boxShadow: "0 24px 50px -30px rgba(58,47,40,0.45)" }}
+        >
+          {stats.map((st, i) => (
+            <div key={st.label} className={`px-4 md:px-8 ${i > 0 ? "border-l" : ""}`} style={{ borderColor: COLORS.border }}>
+              <div className="font-display text-4xl md:text-5xl leading-none" style={{ color: COLORS.fg }}>
+                {st.value}
+              </div>
+              <div className="w-8 h-[2px] mt-3 mb-2" style={{ background: COLORS.accent }} />
+              <div className="text-[11px] md:text-xs" style={{ color: COLORS.fg2 }}>{st.label}</div>
             </div>
-            <div className="w-10 h-[2px] mt-3 mb-2" style={{ background: COLORS.primary }} />
-            <div className="text-[11px] md:text-xs" style={{ color: COLORS.fg2 }}>{st.label}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
       {/* Featured chatbot */}

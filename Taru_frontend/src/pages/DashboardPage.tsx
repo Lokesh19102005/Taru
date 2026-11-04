@@ -18,6 +18,7 @@ import {
 import COLORS from "../lib/studentTheme";
 import TaruLogo from "../components/TaruLogo";
 import { useAuth } from "../contexts/AuthContext";
+import { apiRequest } from "../api/client";
 
 const navItems = [
   { id: "chatbot", icon: <Bot size={17} />, label: "Taru AI Assistant" },
@@ -110,6 +111,39 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+
+  // When the dashboard opens (page load or right after login) and the student
+  // hasn't checked in today, offer the check-in in a pop-up. They can dismiss it
+  // and carry on; navigating around the app afterwards does not bring it back.
+  const [showCheckinPrompt, setShowCheckinPrompt] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    if (window.location.pathname.startsWith("/dashboard/check")) return;
+
+    let cancelled = false;
+    apiRequest("/api/checkin/today")
+      .then((res) => {
+        if (!cancelled && !res.checkedIn) setShowCheckinPrompt(true);
+      })
+      .catch(() => {
+        // can't tell if they checked in: don't get in the way
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?._id]);
+
+  useEffect(() => {
+    if (!showCheckinPrompt) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowCheckinPrompt(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showCheckinPrompt]);
 
   const onLogout = () => {
     logout();
@@ -287,6 +321,67 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      {showCheckinPrompt && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center px-5 animate-fade-in"
+          style={{ background: "rgba(31, 26, 23, 0.35)", backdropFilter: "blur(3px)" }}
+          onClick={() => setShowCheckinPrompt(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkin-prompt-title"
+            className="w-full max-w-md rounded-3xl bg-white border p-7 text-center"
+            style={{
+              borderColor: COLORS.border,
+              boxShadow: "0 30px 70px -30px rgba(58, 47, 40, 0.55)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center"
+              style={{ background: COLORS.muted, color: COLORS.accent }}
+            >
+              <ClipboardList size={22} />
+            </div>
+            <h2
+              id="checkin-prompt-title"
+              className="font-display text-3xl leading-tight mb-2"
+              style={{ color: COLORS.fg }}
+            >
+              You haven't checked in today
+            </h2>
+            <p
+              className="text-sm leading-relaxed mb-6"
+              style={{ color: COLORS.fg2 }}
+            >
+              A quick check-in takes about a minute and helps you keep track of
+              how you're doing. Would you like to do it now?
+            </p>
+            <div className="flex flex-col gap-2.5">
+              <button
+                autoFocus
+                onClick={() => {
+                  setShowCheckinPrompt(false);
+                  navigate("/dashboard/check");
+                }}
+                className="w-full py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: COLORS.primary }}
+              >
+                Check in now
+              </button>
+              <button
+                onClick={() => setShowCheckinPrompt(false)}
+                className="w-full py-3 rounded-full text-sm font-semibold border bg-white transition-colors hover:bg-[#F8EFE3]"
+                style={{ borderColor: COLORS.border2, color: COLORS.fg2 }}
+              >
+                Continue without check-in
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { Clock, Sparkle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { COLORS } from "../lib/studentTheme";
 import { useSubmitCheckin } from "../api/checkin";
 import { MOOD_SCALE } from "../lib/moodScale";
+import CheckinIntroArt from "./CheckinIntroArt";
 import {
   CATEGORY_TREES,
   POSITIVE_TREE,
@@ -59,6 +60,9 @@ interface RatingOption {
 }
 
 const MOOD_OPTIONS = MOOD_SCALE;
+
+// A touch lighter than the app background
+const PAGE_BG = "#FFFEFC";
 
 const ENERGY_OPTIONS: RatingOption[] = [
   { emoji: "🪫", label: "Completely Drained", hint: "exhausted, can barely get out of bed", score: 4 },
@@ -213,13 +217,18 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
     );
   };
 
+  const shell = isGuest
+    ? "min-h-screen"
+    : "min-h-[calc(100vh-10rem)] rounded-3xl border";
+
   if (done) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center px-6 animate-fade-in"
-        style={{ background: COLORS.bg }}
+        className={`${shell} @container relative overflow-hidden flex flex-col items-center justify-center px-6 animate-fade-in`}
+        style={{ background: PAGE_BG, borderColor: COLORS.border }}
       >
-        <div className="max-w-md w-full text-center py-16">
+        <CheckinIntroArt />
+        <div className="relative z-10 max-w-md w-full text-center py-16">
           <div className="text-5xl mb-5 animate-float">🌿</div>
           <h2 className="text-2xl font-bold mb-3" style={{ color: COLORS.fg }}>
             Shukriya, sharing ke liye
@@ -263,61 +272,142 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
 
   return (
     <div
-      className="min-h-screen flex flex-col animate-fade-in"
-      style={{ background: COLORS.bg }}
+      className={`${shell} @container relative overflow-hidden flex flex-col animate-fade-in`}
+      style={{ background: PAGE_BG, borderColor: COLORS.border }}
     >
-      {/* Progress bar */}
-      <div
-        className="sticky top-0 z-50 border-b px-6 py-3 glass"
-        style={{ borderColor: COLORS.border }}
-      >
-        <div className="max-w-lg mx-auto flex items-center gap-4">
-          <span
-            className="text-sm font-semibold tracking-widest"
-            style={{ fontFamily: "var(--font-mono)", color: COLORS.fg }}
-          >
-            taru
-          </span>
-          <div
-            className="flex-1 h-1 rounded-full overflow-hidden"
-            style={{ background: COLORS.muted }}
-          >
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${pct}%`, background: COLORS.primary }}
-            />
-          </div>
-          <span
-            className="text-[11px] whitespace-nowrap"
-            style={{ fontFamily: "var(--font-mono)", color: COLORS.fg3 }}
-          >
-            {current} of {total}
-          </span>
-          <button
-            onClick={handleBack}
-            className="transition-colors hover:text-[#3A2F28]"
-            style={{ color: COLORS.fg3 }}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      </div>
+      <CheckinIntroArt />
 
-      <div className="flex-1 max-w-lg mx-auto w-full px-6 py-8">
+      {/* Thin progress line (not shown on the welcome page) */}
+      {step !== "intro" && (
+        <div
+          className="absolute inset-x-0 top-0 h-[3px]"
+          style={{ background: COLORS.muted }}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={current}
+          aria-label="Check-in progress"
+        >
+          <div
+            className="h-full transition-all duration-500"
+            style={{ width: `${pct}%`, background: COLORS.accent }}
+          />
+        </div>
+      )}
+
+      <button
+        onClick={handleBack}
+        aria-label="Close check-in"
+        className={`absolute right-4 top-4 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:text-[#3A2F28] ${step === "intro" ? "bg-white shadow-md" : "hover:bg-[#F8EFE3]"}`}
+        style={{ color: COLORS.fg3 }}
+      >
+        <X size={17} />
+      </button>
+
+      <div
+        className={`relative z-10 flex-1 mx-auto w-full px-6 pt-14 pb-10 ${step === "category" ? "max-w-2xl" : "max-w-lg"}`}
+      >
         {/* Intro */}
         {step === "intro" && (
-          <div className="animate-slide-up">
-            <StepHeader
-              eyebrow="daily check-in"
-              title="Welcome to your daily check-in."
-              subtitle="Take a moment to reflect on your day. This quick check-in helps you track your wellbeing, energy, and stress over time. You can skip any question you'd rather not answer."
-            />
+          <div className="min-h-[62vh] flex flex-col items-center justify-center text-center animate-slide-up">
+            {/* leaf badge with a few sparkles */}
+            <div className="relative w-44 h-24 mb-4 flex items-center justify-center">
+              <Sparkle
+                size={14}
+                className="absolute left-4 top-2"
+                style={{ color: COLORS.accent }}
+              />
+              <Sparkle
+                size={9}
+                className="absolute left-0 top-12"
+                style={{ color: "#EBB89A" }}
+              />
+              <Sparkle
+                size={16}
+                className="absolute right-3 top-5"
+                style={{ color: COLORS.accent }}
+              />
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(145deg, #FFFFFF, #FCE9DC)",
+                  boxShadow:
+                    "0 18px 36px -18px rgba(217,142,104,0.7), inset 0 -4px 10px rgba(217,142,104,0.12)",
+                }}
+              >
+                <svg
+                  viewBox="0 0 32 32"
+                  className="w-9 h-9"
+                  fill="none"
+                  stroke="#8A5A44"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 28 V12" />
+                  <path d="M16 14 C10 14 7 10 7 6 C12 6 16 9 16 14 Z" />
+                  <path d="M16 18 C22 18 25 14 25 10 C20 10 16 13 16 18 Z" />
+                  <path d="M16 23 C11 23 8 20 8 16 C12 16 16 18 16 23 Z" />
+                </svg>
+              </div>
+            </div>
+
+            <span
+              className="inline-flex rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              style={{ background: "#FBE3D1", color: "#6B5B4E" }}
+            >
+              Welcome
+            </span>
+
+            <h1
+              className="mt-5 mb-4 text-4xl sm:text-5xl leading-[1.15]"
+              style={{
+                fontFamily: '"Lora", Georgia, serif',
+                color: COLORS.fg,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              Take a moment
+              <br />
+              for{" "}
+              <em className="italic" style={{ color: "#C4623A" }}>
+                yourself.
+              </em>
+            </h1>
+
+            <p
+              className="text-[15px] leading-relaxed mb-5 max-w-xs"
+              style={{ color: COLORS.fg2 }}
+            >
+              A quick check-in on how you're doing today. You can skip any
+              question you'd rather not answer.
+            </p>
+
+            <span
+              className="inline-flex items-center gap-2 rounded-full border bg-white/80 px-4 py-2 text-xs mb-8"
+              style={{ borderColor: "#F1DFD0", color: COLORS.fg2 }}
+            >
+              <Clock size={14} style={{ color: COLORS.fg3 }} />
+              About 1 minute · 8 short steps
+            </span>
+
             <button
-              className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 card-hover"
-              style={{ background: COLORS.gradient, color: "#fff" }}
+              className="w-full max-w-xs py-3.5 rounded-full font-semibold text-sm transition-all hover:opacity-90 card-hover"
+              style={{
+                background: COLORS.gradient,
+                color: "#fff",
+                boxShadow: "0 18px 30px -16px rgba(31,26,23,0.7)",
+              }}
               onClick={() => goTo("mood")}
             >
               let's begin →
+            </button>
+            <button
+              onClick={handleBack}
+              className="mt-4 text-sm font-medium transition-colors hover:text-[#3A2F28]"
+              style={{ color: COLORS.fg3 }}
+            >
+              not now
             </button>
           </div>
         )}
@@ -356,6 +446,7 @@ export default function CheckinFlow({ isGuest }: CheckFlowProps) {
             title="What is weighing on your mind most?"
             subtitle="Pick the one that feels closest."
             options={CATEGORY_OPTIONS}
+            columns={2}
             choice={category}
             onChoose={chooseCategory}
             onBack={goBack}
@@ -695,6 +786,7 @@ function TreeStep({
   title,
   subtitle,
   options,
+  columns = 1,
   choice,
   onChoose,
   onBack,
@@ -705,6 +797,7 @@ function TreeStep({
   title: string;
   subtitle: string;
   options: ChoiceOption[];
+  columns?: 1 | 2;
   choice: TreeChoice | null;
   onChoose: (choice: TreeChoice) => void;
   onBack: () => void;
@@ -715,7 +808,13 @@ function TreeStep({
   return (
     <div className="animate-fade-in">
       <StepHeader eyebrow={eyebrow} title={title} subtitle={subtitle} />
-      <div className="flex flex-col gap-2.5 mb-8">
+      <div
+        className={
+          columns === 2
+            ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-8"
+            : "flex flex-col gap-2.5 mb-8"
+        }
+      >
         {options.map((o) => (
           <OptionCard
             key={o.value}
@@ -725,7 +824,9 @@ function TreeStep({
             onClick={() => onChoose({ value: o.value, other: false })}
           />
         ))}
-        <OthersCard choice={choice} onChange={onChoose} />
+        <div className={columns === 2 ? "sm:col-span-2" : ""}>
+          <OthersCard choice={choice} onChange={onChoose} />
+        </div>
       </div>
       <NavRow
         onBack={onBack}
