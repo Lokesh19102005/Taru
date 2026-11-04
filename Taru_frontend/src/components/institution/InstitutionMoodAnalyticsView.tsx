@@ -14,7 +14,7 @@ import {
   fetchStudentMoodTrend,
 } from "../../api/institution";
 import { moodColor, moodForScore } from "../../lib/moodScale";
-import { COLORS } from "../../lib/theme";
+import { COLORS } from "../../lib/institutionTheme";
 import type {
   InstitutionMoodOverviewRow,
   MoodTrendBucket,
@@ -212,7 +212,7 @@ export default function InstitutionMoodAnalyticsView() {
                   type="linear"
                   dataKey="averageMood"
                   name="Average mood"
-                  stroke={COLORS.primary}
+                  stroke={COLORS.accent}
                   connectNulls={false}
                   dot={(props) => {
                     const value = props.payload?.averageMood;

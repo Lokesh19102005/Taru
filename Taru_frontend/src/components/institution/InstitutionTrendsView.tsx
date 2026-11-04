@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TrendingUp } from "lucide-react";
-import { COLORS } from "../../lib/theme";
+import { COLORS } from "../../lib/institutionTheme";
 import {
   fetchInstitutionWellnessFilterOptions,
   fetchInstitutionWellnessTrend,
@@ -13,10 +13,7 @@ import {
   MoodOverviewRange,
 } from "@/types";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -302,135 +299,11 @@ export default function InstitutionTrendsView() {
                     type="monotone"
                     dataKey={selectedMetric}
                     name={`Average ${selectedMetricLabel.toLowerCase()}`}
-                    stroke={COLORS.primary}
+                    stroke={COLORS.accent}
                     connectNulls={false}
                     dot
                   />
                 </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div
-            className="rounded-xl border p-4"
-            style={{ background: COLORS.card, borderColor: COLORS.border }}
-          >
-            <h4
-              className="mb-1 text-sm font-bold"
-              style={{ color: COLORS.fg }}
-            >
-              Check-in dimensions for selected period
-            </h4>
-            <p className="mb-4 text-xs" style={{ color: COLORS.fg3 }}>
-              Lower scores indicate better reported experiences.
-            </p>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    {
-                      dimension: "Mood",
-                      score: trend.periodAverages.averageMood,
-                    },
-                    {
-                      dimension: "Stress",
-                      score: trend.periodAverages.averageStress,
-                    },
-                    {
-                      dimension: "Energy",
-                      score: trend.periodAverages.averageEnergy,
-                    },
-                    {
-                      dimension: "Motivation",
-                      score: trend.periodAverages.averageMotivation,
-                    },
-                  ].filter((item) => item.score !== null)}
-                  layout="vertical"
-                  margin={{ left: 12, right: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    type="number"
-                    domain={[0, 4]}
-                    ticks={[0, 1, 2, 3, 4]}
-                  />
-                  <YAxis type="category" dataKey="dimension" width={110} />
-                  <Tooltip
-                    formatter={(value) =>
-                      typeof value === "number"
-                        ? [value.toFixed(1), "Average score"]
-                        : ["No data", "Average score"]
-                    }
-                  />
-                  <Bar
-                    dataKey="score"
-                    name="Average score"
-                    fill={COLORS.primary}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div
-            className="rounded-xl border p-4"
-            style={{ background: COLORS.card, borderColor: COLORS.border }}
-          >
-            <h4
-              className="mb-4 text-sm font-bold"
-              style={{ color: COLORS.fg }}
-            >
-              Mood distribution
-            </h4>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={trendSeries}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    domain={[0, 100]}
-                    ticks={[0, 25, 50, 75, 100]}
-                    tickFormatter={(value) => `${value}%`}
-                  />
-                  <Tooltip
-                    formatter={(value) =>
-                      typeof value === "number"
-                        ? [`${value.toFixed(1)}%`, "Share of check-ins"]
-                        : ["No check-ins", "Share of check-ins"]
-                    }
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="moodVeryHappyPercent"
-                    name="Very Happy"
-                    stackId="mood"
-                    fill="#15803D"
-                  />
-                  <Bar
-                    dataKey="moodHappyPercent"
-                    name="Happy"
-                    stackId="mood"
-                    fill="#65A30D"
-                  />
-                  <Bar
-                    dataKey="moodNeutralPercent"
-                    name="Neutral"
-                    stackId="mood"
-                    fill="#D97706"
-                  />
-                  <Bar
-                    dataKey="moodStressedPercent"
-                    name="Stressed"
-                    stackId="mood"
-                    fill="#F97316"
-                  />
-                  <Bar
-                    dataKey="moodSadPercent"
-                    name="Sad"
-                    stackId="mood"
-                    fill="#DC2626"
-                  />
-                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>

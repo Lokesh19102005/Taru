@@ -1,0 +1,110 @@
+/* Institution-side look, matched to the student app (.student-app in index.css).
+   Everything is scoped under .inst-root so the rest of the site is untouched. */
+
+.inst-root {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #1f1a17;
+  --card-hover-border: #decdb9;
+}
+
+/* Warm off-white with peach glows in the top corners */
+.inst-panel {
+  background-color: #fffdfa;
+  background-image:
+    radial-gradient(900px 520px at 0% 0%, rgba(250, 214, 190, 0.55), transparent 60%),
+    radial-gradient(800px 520px at 100% 0%, rgba(240, 223, 196, 0.6), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Editorial headings: Oswald light */
+.inst-root h1,
+.inst-root h2,
+.inst-root h3.text-lg,
+.inst-root h3.text-xl,
+.inst-root .font-display {
+  font-family: "Oswald", "Inter", sans-serif;
+  font-weight: 300 !important;
+  letter-spacing: 0.005em;
+}
+
+/* Cards: white, thin warm border, soft warm shadow */
+.inst-card {
+  background: #fff;
+  border: 1px solid #eee4d7;
+  border-radius: 1.75rem;
+  box-shadow: 0 18px 40px -26px rgba(58, 47, 40, 0.35);
+}
+.inst-root .rounded-2xl {
+  border-radius: 1.5rem;
+  box-shadow: 0 14px 34px -26px rgba(58, 47, 40, 0.35);
+}
+
+/* Pill chip used next to big numbers */
+.inst-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #eee4d7;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Page titles inside the content area */
+.inst-root main h2.text-xl,
+.inst-root main h2.text-2xl {
+  font-size: 1.9rem;
+  line-height: 2.2rem;
+}
+
+/* Replace the teal hover / focus accents from the shared markup with warm neutrals */
+.inst-root .hover\:bg-teal-50:hover,
+.inst-root .hover\:bg-teal-50\/30:hover,
+.inst-root .hover\:bg-teal-50\/50:hover,
+.inst-root .hover\:bg-teal-50\/60:hover {
+  background-color: #f8efe3;
+}
+.inst-root .hover\:border-teal-400:hover {
+  border-color: #decdb9;
+}
+.inst-root .focus\:border-teal-500:focus,
+.inst-root .focus\:border-teal-400:focus {
+  border-color: #1f1a17;
+}
+.inst-root .focus\:ring-teal-500:focus,
+.inst-root .focus\:ring-teal-50:focus,
+.inst-root .focus\:ring-teal-100:focus {
+  --tw-ring-color: rgba(31, 26, 23, 0.12);
+}
+.inst-root .hover\:text-teal-600:hover,
+.inst-root .group:hover .group-hover\:text-teal-600 {
+  color: #1f1a17;
+}
+.inst-root .card-hover:hover {
+  transform: none;
+  box-shadow: 0 18px 40px -22px rgba(58, 47, 40, 0.35);
+  border-color: transparent !important;
+}
+
+/* Form controls */
+.inst-root select,
+.inst-root input[type="text"],
+.inst-root input[type="email"],
+.inst-root input[type="password"],
+.inst-root input[type="search"] {
+  border-radius: 999px;
+}
+.inst-root textarea {
+  border-radius: 1.25rem;
+}
+
+/* Scrollbars: warm */
+.inst-root,
+.inst-root * {
+  scrollbar-color: #decdb9 transparent;
+}
+.inst-root *::-webkit-scrollbar-thumb {
+  background: #decdb9;
+}

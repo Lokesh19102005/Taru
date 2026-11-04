@@ -1,41 +1,125 @@
 import { useState } from "react";
 import { useNavigate, useLocation, Outlet, NavLink } from "react-router-dom";
 import {
-  Heart,
   LogOut,
   Building2,
   Activity,
   Users,
   Menu,
-  BarChart2,
+  X,
   LineChart,
-  Megaphone,
   TrendingUp,
+  Megaphone,
 } from "lucide-react";
 import { useInstitutionAuth } from "../contexts/InstitutionAuthContext";
-import { COLORS } from "../lib/theme";
+import { COLORS } from "../lib/institutionTheme";
+import "../institution.css";
 
-const sidebarItems = [
-  { id: "overview", icon: <Activity size={16} />, label: "Overview" },
-  { id: "trends", icon: <TrendingUp size={16} />, label: "Campus Trends" },
-  { id: "students", icon: <Users size={16} />, label: "Students" },
-  {
-    id: "mood-analytics",
-    icon: <LineChart size={16} />,
-    label: "Mood Analytics",
-  },
-  {
-    id: "concerns",
-    icon: <Megaphone size={16} />,
-    label: "Concerns",
-  },
+const navItems = [
+  { id: "overview", icon: Activity, label: "Overview" },
+  { id: "trends", icon: TrendingUp, label: "Campus Trends" },
+  { id: "students", icon: Users, label: "Students" },
+  { id: "mood-analytics", icon: LineChart, label: "Mood Analytics" },
+  { id: "concerns", icon: Megaphone, label: "Concerns" },
 ];
+
+interface RailProps {
+  pathname: string;
+  /** Always show labels (mobile drawer); otherwise labels appear on hover/focus */
+  expanded?: boolean;
+  onNavigate: () => void;
+  onLogout: () => void;
+}
+
+// Round icon buttons straight on the page (no container). On hover / keyboard
+// focus the circles widen into pills that show their label.
+function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
+  const label = expanded
+    ? "opacity-100"
+    : "opacity-0 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100";
+
+  const item =
+    "flex items-center gap-3 h-10 w-full rounded-full px-[11px] overflow-hidden whitespace-nowrap text-sm font-bold transition-colors border border-[#EEE4D7] shadow-[0_6px_16px_-8px_rgba(58,47,40,0.35)]";
+
+  return (
+    <nav
+      aria-label="Institution navigation"
+      className={`group/rail relative isolate flex flex-col gap-3 h-full transition-[width] duration-200 ease-out ${
+        expanded ? "w-56" : "w-10 hover:w-52 focus-within:w-52"
+      }`}
+    >
+      {/* Frosted panel that fades in behind the buttons when the rail opens, so
+          it reads as an open sidebar and the page content underneath is muted */}
+      {!expanded && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-3 -z-10 rounded-[28px] border border-[#EEE4D7] bg-white/75 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(58,47,40,0.45)] opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100"
+        />
+      )}
+      <NavLink
+        to="/institution/dashboard/overview"
+        onClick={onNavigate}
+        aria-label="Taru campus"
+        className="flex items-center gap-3 h-10 mb-5 whitespace-nowrap"
+      >
+        <img
+          src="/favicon.png"
+          alt=""
+          className="w-10 h-10 rounded-xl shrink-0"
+        />
+        <span
+          className={`font-display uppercase tracking-[0.25em] text-lg transition-opacity duration-150 ${label}`}
+          style={{ color: COLORS.fg }}
+        >
+          taru campus
+        </span>
+      </NavLink>
+
+      {navItems.map(({ id, icon: Icon, label: text }) => {
+        const path = `/institution/dashboard/${id}`;
+        const active = pathname === path;
+        return (
+          <NavLink
+            key={id}
+            to={path}
+            onClick={onNavigate}
+            aria-label={text}
+            title={text}
+            className={`${item} ${active ? "" : "hover:bg-[#F8EFE3]"}`}
+            style={{
+              background: active ? COLORS.primary : "#fff",
+              color: active ? "#fff" : COLORS.fg,
+            }}
+          >
+            <Icon size={18} className="shrink-0" />
+            <span className={`transition-opacity duration-150 ${label}`}>
+              {text}
+            </span>
+          </NavLink>
+        );
+      })}
+
+      <button
+        onClick={onLogout}
+        aria-label="Sign out"
+        title="Sign out"
+        className={`${item} mt-auto bg-white hover:bg-red-50`}
+        style={{ color: "#D93025" }}
+      >
+        <LogOut size={18} className="shrink-0" />
+        <span className={`transition-opacity duration-150 ${label}`}>
+          Sign out
+        </span>
+      </button>
+    </nav>
+  );
+}
 
 export default function InstitutionDashboardPage() {
   const { institution, logout } = useInstitutionAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -44,130 +128,60 @@ export default function InstitutionDashboardPage() {
 
   if (!institution) return null;
 
-  const isOverview =
-    location.pathname === "/institution/dashboard" ||
-    location.pathname === "/institution/dashboard/overview";
+  const initial = institution.collegeName.trim().charAt(0).toUpperCase();
 
   return (
     <div
-      className="h-screen flex flex-col animate-fade-in"
-      style={{ background: COLORS.muted }}
+      className="inst-root min-h-screen animate-fade-in"
+      style={{ background: COLORS.bg }}
     >
-      {/* Top bar */}
-      <header
-        className="glass sticky top-0 z-50 h-14 px-4 md:px-6 flex items-center justify-between border-b"
-        style={{ borderColor: COLORS.border }}
-      >
-        <div className="flex items-center gap-3">
-          <button
-            className="md:hidden hover:text-teal-600 transition-colors"
-            style={{ color: COLORS.fg2 }}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <Menu size={19} />
-          </button>
-          <div className="flex items-center gap-2">
+      <div className="inst-panel relative flex h-screen overflow-hidden">
+        {/* Desktop rail: the placeholder reserves space, the rail widens over the content */}
+        <div className="hidden md:block w-[88px] shrink-0 relative">
+          <div className="absolute left-6 top-5 bottom-6 z-30">
+            <Rail
+              pathname={location.pathname}
+              onNavigate={() => {}}
+              onLogout={handleLogout}
+            />
+          </div>
+        </div>
+
+        {/* Mobile drawer */}
+        {drawerOpen && (
+          <div className="md:hidden fixed inset-0 z-40">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: COLORS.primary }}
+              className="absolute inset-0 bg-black/30"
+              onClick={() => setDrawerOpen(false)}
+            />
+            <div
+              className="absolute left-3 top-3 bottom-3 rounded-[28px] p-4"
+              style={{ background: COLORS.bg }}
             >
-              <Heart size={13} className="text-white" fill="white" />
+              <Rail
+                expanded
+                pathname={location.pathname}
+                onNavigate={() => setDrawerOpen(false)}
+                onLogout={handleLogout}
+              />
             </div>
-            <span
-              className="font-extrabold text-[0.9rem] tracking-tight"
-              style={{ color: COLORS.fg }}
-            >
-              taru campus
-            </span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg"
-            style={{ background: COLORS.muted }}
-          >
-            <Building2 size={13} style={{ color: COLORS.fg2 }} />
-            <span
-              className="text-xs font-semibold"
-              style={{ color: COLORS.fg }}
-            >
-              {institution.collegeName}
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border hover:bg-red-50 transition-colors"
-            style={{ borderColor: COLORS.border, color: "#cc0000" }}
-          >
-            <LogOut size={13} /> Sign Out
-          </button>
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden relative">
-        {sidebarOpen && (
-          <div
-            className="md:hidden fixed inset-0 bg-black/30 z-30"
-            onClick={() => setSidebarOpen(false)}
-          />
         )}
 
-        {/* Sidebar */}
-        <aside
-          className={`glass fixed md:static top-14 bottom-0 left-0 z-40 w-56 flex flex-col border-r transition-transform duration-200 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
-          style={{ borderColor: COLORS.border }}
-        >
-          <nav className="flex-1 p-3 space-y-0.5">
-            <NavLink
-              to="/institution/dashboard"
-              end
-              onClick={() => setSidebarOpen(false)}
-              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
-              style={{
-                background: isOverview ? COLORS.primary : "transparent",
-                color: isOverview ? "#fff" : COLORS.fg2,
-              }}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Top bar */}
+          <header className="flex items-center justify-between gap-3 px-5 md:pl-2 md:pr-10 pt-5 pb-2">
+            <button
+              className="md:hidden w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center"
+              style={{ color: COLORS.fg }}
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open menu"
             >
-              <BarChart2 size={16} /> Dashboard
-            </NavLink>
-
-            <p
-              className="text-[9px] font-bold uppercase tracking-widest px-3 pt-4 pb-1"
-              style={{ fontFamily: "var(--font-mono)", color: COLORS.fg4 }}
-            >
-              Manage
-            </p>
-
-            {sidebarItems.map((item) => {
-              const path = `/institution/dashboard/${item.id}`;
-              const isActive = location.pathname === path;
-              return (
-                <NavLink
-                  key={item.id}
-                  to={path}
-                  onClick={() => setSidebarOpen(false)}
-                  className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 font-semibold hover:bg-teal-50"
-                  style={{
-                    background: isActive ? COLORS.primary : "transparent",
-                    color: isActive ? "#fff" : COLORS.fg2,
-                  }}
-                >
-                  {item.icon}
-                  <span className="leading-tight">{item.label}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
-
-          {/* Bottom section */}
-          <div className="p-3 border-t" style={{ borderColor: COLORS.border }}>
-            <div
-              className="rounded-xl p-3 border mb-3 card-hover"
-              style={{ background: COLORS.muted, borderColor: COLORS.border }}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Building2 size={12} style={{ color: COLORS.fg }} />
+              {drawerOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <div className="flex items-center gap-2.5 ml-auto">
+              <div className="hidden sm:flex items-center gap-2 rounded-full bg-white pl-3 pr-4 h-10 shadow-sm">
+                <Building2 size={15} style={{ color: COLORS.fg2 }} />
                 <span
                   className="text-xs font-bold"
                   style={{ color: COLORS.fg }}
@@ -175,26 +189,23 @@ export default function InstitutionDashboardPage() {
                   {institution.collegeName}
                 </span>
               </div>
-              <p className="text-[10px]" style={{ color: COLORS.fg3 }}>
-                {institution.contactEmail}
-              </p>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold text-white shadow-sm"
+                style={{ background: COLORS.primary }}
+                title={institution.contactEmail}
+              >
+                {initial}
+              </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 text-sm px-3 py-2 rounded-xl transition-colors hover:bg-red-50"
-              style={{ color: "#cc0000" }}
-            >
-              <LogOut size={15} /> Sign out
-            </button>
-          </div>
-        </aside>
+          </header>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto relative z-0">
-          <div className="max-w-4xl mx-auto px-4 md:px-8 py-6">
-            <Outlet />
-          </div>
-        </main>
+          {/* Main content */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="max-w-6xl mx-auto pl-5 pr-5 md:pl-2 md:pr-10 pt-2 pb-10">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

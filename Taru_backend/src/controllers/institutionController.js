@@ -34,19 +34,59 @@ const ISSUE_CATEGORIES = new Set([
 ]);
 const TOP_CATEGORY_LIMIT = 5;
 
-// Most common issue categories; free-text "Others" answers are grouped as "others"
-function getTopCategories(checkins) {
-  const counts = new Map();
+// Overview periods -> number of days ending today
+const OVERVIEW_PERIOD_DAYS = { today: 1, week: 7, month: 30, quarter: 90 };
 
-  for (const { category } of checkins) {
+const byCountDesc = (a, b) => b.count - a.count;
+
+// Most common issue categories with their root-cause → specific-issue breakdown.
+// Free-text "Others" categories are grouped as "others" (no breakdown, since the
+// check-in skips the deeper questions). Root causes / issues are returned as stored;
+// null means the student skipped that question.
+function getTopCategories(checkins) {
+  const groups = new Map();
+
+  for (const { category, rootCause, specificIssue } of checkins) {
     if (!category || category === "positive") continue;
     const key = ISSUE_CATEGORIES.has(category) ? category : "others";
-    counts.set(key, (counts.get(key) || 0) + 1);
+
+    let group = groups.get(key);
+    if (!group) {
+      group = { count: 0, rootCauses: new Map() };
+      groups.set(key, group);
+    }
+    group.count += 1;
+    if (key === "others") continue;
+
+    const rootKey = rootCause || null;
+    let root = group.rootCauses.get(rootKey);
+    if (!root) {
+      root = { count: 0, issues: new Map() };
+      group.rootCauses.set(rootKey, root);
+    }
+    root.count += 1;
+
+    if (rootKey) {
+      const issueKey = specificIssue || null;
+      root.issues.set(issueKey, (root.issues.get(issueKey) || 0) + 1);
+    }
   }
 
-  return [...counts]
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count)
+  return [...groups]
+    .map(([category, group]) => ({
+      category,
+      count: group.count,
+      rootCauses: [...group.rootCauses]
+        .map(([rootCause, root]) => ({
+          rootCause,
+          count: root.count,
+          issues: [...root.issues]
+            .map(([issue, count]) => ({ issue, count }))
+            .sort(byCountDesc),
+        }))
+        .sort(byCountDesc),
+    }))
+    .sort(byCountDesc)
     .slice(0, TOP_CATEGORY_LIMIT);
 }
 
@@ -169,12 +209,13 @@ exports.getAnalytics = async (req, res) => {
     const studentIds = students.map((s) => s._id);
     const totalStudents = studentIds.length;
 
-    // Get today's date range
+    // Window ending today: today only, past 7 days, 1 month (30 days) or 3 months (90 days)
+    const range = OVERVIEW_PERIOD_DAYS[req.query.range] ? req.query.range : "today";
     const now = new Date();
-    const startOfToday = new Date(
+    const windowStart = new Date(
       now.getFullYear(),
       now.getMonth(),
-      now.getDate(),
+      now.getDate() - (OVERVIEW_PERIOD_DAYS[range] - 1),
     );
     const endOfToday = new Date(
       now.getFullYear(),
@@ -186,16 +227,16 @@ exports.getAnalytics = async (req, res) => {
       999,
     );
 
-    // Find today's check-ins for these students
     const checkins = await DailyCheckIn.find({
       userId: { $in: studentIds },
-      date: { $gte: startOfToday, $lte: endOfToday },
+      date: { $gte: windowStart, $lte: endOfToday },
     });
 
-    const studentsCheckedIn = checkins.length;
+    // Each student counts once, however many days they checked in during the window
+    const studentsCheckedIn = new Set(checkins.map((c) => String(c.userId))).size;
 
-    // Compute averages ONLY from students who checked in
-    // Ratings can be skipped, so each one is averaged over the students who answered it
+    // Averages over the check-ins in the window. Ratings can be skipped, so each
+    // one is averaged over the check-ins that answered it
     const average = (getValue) => {
       const values = checkins.map(getValue).filter((v) => typeof v === "number");
       if (!values.length) return null;
@@ -213,8 +254,10 @@ exports.getAnalytics = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
+        range,
         totalStudents,
         studentsCheckedIn,
+        checkinCount: checkins.length,
         averages,
         topCategories: getTopCategories(checkins),
       },

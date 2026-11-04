@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Megaphone, MessageCircle, ChevronUp, ChevronDown, ChevronDownIcon } from 'lucide-react'
-import { COLORS } from '../../lib/theme'
+import { COLORS } from '../../lib/institutionTheme'
 import { getConcernsForInstitution, getInstitutionComments } from '../../api/concern'
 
 /* ── Helpers ─────────────────────────────── */
@@ -125,7 +125,7 @@ function InstitutionConcernCard({ concern }: { concern: Concern }) {
         <div className="flex items-center gap-2.5">
           <span
             className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-full"
-            style={{ background: '#F0FDFA', color: COLORS.primary, border: `1px solid ${COLORS.border2}` }}
+            style={{ background: '#F8EFE3', color: COLORS.primary, border: `1px solid ${COLORS.border2}` }}
           >
             {typeInfo.emoji} {typeInfo.label}
           </span>

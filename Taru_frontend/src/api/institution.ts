@@ -69,8 +69,14 @@ export const fetchInstitutionProfile =
     return apiRequest("/api/institution/me", { method: "GET" });
   };
 
-export const fetchAnalytics = async (filters: InstitutionCohortFilters) => {
+export type OverviewPeriod = "today" | "week" | "month" | "quarter";
+
+export const fetchAnalytics = async (
+  filters: InstitutionCohortFilters,
+  period: OverviewPeriod = "today",
+) => {
   const params = cohortParams(filters);
+  params.set("range", period);
   return apiRequest(`/api/institution/analytics?${params.toString()}`, {
     method: "GET",
   });

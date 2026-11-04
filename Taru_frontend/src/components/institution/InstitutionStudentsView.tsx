@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Users, Search, Filter, X } from 'lucide-react'
-import { COLORS } from '../../lib/theme'
+import { COLORS } from '../../lib/institutionTheme'
 import { fetchStudents } from '../../api/institution'
 import { TOTAL_SCORE_MAX } from '../../lib/moodScale'
 import { topicSummary } from '../../lib/checkinTree'
@@ -311,7 +311,7 @@ export default function InstitutionStudentsView() {
                   </div>
                 </div>
                 {s.todayCheckin ? (
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#CCFBF1', color: '#0D9488' }}>CHECKED IN</span>
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#E3F6E8', color: '#1E8E46' }}>CHECKED IN</span>
                 ) : (
                   <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#F1F5F9', color: '#64748B' }}>PENDING</span>
                 )}

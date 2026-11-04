@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Heart, X, Lock, Users, BarChart3, LineChart } from 'lucide-react';
-import { COLORS as C } from '../lib/theme';
+import { X, Lock, Users, BarChart3, LineChart } from 'lucide-react';
+import { COLORS as C } from '../lib/institutionTheme';
+import '../institution.css';
 import type { AuthTab } from '../types';
 import { useInstitutionAuth } from '../contexts/InstitutionAuthContext';
 
@@ -48,30 +49,32 @@ export default function InstitutionAuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: C.bg }}>
+    <div className="inst-root inst-panel min-h-screen flex" style={{ background: C.bg }}>
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-[44%] p-12 border-r" style={{ background: 'linear-gradient(135deg, #0D9488, #059669)', borderColor: C.border }}>
-        <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
-          <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-            <Heart size={13} className="text-white" fill="white" />
-          </div>
-          <span className="font-bold text-white">taru</span>
+      <div className="relative overflow-hidden hidden lg:flex flex-col justify-between w-[44%] p-12" style={{ background: 'linear-gradient(160deg, #2A211C, #1F1A17)' }}>
+        {/* soft gradient glows */}
+        <div className="pointer-events-none absolute -bottom-32 -left-24 w-[26rem] h-[26rem] rounded-full blur-3xl opacity-60" style={{ background: 'radial-gradient(circle, #F4C3A1, transparent 70%)' }} />
+        <div className="pointer-events-none absolute top-1/3 -right-32 w-[24rem] h-[24rem] rounded-full blur-3xl opacity-50" style={{ background: 'radial-gradient(circle, #D98E68, transparent 70%)' }} />
+        <div className="pointer-events-none absolute -top-24 left-1/3 w-[18rem] h-[18rem] rounded-full blur-3xl opacity-40" style={{ background: 'radial-gradient(circle, #B8704F, transparent 70%)' }} />
+        <div className="relative flex items-center gap-2 cursor-pointer" onClick={onBack}>
+          <img src="/favicon.png" alt="" className="w-9 h-9 rounded-xl" style={{ filter: 'invert(1)' }} />
+          <span className="font-display uppercase tracking-[0.25em] text-xl text-white">taru</span>
         </div>
-        <div>
-          <h2 className="text-4xl font-extrabold text-white leading-tight mb-4">
+        <div className="relative">
+          <h2 className="text-4xl font-extrabold text-white leading-tight mb-4 tracking-tight">
             Institutional portal for<br />
-            <span style={{ textDecoration: 'underline', textDecorationColor: 'rgba(255,255,255,0.5)' }}>campus wellbeing</span>
+            <span style={{ background: 'linear-gradient(135deg, #F4C3A1, #D98E68)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>campus wellbeing</span>
           </h2>
-          <p className="text-white/60 text-sm leading-relaxed max-w-xs">Monitor your campus mental health trends and support student wellbeing through data-driven insights.</p>
+          <p className="text-white/65 text-sm leading-relaxed max-w-xs">Monitor your campus mental health trends and support student wellbeing through data-driven insights.</p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="relative grid grid-cols-2 gap-3">
           {[
             { icon: <BarChart3 size={13} />, text: 'Campus Analytics' },
             { icon: <Users size={13} />, text: 'Student Wellbeing' },
             { icon: <LineChart size={13} />, text: 'Data Insights' },
             { icon: <Lock size={13} />, text: 'Secure Access' },
           ].map(b => (
-            <div key={b.text} className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2.5 text-white/75 text-xs">
+            <div key={b.text} className="flex items-center gap-2 bg-white/10 backdrop-blur rounded-full px-4 py-2.5 text-white/80 text-xs font-semibold">
               {b.icon}<span>{b.text}</span>
             </div>
           ))}
@@ -83,31 +86,28 @@ export default function InstitutionAuthPage() {
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: C.primary }}>
-                <Heart size={13} className="text-white" fill="white" />
-              </div>
-              <span className="font-bold" style={{ color: C.fg }}>taru</span>
+              <img src="/favicon.png" alt="" className="w-9 h-9 rounded-xl" />
+              <span className="font-display uppercase tracking-[0.25em] text-xl" style={{ color: C.fg }}>taru</span>
             </div>
             <button onClick={onBack} style={{ color: C.fg3 }}><X size={18} /></button>
           </div>
 
-          <h1 className="text-2xl font-extrabold mb-1" style={{ color: C.fg }}>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-1" style={{ color: C.fg }}>
             {tab === 'login' ? 'Institution Login' : 'Institution Registration'}
           </h1>
           <p className="text-sm mb-7" style={{ color: C.fg2 }}>
             {tab === 'login' ? 'Sign in to access your campus dashboard.' : 'Register your institution on our platform.'}
           </p>
 
-          <div className="flex rounded-xl p-1 mb-6" style={{ background: C.muted }}>
+          <div className="flex rounded-full p-1 mb-6 bg-white shadow-sm">
             {(['login', 'register'] as AuthTab[]).map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-teal-50"
+                className="flex-1 py-2 rounded-full text-sm font-bold transition-all"
                 style={{
-                  background: tab === t ? C.card : 'transparent',
-                  color: tab === t ? C.fg : C.fg3,
-                  boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  background: tab === t ? C.primary : 'transparent',
+                  color: tab === t ? '#fff' : C.fg3,
                 }}
               >
                 {t === 'login' ? 'Sign In' : 'Register'}
@@ -145,7 +145,7 @@ export default function InstitutionAuthPage() {
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>
 
-            <button type="submit" disabled={loading} className="w-full font-bold py-3 rounded-xl transition-all hover:opacity-80 text-sm mt-2 disabled:opacity-50"
+            <button type="submit" disabled={loading} className="w-full font-bold py-3 rounded-full transition-all hover:opacity-85 text-sm mt-2 disabled:opacity-50"
               style={{ background: C.primary, color: '#fff' }}>
               {loading ? (tab === 'login' ? 'Signing in...' : 'Registering...') : (tab === 'login' ? 'Sign In' : 'Register')}
             </button>
