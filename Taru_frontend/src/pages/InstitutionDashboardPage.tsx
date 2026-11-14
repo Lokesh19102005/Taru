@@ -43,7 +43,7 @@ function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
     : "opacity-0 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100";
 
   const item =
-    "flex items-center gap-3 h-10 w-full rounded-full px-[11px] overflow-hidden whitespace-nowrap text-sm font-bold transition-colors border border-[#EEE4D7] shadow-[0_6px_16px_-8px_rgba(58,47,40,0.35)]";
+    "flex items-center gap-3 h-10 w-full rounded-full px-[11px] overflow-hidden whitespace-nowrap text-sm font-bold transition-colors border border-[#E1EAEA] shadow-[0_6px_16px_-8px_rgba(40,80,82,0.3)]";
 
   return (
     <nav
@@ -57,7 +57,7 @@ function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
       {!expanded && (
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-3 -z-10 rounded-[28px] border border-[#EEE4D7] bg-white/75 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(58,47,40,0.45)] opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100"
+          className="pointer-events-none absolute -inset-3 -z-10 rounded-[28px] border border-[#E1EAEA] bg-white/75 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(40,80,82,0.35)] opacity-0 transition-opacity duration-200 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100"
         />
       )}
       <NavLink
@@ -95,7 +95,7 @@ function Rail({ pathname, expanded, onNavigate, onLogout }: RailProps) {
             }}
             aria-label={text}
             title={text}
-            className={`${item} ${active ? "" : "hover:bg-[#F8EFE3]"}`}
+            className={`${item} ${active ? "" : "hover:bg-[#E8EFEF]"}`}
             style={{
               background: active ? COLORS.primary : "#fff",
               color: active ? "#fff" : COLORS.fg,

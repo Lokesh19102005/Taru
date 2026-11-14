@@ -82,7 +82,13 @@ export default function InstitutionAuthPage() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto animate-fade-in">
+      <div
+        className="relative flex-1 flex items-center justify-center px-6 py-12 overflow-y-auto animate-fade-in"
+        style={{
+          background:
+            'radial-gradient(700px 520px at 100% 100%, rgba(140,203,214,0.75), transparent 65%), radial-gradient(700px 520px at 0% 85%, rgba(169,211,242,0.6), transparent 65%), radial-gradient(600px 400px at 70% 0%, rgba(255,255,255,0.9), transparent 65%), #EEF4F4',
+        }}
+      >
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
