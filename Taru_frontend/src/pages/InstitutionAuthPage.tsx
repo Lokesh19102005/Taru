@@ -49,7 +49,7 @@ export default function InstitutionAuthPage() {
   };
 
   return (
-    <div className="inst-root inst-panel min-h-screen flex" style={{ background: C.bg }}>
+    <div className="inst-root inst-panel auth-shell min-h-dvh flex" style={{ background: C.bg }}>
       {/* Left panel */}
       <div className="relative overflow-hidden hidden lg:flex flex-col justify-between w-[44%] p-12" style={{ background: 'linear-gradient(160deg, #2A211C, #1F1A17)' }}>
         {/* soft gradient glows */}
@@ -95,7 +95,7 @@ export default function InstitutionAuthPage() {
               <img src="/favicon.png" alt="" className="w-9 h-9 rounded-xl" />
               <span className="font-display uppercase tracking-[0.25em] text-xl" style={{ color: C.fg }}>taru</span>
             </div>
-            <button onClick={onBack} style={{ color: C.fg3 }}><X size={18} /></button>
+            <button onClick={onBack} aria-label="Back to home" className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-black/5" style={{ color: C.fg3 }}><X size={18} /></button>
           </div>
 
           <h1 className="text-3xl font-extrabold tracking-tight mb-1" style={{ color: C.fg }}>
@@ -123,30 +123,30 @@ export default function InstitutionAuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">
+              <div role="alert" className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College Name</label>
-              <input type="text" placeholder="e.g. IIIT Allahabad" value={form.collegeName} onChange={e => setForm({ ...form, collegeName: e.target.value })}
+              <label htmlFor="auth-field-1" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College Name</label>
+              <input id="auth-field-1" type="text" placeholder="e.g. IIIT Allahabad" value={form.collegeName} onChange={e => setForm({ ...form, collegeName: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>
             
             {tab === 'register' && (
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Contact Email</label>
-                <input type="email" placeholder="admin@college.edu" value={form.contactEmail} onChange={e => setForm({ ...form, contactEmail: e.target.value })}
+                <label htmlFor="auth-field-2" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Contact Email</label>
+                <input id="auth-field-2" autoComplete="email" type="email" placeholder="admin@college.edu" value={form.contactEmail} onChange={e => setForm({ ...form, contactEmail: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
-              <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+              <label htmlFor="auth-field-3" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
+              <input id="auth-field-3" autoComplete={tab === 'login' ? 'current-password' : 'new-password'} type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>

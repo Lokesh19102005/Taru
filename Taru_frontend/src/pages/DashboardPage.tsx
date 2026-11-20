@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Outlet, NavLink } from "react-router-dom";
 import {
   Phone,
+  X,
   Menu,
-  Bell,
   Sparkles,
   LogOut,
   ClipboardList,
@@ -111,6 +111,25 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const profileButton = useRef<HTMLButtonElement>(null);
+  const checkinDialog = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!sidebarOpen && !userOpen) return;
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (userOpen) {
+        setUserOpen(false);
+        profileButton.current?.focus();
+      } else {
+        setSidebarOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", dismiss);
+    return () => document.removeEventListener("keydown", dismiss);
+  }, [sidebarOpen, userOpen]);
 
   // When the dashboard opens (page load or right after login) and the student
   // hasn't checked in today, offer the check-in in a pop-up. They can dismiss it
@@ -138,11 +157,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!showCheckinPrompt) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowCheckinPrompt(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    checkinDialog.current?.showModal();
   }, [showCheckinPrompt]);
 
   const onLogout = () => {
@@ -155,7 +170,7 @@ export default function DashboardPage() {
     location.pathname === "/dashboard/home";
 
   const railItems = [
-    { to: "/dashboard", label: "Overview", icon: <Sparkles size={18} />, active: isOverview },
+    { to: "/dashboard/home", label: "Overview", icon: <Sparkles size={18} />, active: isOverview },
     ...navItems.map((item) => ({
       to: `/dashboard/${item.id}`,
       label: item.label,
@@ -174,8 +189,10 @@ export default function DashboardPage() {
     <NavLink
       key={to}
       to={to}
+      end
+      aria-current={active ? "page" : undefined}
       onClick={() => setSidebarOpen(false)}
-      className="flex items-center gap-4 h-11 rounded-full transition-colors"
+      className="flex items-center gap-3 min-h-11 rounded-xl transition-colors hover:bg-[#F8EFE3]"
       style={{ color: active ? "#fff" : COLORS.fg2 }}
     >
       <span
@@ -188,7 +205,7 @@ export default function DashboardPage() {
         {icon}
       </span>
       <span
-        className="text-sm font-medium whitespace-nowrap md:opacity-0 group-hover/rail:opacity-100 transition-opacity"
+        className="text-sm font-medium whitespace-nowrap md:opacity-0 xl:opacity-100 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100 transition-opacity"
         style={{ color: active ? COLORS.primaryDark : COLORS.fg2 }}
       >
         {label}
@@ -197,16 +214,20 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="student-app h-screen flex flex-col animate-fade-in">
+    <div className="student-app h-dvh flex flex-col">
       {/* Top bar */}
-      <header className="sticky top-0 z-50 h-16 px-4 md:px-8 flex items-center justify-between">
+      <header className="sticky top-0 z-50 h-16 shrink-0 border-b border-[#EEE4D7] bg-[#FFFDFA] px-3 md:px-8 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
-            className="md:hidden transition-colors"
+            ref={menuButton}
+            aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={sidebarOpen}
+            aria-controls="student-navigation"
+            className="md:hidden grid size-11 place-items-center rounded-xl hover:bg-[#F8EFE3]"
             style={{ color: COLORS.fg2 }}
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            <Menu size={20} />
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <NavLink
             to="/dashboard"
@@ -234,18 +255,11 @@ export default function DashboardPage() {
         </a>
 
         <div className="flex items-center gap-2">
-          <button
-            className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/80 transition-colors"
-            style={{ color: COLORS.fg2 }}
-          >
-            <Bell size={17} />
-            <span
-              className="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full"
-              style={{ background: COLORS.accent }}
-            />
-          </button>
           <div className="relative">
             <button
+              ref={profileButton}
+              aria-label="Account options"
+              aria-expanded={userOpen}
               onClick={() => setUserOpen(!userOpen)}
               className="flex items-center gap-2.5 pl-1 py-1 pr-3 rounded-full hover:bg-white/80 transition-colors cursor-pointer"
             >
@@ -284,12 +298,12 @@ export default function DashboardPage() {
         )}
 
         {/* Icon rail — expands on hover (always expanded in the mobile drawer) */}
-        <div className="md:w-[88px] shrink-0">
+        <div className="md:w-[72px] xl:w-64 shrink-0">
           <aside
-            className={`group/rail fixed md:absolute top-16 bottom-0 left-0 z-40 flex flex-col px-5 py-4 overflow-hidden transition-all duration-300 w-64 md:w-[88px] md:hover:w-64 md:hover:shadow-2xl md:hover:rounded-r-3xl ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
-            style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(14px)" }}
+            id="student-navigation"
+            className={`group/rail fixed md:absolute top-16 md:top-0 bottom-0 left-0 z-40 flex flex-col px-3.5 py-4 overflow-y-auto overflow-x-hidden w-64 max-w-[calc(100vw-2rem)] md:w-[72px] md:hover:w-64 md:focus-within:w-64 xl:w-64 border-r border-[#EEE4D7] bg-[#FFFDFA] transition-[width,transform] duration-200 ${sidebarOpen ? "visible translate-x-0" : "invisible -translate-x-full md:visible md:translate-x-0"}`}
           >
-            <nav className="flex-1 space-y-1.5">
+            <nav aria-label="Student navigation" className="flex-1 space-y-1.5 pb-3">
               {railItems.map((it) => railLink(it.to, it.label, it.icon, it.active))}
             </nav>
             <div className="space-y-1.5 pt-3 border-t" style={{ borderColor: COLORS.border }}>
@@ -299,7 +313,7 @@ export default function DashboardPage() {
                 className="md:hidden flex items-center gap-4 h-11 text-sm font-medium"
                 style={{ color: COLORS.fg2 }}
               >
-                <span className="w-11 h-11 flex items-center justify-center"><Phone size={18} /></span>
+                <span className="w-11 h-11 shrink-0 flex items-center justify-center"><Phone size={18} /></span>
                 Crisis: 9152987821
               </a>
               <button
@@ -307,38 +321,32 @@ export default function DashboardPage() {
                 className="w-full flex items-center gap-4 h-11 rounded-full"
                 style={{ color: "#c0392b" }}
               >
-                <span className="w-11 h-11 flex items-center justify-center"><LogOut size={18} /></span>
-                <span className="text-sm font-medium whitespace-nowrap md:opacity-0 group-hover/rail:opacity-100 transition-opacity">Sign out</span>
+                <span className="w-11 h-11 shrink-0 flex items-center justify-center"><LogOut size={18} /></span>
+                <span className="text-sm font-medium whitespace-nowrap md:opacity-0 xl:opacity-100 group-hover/rail:opacity-100 group-focus-within/rail:opacity-100 transition-opacity">Sign out</span>
               </button>
             </div>
           </aside>
         </div>
 
         {/* Main */}
-        <main className="flex-1 overflow-y-auto relative z-0">
-          <div className="max-w-5xl mx-auto px-5 md:px-10 pt-4 pb-16">
+        <main className="flex-1 min-w-0 overflow-y-auto relative z-0" key={location.pathname}>
+          <div className="max-w-6xl mx-auto px-5 md:px-8 lg:px-10 pt-6 md:pt-8 pb-16">
             <Outlet />
           </div>
         </main>
       </div>
 
       {showCheckinPrompt && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center px-5 animate-fade-in"
-          style={{ background: "rgba(31, 26, 23, 0.35)", backdropFilter: "blur(3px)" }}
-          onClick={() => setShowCheckinPrompt(false)}
+        <dialog
+          ref={checkinDialog}
+          aria-labelledby="checkin-prompt-title"
+          onClose={() => setShowCheckinPrompt(false)}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) event.currentTarget.close();
+          }}
+          className="m-auto w-[calc(100%-2rem)] max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl border border-[#EEE4D7] bg-white p-0 backdrop:bg-[#1F1A17]/40"
         >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="checkin-prompt-title"
-            className="w-full max-w-md rounded-3xl bg-white border p-7 text-center"
-            style={{
-              borderColor: COLORS.border,
-              boxShadow: "0 30px 70px -30px rgba(58, 47, 40, 0.55)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="p-6 sm:p-7 text-center">
             <div
               className="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center"
               style={{ background: COLORS.muted, color: COLORS.accent }}
@@ -363,7 +371,7 @@ export default function DashboardPage() {
               <button
                 autoFocus
                 onClick={() => {
-                  setShowCheckinPrompt(false);
+                  checkinDialog.current?.close();
                   navigate("/dashboard/check");
                 }}
                 className="w-full py-3 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
@@ -372,7 +380,7 @@ export default function DashboardPage() {
                 Check in now
               </button>
               <button
-                onClick={() => setShowCheckinPrompt(false)}
+                onClick={() => checkinDialog.current?.close()}
                 className="w-full py-3 rounded-full text-sm font-semibold border bg-white transition-colors hover:bg-[#F8EFE3]"
                 style={{ borderColor: COLORS.border2, color: COLORS.fg2 }}
               >
@@ -380,7 +388,7 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
-        </div>
+        </dialog>
       )}
     </div>
   );

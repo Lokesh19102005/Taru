@@ -59,7 +59,7 @@ export default function PsychiatristAuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: C.bg }}>
+    <div className="auth-shell min-h-dvh flex" style={{ background: C.bg }}>
       {/* Left panel */}
       <div className="hidden lg:flex flex-col justify-between w-[44%] p-12 border-r" style={{ background: 'linear-gradient(135deg, #0D9488, #059669)', borderColor: C.border }}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
@@ -99,7 +99,7 @@ export default function PsychiatristAuthPage() {
               </div>
               <span className="font-bold" style={{ color: C.fg }}>taru</span>
             </div>
-            <button onClick={onBack} style={{ color: C.fg3 }}><X size={18} /></button>
+            <button onClick={onBack} aria-label="Back to home" className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-black/5" style={{ color: C.fg3 }}><X size={18} /></button>
           </div>
 
           <h1 className="text-2xl font-extrabold mb-1" style={{ color: C.fg }}>
@@ -128,30 +128,30 @@ export default function PsychiatristAuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">
+              <div role="alert" className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">
                 {error}
               </div>
             )}
 
             {tab === 'register' && (
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Full Name</label>
-                <input type="text" placeholder="Dr. Jane Doe" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                <label htmlFor="auth-field-1" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Full Name</label>
+                <input id="auth-field-1" type="text" placeholder="Dr. Jane Doe" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
               </div>
             )}
             
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Email</label>
-              <input type="email" placeholder="doctor@clinic.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+              <label htmlFor="auth-field-2" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Email</label>
+              <input id="auth-field-2" autoComplete="email" type="email" placeholder="doctor@clinic.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
-              <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+              <label htmlFor="auth-field-3" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
+              <input id="auth-field-3" autoComplete={tab === 'login' ? 'current-password' : 'new-password'} type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                 style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
             </div>
@@ -159,32 +159,32 @@ export default function PsychiatristAuthPage() {
             {tab === 'register' && (
               <>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Qualification</label>
-                  <input type="text" placeholder="MD Psychiatry" value={form.qualification} onChange={e => setForm({ ...form, qualification: e.target.value })}
+                  <label htmlFor="auth-field-4" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Qualification</label>
+                  <input id="auth-field-4" type="text" placeholder="MD Psychiatry" value={form.qualification} onChange={e => setForm({ ...form, qualification: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} required />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Specialization (comma-separated)</label>
-                  <input type="text" placeholder="Anxiety, Depression, CBT" value={form.specialization} onChange={e => setForm({ ...form, specialization: e.target.value })}
+                  <label htmlFor="auth-field-5" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Specialization (comma-separated)</label>
+                  <input id="auth-field-5" type="text" placeholder="Anxiety, Depression, CBT" value={form.specialization} onChange={e => setForm({ ...form, specialization: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Experience (Years)</label>
-                  <input type="number" placeholder="5" value={form.experience} onChange={e => setForm({ ...form, experience: e.target.value })}
+                  <label htmlFor="auth-field-6" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Experience (Years)</label>
+                  <input id="auth-field-6" type="number" placeholder="5" value={form.experience} onChange={e => setForm({ ...form, experience: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Languages (comma-separated)</label>
-                  <input type="text" placeholder="English, Hindi" value={form.languages} onChange={e => setForm({ ...form, languages: e.target.value })}
+                  <label htmlFor="auth-field-7" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Languages (comma-separated)</label>
+                  <input id="auth-field-7" type="text" placeholder="English, Hindi" value={form.languages} onChange={e => setForm({ ...form, languages: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Bio</label>
-                  <textarea placeholder="Tell us about your practice..." value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })}
+                  <label htmlFor="auth-field-8" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Bio</label>
+                  <textarea id="auth-field-8" placeholder="Tell us about your practice..." value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:border-teal-500 hover:bg-teal-50 min-h-[80px]"
                     style={{ background: C.card, borderColor: C.border, color: C.fg }} />
                 </div>

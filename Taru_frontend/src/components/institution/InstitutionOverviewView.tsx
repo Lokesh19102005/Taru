@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChartNoAxesColumn, ChevronDown, ChevronRight } from "lucide-react";
 import { COLORS, SCORE_GRADIENT_STOPS } from "../../lib/institutionTheme";
 import { useInstitutionAuth } from "../../contexts/InstitutionAuthContext";
 import { TOTAL_SCORE_MAX, getScoreColor, getScoreLabel } from "../../lib/moodScale";
@@ -545,7 +545,7 @@ export default function InstitutionOverviewView() {
         </div>
       ) : (
         <div className="inst-card p-10 text-center">
-          <div className="text-4xl mb-3">📊</div>
+          <ChartNoAxesColumn aria-hidden size={30} className="mx-auto mb-3" style={{ color: COLORS.fg3 }} />
           <p className="text-sm font-extrabold mb-1" style={{ color: COLORS.fg }}>
             {period === "today"
               ? "No check-ins recorded today"

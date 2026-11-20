@@ -144,14 +144,6 @@ body {
   border-color: var(--card-hover-border, #99f6e4) !important;
 }
 
-/* ── Gradient text ────────────────────────── */
-.gradient-text {
-  background: linear-gradient(135deg, #0d9488, #059669);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* ── Student app theme (editorial orchid) ─── */
 .student-app {
   --card-hover-border: #DECDB9;
@@ -186,15 +178,58 @@ body {
 .student-app .glass-teal {
   background: rgba(255, 255, 255, 0.7);
 }
-.student-app .gradient-text {
-  background: linear-gradient(135deg, #d98e68, #b8704f);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
 .student-app .hairline-row {
   border-top: 1px solid #EEE4D7;
   transition: background 0.2s;
 }
 .student-app .hairline-row:hover {
   background: rgba(247, 240, 248, 0.7);
+}
+
+@layer base {
+  :root {
+    --focus-ring: #15766c;
+    --selection: #c7eee7;
+  }
+
+  .student-app {
+    --focus-ring: #86513d;
+    --selection: #f3daca;
+  }
+
+  ::selection {
+    background: var(--selection);
+    color: #1f2525;
+  }
+
+  :is(button, a[href], input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.auth-shell :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.auth-shell :is(input, textarea)::placeholder {
+  color: #6b6b68;
+}
+
+@media (max-width: 47.999rem) {
+  .auth-shell :is(input, select, textarea) {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -7,7 +7,6 @@ import {
   Stethoscope,
   BarChart2,
   ChevronRight,
-  Sparkles,
   ArrowUpRight,
   Flame,
   CalendarDays,
@@ -143,9 +142,9 @@ export default function HomeView() {
           <p className="text-xs font-medium uppercase tracking-[0.22em] mb-5" style={{ color: COLORS.primary }}>
             {getGreeting()}
           </p>
-          <h1 className="text-5xl md:text-6xl leading-[1.05] mb-5" style={{ color: COLORS.fg }}>
+          <h1 className="text-[clamp(2.5rem,10vw,3.75rem)] leading-[1.05] mb-5 [overflow-wrap:anywhere]" style={{ color: COLORS.fg }}>
             Hello, {user?.username || "there"}.<br />
-            <span style={{ color: COLORS.accent }}>How are you feeling?</span>
+            <span style={{ color: "#9C5036" }}>How are you feeling?</span>
           </h1>
           <p className="text-sm leading-relaxed max-w-md mb-8" style={{ color: COLORS.fg2 }}>
             {streak > 0
@@ -172,9 +171,9 @@ export default function HomeView() {
 
         {/* Stats */}
         <div className="relative">
-          <div className="absolute -top-8 -right-6 w-56 h-56 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(246,200,168,0.45)" }} />
+          <div className="absolute -top-8 right-0 w-56 h-56 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(246,200,168,0.45)" }} />
           <div
-            className="relative rounded-[2rem] border p-3 backdrop-blur"
+            className="relative rounded-2xl border p-3"
             style={{
               background: "linear-gradient(150deg, rgba(255,255,255,0.92) 0%, rgba(252,227,210,0.55) 100%)",
               borderColor: COLORS.border,
@@ -205,16 +204,13 @@ export default function HomeView() {
       <button
         type="button"
         onClick={() => navigate("/dashboard/chatbot")}
-        className="group relative w-full overflow-hidden rounded-[2rem] p-8 md:p-10 text-left mb-14 transition-all hover:-translate-y-0.5"
+        className="group relative w-full overflow-hidden rounded-2xl p-6 md:p-10 text-left mb-14 transition-all hover:-translate-y-0.5"
         style={{ background: "linear-gradient(120deg, #FCE3D2 0%, #F7E8D6 55%, #EEDFC9 100%)" }}
       >
         <div className="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-white/40 blur-2xl pointer-events-none" />
         <div className="relative flex items-center justify-between gap-6">
           <div className="max-w-lg">
-            <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] mb-3" style={{ color: COLORS.primaryDark }}>
-              <Sparkles size={13} /> Featured for you
-            </div>
-            <h3 className="text-3xl md:text-4xl mb-2" style={{ color: COLORS.fg }}>Talk to Taru AI</h3>
+            <h2 className="text-3xl md:text-4xl mb-2" style={{ color: COLORS.fg }}>Talk to Taru AI</h2>
             <p className="text-sm leading-relaxed" style={{ color: COLORS.fg2 }}>
               Share what is on your mind and take a moment to reflect.
             </p>
@@ -238,7 +234,7 @@ export default function HomeView() {
             <button
               key={item.id}
               onClick={() => navigate(`/dashboard/${item.id}`)}
-              className={`group rounded-3xl border backdrop-blur-sm p-6 text-left min-h-[170px] flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-24px_rgba(58,47,40,0.35)] ${toolSpans[item.id]}`}
+              className={`group rounded-2xl border p-6 text-left min-h-[170px] flex flex-col justify-between transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-24px_rgba(58,47,40,0.35)] ${toolSpans[item.id]}`}
               style={{ background: toolTints[item.id].bg, borderColor: toolTints[item.id].border }}
             >
               <div className="flex items-start justify-between">

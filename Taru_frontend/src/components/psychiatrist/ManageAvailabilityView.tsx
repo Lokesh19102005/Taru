@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Lock } from 'lucide-react'
 import { COLORS } from '../../lib/theme'
 import { getMyAvailability, setAvailability } from '../../api/availability'
-import { Slot } from '../../types'
 
 const generateAllSlots = () => {
   const slots: { startTime: string; endTime: string }[] = []
