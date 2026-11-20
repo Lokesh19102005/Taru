@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, Outlet, NavLink } from "react-router-dom";
 import {
   LogOut,
@@ -134,6 +134,22 @@ export default function InstitutionDashboardPage() {
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const drawerTrigger = useRef<HTMLButtonElement>(null);
+  const drawer = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const panel = drawer.current;
+    panel?.showModal();
+    const desktop = window.matchMedia("(min-width: 48rem)");
+    const closeOnDesktop = () => {
+      if (desktop.matches) panel?.close();
+    };
+    desktop.addEventListener("change", closeOnDesktop);
+    closeOnDesktop();
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, [drawerOpen]);
+
   const handleLogout = () => {
     logout();
     navigate("/institution/login");
@@ -145,10 +161,10 @@ export default function InstitutionDashboardPage() {
 
   return (
     <div
-      className="inst-root min-h-screen animate-fade-in"
+      className="inst-root min-h-dvh"
       style={{ background: COLORS.bg }}
     >
-      <div className="inst-panel relative flex h-screen overflow-hidden">
+      <div className="inst-panel relative flex h-dvh overflow-hidden">
         {/* Desktop rail: the placeholder reserves space, the rail widens over the content */}
         <div className="hidden md:block w-[88px] shrink-0 relative">
           <div className="absolute left-6 top-5 bottom-6 z-30">
@@ -162,23 +178,36 @@ export default function InstitutionDashboardPage() {
 
         {/* Mobile drawer */}
         {drawerOpen && (
-          <div className="md:hidden fixed inset-0 z-40">
-            <div
-              className="absolute inset-0 bg-black/30"
-              onClick={() => setDrawerOpen(false)}
-            />
-            <div
-              className="absolute left-3 top-3 bottom-3 rounded-[28px] p-4"
-              style={{ background: COLORS.bg }}
-            >
+          <dialog
+            ref={drawer}
+            id="campus-navigation"
+            aria-label="Campus navigation"
+            className="md:hidden fixed inset-y-0 left-0 m-0 h-dvh max-h-none max-w-[calc(100vw-2rem)] overflow-y-auto bg-[#EEF4F4] p-4 backdrop:bg-black/30"
+            onClose={() => {
+              setDrawerOpen(false);
+              drawerTrigger.current?.focus();
+            }}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) event.currentTarget.close();
+            }}
+          >
+            <div>
+              <button
+                autoFocus
+                onClick={() => drawer.current?.close()}
+                aria-label="Close navigation"
+                className="mb-3 grid size-11 place-items-center rounded-full bg-white"
+              >
+                <X size={18} />
+              </button>
               <Rail
                 expanded
                 pathname={location.pathname}
-                onNavigate={() => setDrawerOpen(false)}
+                onNavigate={() => drawer.current?.close()}
                 onLogout={handleLogout}
               />
             </div>
-          </div>
+          </dialog>
         )}
 
         <div className="flex-1 min-w-0 flex flex-col">
@@ -188,22 +217,25 @@ export default function InstitutionDashboardPage() {
               className="md:hidden w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center"
               style={{ color: COLORS.fg }}
               onClick={() => setDrawerOpen(true)}
-              aria-label="Open menu"
+              ref={drawerTrigger}
+              aria-expanded={drawerOpen}
+              aria-controls={drawerOpen ? "campus-navigation" : undefined}
+              aria-label="Open navigation"
             >
               {drawerOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
-            <div className="flex items-center gap-2.5 ml-auto">
-              <div className="hidden sm:flex items-center gap-2 rounded-full bg-white pl-3 pr-4 h-10 shadow-sm">
+            <div className="flex min-w-0 items-center gap-2.5 ml-auto">
+              <div className="flex min-w-0 items-center gap-2 rounded-full bg-white pl-3 pr-4 min-h-10 shadow-sm">
                 <Building2 size={15} style={{ color: COLORS.fg2 }} />
                 <span
-                  className="text-xs font-bold"
+                  className="text-xs font-bold break-words min-w-0"
                   style={{ color: COLORS.fg }}
                 >
                   {institution.collegeName}
                 </span>
               </div>
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold text-white shadow-sm"
+                className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-sm font-extrabold text-white shadow-sm"
                 style={{ background: COLORS.primary }}
                 title={institution.contactEmail}
               >
@@ -213,7 +245,7 @@ export default function InstitutionDashboardPage() {
           </header>
 
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 min-h-0 overflow-y-auto" key={location.pathname}>
             <div className="max-w-6xl mx-auto pl-5 pr-5 md:pl-2 md:pr-10 pt-2 pb-10">
               <Outlet />
             </div>

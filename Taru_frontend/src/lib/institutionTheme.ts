@@ -15,7 +15,7 @@ export const COLORS = {
   muted: '#E8EFEF', // pale blue-grey: tracks, hover tint, chips
   fg: '#0E1111',
   fg2: '#4A5757',
-  fg3: '#8A9898',
+  fg3: '#566969',
   fg4: '#BFCBCB',
   // data fill (bars): green -> orange -> red
   gradient: 'linear-gradient(90deg, #8AE06A, #F7A13A 55%, #F0483A)',

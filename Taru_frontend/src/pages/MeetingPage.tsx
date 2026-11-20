@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Mic, MicOff, Camera, CameraOff, PhoneOff, Loader2, ShieldX, CheckCircle, ArrowLeft, Clock, Users, MoreVertical, Brain, MessageSquare } from 'lucide-react'
+import { Mic, MicOff, Camera, CameraOff, PhoneOff, Loader2, ShieldX, CheckCircle, ArrowLeft, Clock, Users, Brain, MessageSquare } from 'lucide-react'
 import { verifyMeeting, updateMeetingLifecycle } from '../api/meeting'
 import { useWebRTC } from '../hooks/useWebRTC'
 import MoodHistoryPanel from '../components/MoodHistoryPanel'
@@ -213,7 +213,7 @@ export default function MeetingPage() {
   // ─── LOADING ───
   if (meetingState === 'loading') {
     return (
-      <div className="h-screen bg-[#202124] flex flex-col items-center justify-center text-white">
+      <div className="min-h-dvh bg-[#202124] flex flex-col items-center justify-center text-white">
         <Loader2 className="animate-spin mb-4 text-blue-400" size={40} />
         <p className="text-[#e8eaed] text-lg">Verifying access...</p>
       </div>
@@ -223,7 +223,7 @@ export default function MeetingPage() {
   // ─── DENIED ───
   if (meetingState === 'denied') {
     return (
-      <div className="h-screen bg-[#202124] flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-dvh bg-[#202124] flex flex-col items-center justify-center text-white p-4">
         <div className="bg-[#303134] rounded-2xl p-10 max-w-md w-full text-center shadow-2xl">
           <ShieldX size={56} className="text-red-400 mx-auto mb-5" />
           <h2 className="text-2xl font-semibold mb-3 text-[#e8eaed]">Can't join this meeting</h2>
@@ -242,7 +242,7 @@ export default function MeetingPage() {
   // ─── ENDED ───
   if (meetingState === 'ended') {
     return (
-      <div className="h-screen bg-[#202124] flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-dvh bg-[#202124] flex flex-col items-center justify-center text-white p-4">
         <div className="bg-[#303134] rounded-2xl p-10 max-w-md w-full text-center shadow-2xl">
           <CheckCircle size={56} className="text-green-400 mx-auto mb-5" />
           <h2 className="text-2xl font-semibold mb-2 text-[#e8eaed]">Session ended</h2>
@@ -268,7 +268,7 @@ export default function MeetingPage() {
   // ─── LOBBY (Google Meet style) ───
   if (meetingState === 'lobby') {
     return (
-      <div className="h-screen bg-[#202124] flex items-center justify-center p-4 sm:p-8">
+      <div className="min-h-dvh bg-[#202124] flex items-center justify-center p-4 sm:p-8">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 max-w-5xl w-full">
           
           {/* Video Preview */}
@@ -342,10 +342,10 @@ export default function MeetingPage() {
 
   // ─── IN-CALL (connecting, waiting, connected) — Google Meet Layout ───
   return (
-    <div className="h-screen bg-[#202124] flex flex-col overflow-hidden select-none">
+    <div className="h-dvh bg-[#202124] flex flex-col overflow-hidden select-none">
       
       {/* ── Top Bar ── */}
-      <div className="h-16 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 bg-[#202124] z-10">
+      <div className="h-14 sm:h-16 shrink-0 flex items-center justify-between px-4 sm:px-6 bg-[#202124] z-10">
         {/* Left: Meeting info */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex flex-col min-w-0">
@@ -382,9 +382,6 @@ export default function MeetingPage() {
               <Brain size={20} />
             </button>
           )}
-          <button className="w-10 h-10 rounded-full flex items-center justify-center text-[#9aa0a6] hover:bg-[#3c4043] transition-colors">
-            <MoreVertical size={20} />
-          </button>
         </div>
       </div>
 
@@ -394,7 +391,7 @@ export default function MeetingPage() {
           
           {/* Waiting / Connecting State */}
           {(meetingState === 'waiting' || meetingState === 'connecting') && (
-            <div className="w-full h-full bg-[#3c4043] rounded-2xl flex flex-col items-center justify-center">
+            <div className="w-full h-full bg-[#3c4043] rounded-2xl flex flex-col items-center justify-center px-4 text-center">
               <div className="w-20 h-20 rounded-full bg-[#5f6368] flex items-center justify-center mb-6">
                 <Loader2 className="animate-spin text-[#e8eaed]" size={32} />
               </div>

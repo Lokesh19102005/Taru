@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Sparkles,
-  Sun,
   ChevronRight,
   ArrowLeft,
   Wind,
@@ -9,7 +7,6 @@ import {
   Grip,
   LifeBuoy,
   ShipIcon,
-  Palette,
   PaintRoller,
 } from "lucide-react";
 import COLORS from "../../lib/studentTheme";

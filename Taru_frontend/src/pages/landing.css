@@ -1,0 +1,182 @@
+.student-app.taru-landing {
+  --landing-ink: #282019;
+  --landing-muted: #60534a;
+  --landing-rule: #d9cbbd;
+  --landing-paper: #fcf8f0;
+  --landing-panel: #432e25;
+  min-height: 100vh;
+  background: var(--landing-paper);
+  color: var(--landing-ink);
+}
+
+.landing-width {
+  width: min(100% - 3rem, 72rem);
+  margin-inline: auto;
+}
+
+.landing-header,
+.landing-header nav,
+.landing-brand {
+  display: flex;
+  align-items: center;
+}
+
+.landing-header {
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 5rem;
+  border-bottom: 1px solid var(--landing-rule);
+}
+
+.landing-header nav {
+  gap: clamp(0.9rem, 3vw, 2rem);
+  font-size: 0.875rem;
+}
+
+.landing-brand {
+  gap: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.landing-header a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.taru-landing a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+.landing-hero,
+.landing-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-block: clamp(3rem, 8vw, 7rem);
+}
+
+.landing-hero {
+  align-items: center;
+}
+
+.landing-hero h1 {
+  max-width: 13ch;
+  font-size: clamp(2.9rem, 6.5vw, 6rem);
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.landing-intro {
+  max-width: 43ch;
+  margin-top: 1.4rem;
+  color: var(--landing-muted);
+  line-height: 1.7;
+}
+
+.landing-checkin {
+  padding: clamp(1.75rem, 4.7vw, 3.5rem);
+  border-radius: 12px;
+  background: var(--landing-panel);
+  color: var(--landing-paper);
+}
+
+.landing-checkin h2,
+.landing-tools h2 {
+  max-width: 15ch;
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  line-height: 1.1;
+}
+
+.landing-checkin p {
+  margin-top: 1rem;
+  color: #eeded0;
+  line-height: 1.6;
+}
+
+.landing-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-top: 1.5rem;
+  padding: 0.7rem 1.05rem;
+  border-radius: 6px;
+  background: #ffe3cc;
+  color: var(--landing-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.landing-button:hover {
+  background: #fff1e4;
+}
+
+.landing-checkin .landing-button:focus-visible {
+  outline-color: var(--landing-paper);
+}
+
+.landing-checkin .landing-checkin-note {
+  margin-top: 0.55rem;
+  font-size: 0.8125rem;
+}
+
+.landing-tools {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.45fr);
+  border-top: 1px solid var(--landing-rule);
+}
+
+.landing-button-dark {
+  background: var(--landing-panel);
+  color: var(--landing-paper);
+}
+
+.landing-button-dark:hover {
+  background: #5a3d30;
+}
+
+.landing-button-dark:focus-visible {
+  outline-color: var(--landing-ink) !important;
+}
+
+.landing-directory > div {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.75fr) minmax(0, 1.4fr);
+  align-items: baseline;
+  gap: 0.5rem 1.25rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--landing-rule);
+}
+
+.landing-directory > div:first-child {
+  border-top: 1px solid var(--landing-rule);
+}
+
+.landing-directory dt {
+  font-size: 1.5rem;
+}
+
+.landing-directory dd {
+  color: var(--landing-muted);
+  line-height: 1.6;
+}
+
+.landing-footer {
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--landing-rule);
+  color: var(--landing-muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 700px) {
+  .landing-hero,
+  .landing-tools {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .landing-directory > div {
+    grid-template-columns: 1fr;
+  }
+}

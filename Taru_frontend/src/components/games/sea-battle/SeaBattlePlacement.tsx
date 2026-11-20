@@ -347,7 +347,6 @@ export default function SeaBattlePlacement({
           const placedCountOfThisSize = placedShips.filter(
             (s) => s.size === size,
           ).length;
-          const totalOfThisSize = SHIP_SIZES.filter((s) => s === size).length;
           // Roughly track "done" per unique size tier for the summary chips.
           const doneSoFar =
             SHIP_SIZES.slice(0, index + 1).filter((s) => s === size).length <=

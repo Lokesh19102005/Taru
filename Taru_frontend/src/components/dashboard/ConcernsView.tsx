@@ -56,7 +56,7 @@ interface Concern {
 
 /* ── Comment Section ─────────────────────── */
 
-function CommentSection({ concernId, commentCount, onCommentAdded }: { concernId: string; commentCount: number; onCommentAdded: () => void }) {
+function CommentSection({ concernId, onCommentAdded }: { concernId: string; onCommentAdded: () => void }) {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
@@ -218,7 +218,6 @@ function ConcernCard({ concern, onVote }: { concern: Concern; onVote: (id: strin
       {showComments && (
         <CommentSection
           concernId={concern._id}
-          commentCount={localCommentCount}
           onCommentAdded={() => setLocalCommentCount(prev => prev + 1)}
         />
       )}

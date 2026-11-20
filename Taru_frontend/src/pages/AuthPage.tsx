@@ -76,7 +76,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="student-app min-h-screen flex" style={{ background: C.bg }}>
+    <div className="student-app auth-shell min-h-dvh flex" style={{ background: C.bg }}>
       {/* Left panel */}
       <div className="hidden lg:flex flex-col justify-between w-[44%] p-12 border-r" style={{ backgroundImage: "linear-gradient(160deg, rgba(60,32,80,0.55) 0%, rgba(31,26,23,0.35) 60%, rgba(244,183,154,0.35) 100%), url('https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1200&q=70')", backgroundSize: 'cover', backgroundPosition: 'center', borderColor: C.border }}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
@@ -113,7 +113,7 @@ export default function AuthPage() {
               <TaruLogo size={28} />
               <span className="font-display text-xl tracking-[0.2em] uppercase" style={{ color: C.fg }}>taru</span>
             </div>
-            <button onClick={onBack} style={{ color: C.fg3 }}><X size={18} /></button>
+            <button onClick={onBack} aria-label="Back to home" className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-black/5" style={{ color: C.fg3 }}><X size={18} /></button>
           </div>
 
           {/* Title */}
@@ -167,17 +167,17 @@ export default function AuthPage() {
           {tab === 'login' && (
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">{error}</div>
+                <div role="alert" className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">{error}</div>
               )}
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College Email</label>
-                <input type="email" placeholder="you@college.edu" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                <label htmlFor="auth-field-1" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College Email</label>
+                <input id="auth-field-1" autoComplete="email" type="email" placeholder="you@college.edu" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-2xl border text-sm outline-none transition-all focus:border-[#E3B393] hover:bg-[#F8EFE3]"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
-                <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+                <label htmlFor="auth-field-2" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
+                <input id="auth-field-2" autoComplete="current-password" type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-2xl border text-sm outline-none transition-all focus:border-[#E3B393] hover:bg-[#F8EFE3]"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} />
               </div>
@@ -195,23 +195,23 @@ export default function AuthPage() {
           {tab === 'register' && regStep === 1 && (
             <form onSubmit={handleNext} className="space-y-4">
               {error && (
-                <div className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">{error}</div>
+                <div role="alert" className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">{error}</div>
               )}
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College Email</label>
-                <input type="email" placeholder="you@college.edu" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                <label htmlFor="auth-field-3" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College Email</label>
+                <input id="auth-field-3" autoComplete="email" type="email" placeholder="you@college.edu" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-2xl border text-sm outline-none transition-all focus:border-[#E3B393] hover:bg-[#F8EFE3]"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College / University</label>
-                <input type="text" placeholder="Delhi University" value={form.college} onChange={e => setForm({ ...form, college: e.target.value })}
+                <label htmlFor="auth-field-4" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>College / University</label>
+                <input id="auth-field-4" type="text" placeholder="Delhi University" value={form.college} onChange={e => setForm({ ...form, college: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-2xl border text-sm outline-none transition-all focus:border-[#E3B393] hover:bg-[#F8EFE3]"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
-                <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+                <label htmlFor="auth-field-5" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Password</label>
+                <input id="auth-field-5" autoComplete="new-password" type="password" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-2xl border text-sm outline-none transition-all focus:border-[#E3B393] hover:bg-[#F8EFE3]"
                   style={{ background: C.card, borderColor: C.border, color: C.fg }} />
               </div>
@@ -226,13 +226,13 @@ export default function AuthPage() {
           {tab === 'register' && regStep === 2 && (
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">{error}</div>
+                <div role="alert" className="text-red-500 text-xs font-semibold bg-red-50 p-2 rounded-lg">{error}</div>
               )}
 
               {/* Batch */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Batch / Year of Admission</label>
-                <select
+                <label htmlFor="auth-field-6" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Batch / Year of Admission</label>
+                <select id="auth-field-6"
                   value={form.batch}
                   onChange={e => setForm({ ...form, batch: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-2xl border text-sm outline-none transition-all focus:border-[#E3B393] appearance-none hover:bg-[#F8EFE3]"
@@ -247,8 +247,8 @@ export default function AuthPage() {
 
               {/* Age */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Age</label>
-                <input
+                <label htmlFor="auth-field-7" className="block text-xs font-semibold mb-1.5" style={{ color: C.fg }}>Age</label>
+                <input id="auth-field-7"
                   type="number"
                   placeholder="e.g. 20"
                   min={14}
@@ -267,6 +267,7 @@ export default function AuthPage() {
                   {GENDER_OPTIONS.map(g => (
                     <button
                       key={g}
+                      aria-pressed={form.gender === g}
                       type="button"
                       onClick={() => setForm({ ...form, gender: g })}
                       className="py-2.5 rounded-2xl border text-sm font-medium transition-all hover:bg-[#F8EFE3]"

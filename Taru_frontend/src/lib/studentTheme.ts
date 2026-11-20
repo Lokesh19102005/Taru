@@ -12,7 +12,7 @@ export const COLORS = {
   muted: '#F8EFE3',
   fg: '#1F1A17',
   fg2: '#5E554C',
-  fg3: '#958B80',
+  fg3: '#70665B',
   fg4: '#CFC6BA',
   gradient: 'linear-gradient(135deg, #1F1A17 0%, #3A2F28 100%)',
   gradientLight: 'linear-gradient(135deg, #6B5B4E, #3A2F28)',
